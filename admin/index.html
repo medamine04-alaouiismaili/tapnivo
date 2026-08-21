@@ -4,10 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>TAPNIVO | Dashboard</title>
+  <title>TAPNIVO | Ajouter un client</title>
 
   <style>
-
     * {
       box-sizing: border-box;
       margin: 0;
@@ -46,56 +45,47 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 950px;
       margin: auto;
       padding: 35px 20px;
     }
 
     .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
     .header h1 {
       font-size: 30px;
+      margin-bottom: 7px;
     }
 
     .header p {
       color: #6b7280;
-      margin-top: 6px;
     }
 
-    .back {
-      text-decoration: none;
-      color: #4f46e5;
-      font-weight: bold;
-    }
-
-    .form-card {
+    .card {
       background: white;
       border: 1px solid #e5e7eb;
       border-radius: 18px;
-      padding: 30px;
-      margin-bottom: 25px;
+      padding: 28px;
+      margin-bottom: 20px;
     }
 
-    .form-card h2 {
-      font-size: 20px;
+    .card h2 {
+      font-size: 19px;
       margin-bottom: 6px;
     }
 
-    .form-card > p {
+    .description {
       color: #6b7280;
       font-size: 13px;
-      margin-bottom: 25px;
+      margin-bottom: 22px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 17px;
     }
 
     .field {
@@ -104,7 +94,7 @@
       gap: 7px;
     }
 
-    .field.full {
+    .full {
       grid-column: 1 / -1;
     }
 
@@ -115,26 +105,25 @@
     }
 
     input,
-    textarea,
-    select {
+    textarea {
       width: 100%;
-      padding: 13px 14px;
+      padding: 13px;
       border: 1px solid #d1d5db;
       border-radius: 10px;
-      outline: none;
       font-family: inherit;
       font-size: 14px;
+      outline: none;
       background: white;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
     }
 
     input:focus,
     textarea:focus {
       border-color: #4f46e5;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
     }
 
     .photo-box {
@@ -146,8 +135,37 @@
     }
 
     .photo-box input {
-      border: none;
       margin-top: 12px;
+      border: none;
+      padding: 0;
+    }
+
+    .message {
+      display: none;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .success {
+      display: block;
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .profile-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: #4f46e5;
+      font-weight: bold;
+      text-decoration: none;
     }
 
     .actions {
@@ -157,17 +175,17 @@
       margin-top: 25px;
     }
 
-    .btn {
+    button {
       border: none;
       border-radius: 10px;
-      padding: 13px 20px;
+      padding: 14px 22px;
       font-weight: bold;
       cursor: pointer;
-      text-decoration: none;
+      font-size: 14px;
     }
 
     .cancel {
-      background: #f3f4f6;
+      background: #e5e7eb;
       color: #374151;
     }
 
@@ -176,15 +194,9 @@
       color: white;
     }
 
-    .note {
-      background: #eef2ff;
-      border: 1px solid #c7d2fe;
-      color: #3730a3;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-bottom: 20px;
+    .save:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     footer {
@@ -195,22 +207,15 @@
     }
 
     @media (max-width: 700px) {
-
       .grid {
         grid-template-columns: 1fr;
       }
 
-      .field.full {
+      .full {
         grid-column: auto;
       }
 
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-      }
-
-      .form-card {
+      .card {
         padding: 20px;
       }
 
@@ -218,35 +223,31 @@
         flex-direction: column;
       }
 
-      .btn {
-        text-align: center;
+      button {
+        width: 100%;
       }
-
     }
-
   </style>
 </head>
 
 <body>
 
-<header class="topbar">
+  <header class="topbar">
 
-  <div class="logo">
-    TAP<span>NIVO</span>
-  </div>
+    <div class="logo">
+      TAP<span>NIVO</span>
+    </div>
 
-  <div class="admin">
-    Admin
-  </div>
+    <div class="admin">
+      Admin
+    </div>
 
-</header>
+  </header>
 
 
-<main class="container">
+  <main class="container">
 
-  <div class="header">
-
-    <div>
+    <div class="header">
 
       <h1>
         Ajouter un client
@@ -258,107 +259,157 @@
 
     </div>
 
-    <a
-      class="back"
-      href="/admin/"
-    >
-      ← Dashboard
-    </a>
 
-  </div>
+    <div id="message" class="message"></div>
 
 
-  <div class="note">
-
-    ℹ️ Cette première version prépare le formulaire.
-    Les informations seront connectées à une base de données
-    dans l'étape suivante afin de créer automatiquement
-    le profil du client.
-
-  </div>
+    <form id="clientForm">
 
 
-  <form id="clientForm">
+      <!-- INFORMATIONS -->
+
+      <div class="card">
+
+        <h2>
+          Informations professionnelles
+        </h2>
+
+        <p class="description">
+          Informations principales du client.
+        </p>
 
 
-    <!-- INFORMATIONS -->
+        <div class="grid">
 
-    <div class="form-card">
+          <div class="field">
 
-      <h2>
-        Informations professionnelles
-      </h2>
-
-      <p>
-        Les informations principales qui apparaîtront sur le profil.
-      </p>
-
-
-      <div class="grid">
-
-        <div class="field">
-
-          <label>
-            Nom complet / Nom commercial
-          </label>
-
-          <input
-            type="text"
-            name="name"
-            placeholder="Ex : Yassine Immobilier"
-            required
-          >
-
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            Profession
-          </label>
-
-          <input
-            type="text"
-            name="profession"
-            placeholder="Ex : Agent Immobilier"
-          >
-
-        </div>
-
-
-        <div class="field full">
-
-          <label>
-            Description
-          </label>
-
-          <textarea
-            name="bio"
-            placeholder="Présentez brièvement votre activité..."
-          ></textarea>
-
-        </div>
-
-
-        <div class="field full">
-
-          <label>
-            Photo de profil
-          </label>
-
-          <div class="photo-box">
-
-            📷
-
-            <div>
-              Choisir une photo
-            </div>
+            <label>
+              Nom complet / Nom commercial *
+            </label>
 
             <input
-              type="file"
-              accept="image/*"
-              name="photo"
+              type="text"
+              name="name"
+              placeholder="Ex : Yassine Immobilier"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Profession
+            </label>
+
+            <input
+              type="text"
+              name="profession"
+              placeholder="Ex : Agent Immobilier"
+            >
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Description
+            </label>
+
+            <textarea
+              name="bio"
+              placeholder="Présentez l'activité du client..."
+            ></textarea>
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Photo de profil
+            </label>
+
+            <div class="photo-box">
+
+              📷
+
+              <div>
+                Choisir une photo
+              </div>
+
+              <input
+                type="file"
+                name="photo"
+                accept="image/*"
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- CONTACT -->
+
+      <div class="card">
+
+        <h2>
+          Contact
+        </h2>
+
+        <p class="description">
+          Coordonnées professionnelles.
+        </p>
+
+
+        <div class="grid">
+
+          <div class="field">
+
+            <label>
+              Téléphone
+            </label>
+
+            <input
+              type="tel"
+              name="phone"
+              placeholder="+212 6 XX XX XX XX"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              WhatsApp
+            </label>
+
+            <input
+              type="tel"
+              name="whatsapp"
+              placeholder="+212 6 XX XX XX XX"
+            >
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Email
+            </label>
+
+            <input
+              type="email"
+              name="email"
+              placeholder="contact@example.com"
             >
 
           </div>
@@ -367,297 +418,388 @@
 
       </div>
 
-    </div>
+
+      <!-- RESEAUX SOCIAUX -->
+
+      <div class="card">
+
+        <h2>
+          Réseaux sociaux
+        </h2>
+
+        <p class="description">
+          Liens vers les réseaux sociaux du client.
+        </p>
 
 
-    <!-- CONTACT -->
+        <div class="grid">
 
-    <div class="form-card">
+          <div class="field">
 
-      <h2>
-        Contact
-      </h2>
+            <label>
+              Instagram
+            </label>
 
-      <p>
-        Coordonnées professionnelles du client.
-      </p>
+            <input
+              type="url"
+              name="instagram"
+              placeholder="https://instagram.com/..."
+            >
 
-
-      <div class="grid">
-
-        <div class="field">
-
-          <label>
-            Téléphone
-          </label>
-
-          <input
-            type="tel"
-            name="phone"
-            placeholder="+212 6 XX XX XX XX"
-          >
-
-        </div>
+          </div>
 
 
-        <div class="field">
+          <div class="field">
 
-          <label>
-            WhatsApp
-          </label>
+            <label>
+              Facebook
+            </label>
 
-          <input
-            type="tel"
-            name="whatsapp"
-            placeholder="+212 6 XX XX XX XX"
-          >
+            <input
+              type="url"
+              name="facebook"
+              placeholder="https://facebook.com/..."
+            >
 
-        </div>
-
-
-        <div class="field full">
-
-          <label>
-            Email
-          </label>
-
-          <input
-            type="email"
-            name="email"
-            placeholder="contact@example.com"
-          >
-
-        </div>
-
-      </div>
-
-    </div>
+          </div>
 
 
-    <!-- RESEAUX -->
+          <div class="field">
 
-    <div class="form-card">
+            <label>
+              TikTok
+            </label>
 
-      <h2>
-        Réseaux sociaux
-      </h2>
+            <input
+              type="url"
+              name="tiktok"
+              placeholder="https://tiktok.com/@..."
+            >
 
-      <p>
-        Ajoutez les comptes que le client souhaite afficher.
-      </p>
-
-
-      <div class="grid">
-
-        <div class="field">
-
-          <label>
-            Instagram
-          </label>
-
-          <input
-            type="url"
-            name="instagram"
-            placeholder="https://instagram.com/..."
-          >
-
-        </div>
+          </div>
 
 
-        <div class="field">
+          <div class="field">
 
-          <label>
-            Facebook
-          </label>
+            <label>
+              LinkedIn
+            </label>
 
-          <input
-            type="url"
-            name="facebook"
-            placeholder="https://facebook.com/..."
-          >
+            <input
+              type="url"
+              name="linkedin"
+              placeholder="https://linkedin.com/in/..."
+            >
 
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            TikTok
-          </label>
-
-          <input
-            type="url"
-            name="tiktok"
-            placeholder="https://tiktok.com/@..."
-          >
-
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            LinkedIn
-          </label>
-
-          <input
-            type="url"
-            name="linkedin"
-            placeholder="https://linkedin.com/in/..."
-          >
+          </div>
 
         </div>
 
       </div>
 
-    </div>
+
+      <!-- LOCALISATION -->
+
+      <div class="card">
+
+        <h2>
+          Localisation
+        </h2>
+
+        <p class="description">
+          Adresse et position du client.
+        </p>
 
 
-    <!-- LOCALISATION -->
+        <div class="grid">
 
-    <div class="form-card">
+          <div class="field full">
 
-      <h2>
-        Localisation
-      </h2>
+            <label>
+              Adresse
+            </label>
 
-      <p>
-        Permettez aux clients de trouver facilement l'entreprise.
-      </p>
+            <input
+              type="text"
+              name="address"
+              placeholder="Ex : Avenue Hassan II, Fès"
+            >
 
-
-      <div class="grid">
-
-        <div class="field full">
-
-          <label>
-            Adresse
-          </label>
-
-          <input
-            type="text"
-            name="address"
-            placeholder="Ex : Avenue Hassan II, Fès"
-          >
-
-        </div>
+          </div>
 
 
-        <div class="field full">
+          <div class="field full">
 
-          <label>
-            Lien Google Maps
-          </label>
+            <label>
+              Google Maps
+            </label>
 
-          <input
-            type="url"
-            name="maps"
-            placeholder="https://maps.google.com/..."
-          >
+            <input
+              type="url"
+              name="maps"
+              placeholder="https://maps.google.com/..."
+            >
 
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- BUSINESS -->
-
-    <div class="form-card">
-
-      <h2>
-        Business
-      </h2>
-
-      <p>
-        Informations supplémentaires sur l'activité.
-      </p>
-
-
-      <div class="grid">
-
-        <div class="field full">
-
-          <label>
-            Site web
-          </label>
-
-          <input
-            type="url"
-            name="website"
-            placeholder="https://..."
-          >
-
-        </div>
-
-
-        <div class="field full">
-
-          <label>
-            Lien Google Reviews
-          </label>
-
-          <input
-            type="url"
-            name="reviews"
-            placeholder="https://g.page/..."
-          >
+          </div>
 
         </div>
 
       </div>
 
-    </div>
+
+      <!-- BUSINESS -->
+
+      <div class="card">
+
+        <h2>
+          Business
+        </h2>
+
+        <p class="description">
+          Informations supplémentaires.
+        </p>
 
 
-    <div class="actions">
+        <div class="grid">
 
-      <a
-        href="/admin/"
-        class="btn cancel"
-      >
-        Annuler
-      </a>
+          <div class="field full">
 
-      <button
-        type="submit"
-        class="btn save"
-      >
-        Créer le profil
-      </button>
+            <label>
+              Site web
+            </label>
 
-    </div>
+            <input
+              type="url"
+              name="website"
+              placeholder="https://..."
+            >
+
+          </div>
 
 
-  </form>
+          <div class="field full">
 
-</main>
+            <label>
+              Google Reviews
+            </label>
+
+            <input
+              type="url"
+              name="reviews"
+              placeholder="https://g.page/..."
+            >
+
+          </div>
+
+        </div>
+
+      </div>
 
 
-<footer>
+      <div class="actions">
 
-  TAPNIVO • Digital Business Cards
+        <button
+          type="reset"
+          class="cancel"
+        >
+          Effacer
+        </button>
 
-</footer>
+
+        <button
+          type="submit"
+          class="save"
+        >
+          Créer le profil
+        </button>
+
+      </div>
 
 
-<script>
+    </form>
 
-  document
-    .getElementById("clientForm")
-    .addEventListener("submit", function(event) {
+  </main>
 
-      event.preventDefault();
 
-      alert(
-        "Formulaire prêt ! Dans l'étape suivante, nous allons connecter ce formulaire à la base de données TAPNIVO."
-      );
+  <footer>
+    TAPNIVO • Digital Business Cards
+  </footer>
 
-    });
 
-</script>
+  <script>
 
+    const form =
+      document.getElementById("clientForm");
+
+    const message =
+      document.getElementById("message");
+
+
+    form.addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+
+        const button =
+          form.querySelector(
+            "button[type='submit']"
+          );
+
+
+        button.disabled = true;
+
+        button.textContent =
+          "Création...";
+
+
+        message.className =
+          "message";
+
+        message.textContent = "";
+
+
+        const data = {
+
+          name:
+            form.elements["name"].value.trim(),
+
+          profession:
+            form.elements["profession"].value.trim(),
+
+          bio:
+            form.elements["bio"].value.trim(),
+
+          phone:
+            form.elements["phone"].value.trim(),
+
+          whatsapp:
+            form.elements["whatsapp"].value.trim(),
+
+          email:
+            form.elements["email"].value.trim(),
+
+          instagram:
+            form.elements["instagram"].value.trim(),
+
+          facebook:
+            form.elements["facebook"].value.trim(),
+
+          tiktok:
+            form.elements["tiktok"].value.trim(),
+
+          linkedin:
+            form.elements["linkedin"].value.trim(),
+
+          address:
+            form.elements["address"].value.trim(),
+
+          maps:
+            form.elements["maps"].value.trim(),
+
+          website:
+            form.elements["website"].value.trim(),
+
+          reviews:
+            form.elements["reviews"].value.trim()
+
+        };
+
+
+        try {
+
+          const response =
+            await fetch(
+              "/api/clients",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify(data)
+              }
+            );
+
+
+          const result =
+            await response.json();
+
+
+          if (
+            !response.ok ||
+            !result.success
+          ) {
+
+            throw new Error(
+              result.error ||
+              "Une erreur est survenue."
+            );
+
+          }
+
+
+          message.className =
+            "message success";
+
+
+          message.innerHTML =
+            "✅ Client créé avec succès !";
+
+
+          const link =
+            document.createElement("a");
+
+
+          link.className =
+            "profile-link";
+
+
+          link.href =
+            "/client/" +
+            result.slug;
+
+
+          link.target =
+            "_blank";
+
+
+          link.textContent =
+            "Voir le profil →";
+
+
+          message.appendChild(link);
+
+
+          form.reset();
+
+
+        } catch (error) {
+
+          message.className =
+            "message error";
+
+
+          message.textContent =
+            "❌ Erreur : " +
+            error.message;
+
+        }
+
+
+        button.disabled = false;
+
+        button.textContent =
+          "Créer le profil";
+
+      }
+    );
+
+  </script>
 
 </body>
 </html>
