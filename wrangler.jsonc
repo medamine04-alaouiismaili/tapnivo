@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tapnivo",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-21",
+  "assets": {
+    "directory": "."
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tapnivo-db",
+      "database_id": "159e58ab-2229-4ff8-8dfc-f08bd633a6ce"
+    }
+  ]
+}
