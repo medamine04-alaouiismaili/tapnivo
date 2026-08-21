@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>TAPNIVO | NFC Digital Business Cards</title>
+
+  <meta name="description" content="TAPNIVO - Cartes NFC et profils digitaux pour professionnels.">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #111827;
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 18px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #374151;
+      margin-left: 20px;
+      font-size: 14px;
+    }
+
+    .hero {
+      max-width: 1100px;
+      margin: auto;
+      padding: 90px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 50px;
+    }
+
+    .hero-text {
+      max-width: 600px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 8px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 52px;
+      line-height: 1.08;
+      margin-bottom: 22px;
+    }
+
+    h1 span {
+      color: #4f46e5;
+    }
+
+    .hero p {
+      font-size: 19px;
+      line-height: 1.6;
+      color: #6b7280;
+      margin-bottom: 30px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .secondary {
+      background: white;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    .card-demo {
+      width: 320px;
+      height: 200px;
+      background: linear-gradient(135deg, #111827, #374151);
+      border-radius: 18px;
+      color: white;
+      padding: 25px;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-logo {
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .card-name {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .card-tap {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .features {
+      background: white;
+      padding: 70px 20px;
+    }
+
+    .features-container {
+      max-width: 1100px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .features h2 {
+      font-size: 34px;
+      margin-bottom: 45px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .feature {
+      padding: 28px;
+      border: 1px solid #e5e7eb;
+      border-radius: 15px;
+      background: #fafafa;
+    }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 15px;
+    }
+
+    .feature h3 {
+      margin-bottom: 10px;
+    }
+
+    .feature p {
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    footer {
+      background: #111827;
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    footer p {
+      opacity: 0.7;
+      font-size: 14px;
+    }
+
+    @media (max-width: 750px) {
+      .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .buttons {
+        justify-content: center;
+      }
+
+      h1 {
+        font-size: 38px;
+      }
+
+      .card-demo {
+        width: 300px;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">TAPNIVO</div>
+
+    <nav>
+      <a href="#services">Services</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+
+      <div class="hero-text">
+
+        <div class="badge">
+          NFC • QR • Digital
+        </div>
+
+        <h1>
+          Votre identité professionnelle,
+          <span>en un seul Tap.</span>
+        </h1>
+
+        <p>
+          TAPNIVO transforme votre carte de visite traditionnelle
+          en une expérience digitale simple, moderne et professionnelle.
+        </p>
+
+        <div class="buttons">
+          <a href="#services" class="btn primary">
+            Découvrir TAPNIVO
+          </a>
+
+          <a href="#contact" class="btn secondary">
+            Nous contacter
+          </a>
+        </div>
+
+      </div>
+
+      <div class="card-demo">
+
+        <div class="card-logo">
+          TAPNIVO
+        </div>
+
+        <div>
+          <div class="card-name">
+            Votre Nom
+          </div>
+
+          <div class="card-tap">
+            Tap to connect
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="features" id="services">
+
+      <div class="features-container">
+
+        <h2>
+          Tout votre contact, au même endroit
+        </h2>
+
+        <div class="feature-grid">
+
+          <div class="feature">
+
+            <div class="feature-icon">📱</div>
+
+            <h3>
+              NFC
+            </h3>
+
+            <p>
+              Partagez votre profil professionnel
+              simplement en approchant votre smartphone.
+            </p>
+
+          </div>
+
+
+          <div class="feature">
+
+            <div class="feature-icon">▣</div>
+
+            <h3>
+              QR Code
+            </h3>
+
+            <p>
+              Votre profil reste accessible même
+              sans utiliser la technologie NFC.
+            </p>
+
+          </div>
+
+
+          <div class="feature">
+
+            <div class="feature-icon">🌐</div>
+
+            <h3>
+              Profil digital
+            </h3>
+
+            <p>
+              Téléphone, WhatsApp, Instagram,
+              localisation et autres informations
+              réunies sur une seule page.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer id="contact">
+
+    <p>
+      © 2026 TAPNIVO — NFC & Digital Business Cards
+    </p>
+
+  </footer>
+
+</body>
+</html>
