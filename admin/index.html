@@ -7,6 +7,7 @@
   <title>TAPNIVO | Dashboard</title>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -21,7 +22,7 @@
 
     .topbar {
       height: 70px;
-      background: #ffffff;
+      background: white;
       border-bottom: 1px solid #e5e7eb;
       display: flex;
       align-items: center;
@@ -40,176 +41,150 @@
     }
 
     .admin {
-      font-size: 14px;
       color: #6b7280;
+      font-size: 14px;
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1000px;
       margin: auto;
       padding: 35px 20px;
     }
 
-    .welcome {
+    .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
       margin-bottom: 30px;
     }
 
-    .welcome h1 {
+    .header h1 {
       font-size: 30px;
-      margin-bottom: 7px;
     }
 
-    .welcome p {
+    .header p {
       color: #6b7280;
+      margin-top: 6px;
     }
 
-    .add-button {
-      background: #4f46e5;
-      color: white;
+    .back {
       text-decoration: none;
-      padding: 13px 18px;
-      border-radius: 10px;
+      color: #4f46e5;
       font-weight: bold;
-      border: none;
-      cursor: pointer;
     }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin-bottom: 35px;
-    }
-
-    .stat {
+    .form-card {
       background: white;
       border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 22px;
+      border-radius: 18px;
+      padding: 30px;
+      margin-bottom: 25px;
     }
 
-    .stat-title {
+    .form-card h2 {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .form-card > p {
       color: #6b7280;
       font-size: 13px;
-      margin-bottom: 10px;
+      margin-bottom: 25px;
     }
 
-    .stat-number {
-      font-size: 30px;
-      font-weight: 800;
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
     }
 
-    .clients-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .clients-header h2 {
-      font-size: 21px;
-    }
-
-    .search {
-      padding: 11px 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 9px;
-      outline: none;
-      width: 230px;
-    }
-
-    .clients {
+    .field {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 7px;
     }
 
-    .client {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 15px;
-      padding: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+    .field.full {
+      grid-column: 1 / -1;
     }
 
-    .client-info {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .avatar {
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      background: #eef2ff;
-      color: #4f46e5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    .client-name {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    .client-job {
-      color: #6b7280;
+    label {
       font-size: 13px;
-    }
-
-    .status {
-      display: inline-block;
-      margin-top: 7px;
-      font-size: 11px;
-      color: #047857;
-      background: #d1fae5;
-      padding: 4px 8px;
-      border-radius: 20px;
       font-weight: bold;
-    }
-
-    .client-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .action {
-      padding: 9px 13px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: bold;
-      border: 1px solid #d1d5db;
       color: #374151;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
       background: white;
     }
 
-    .action.primary {
-      background: #4f46e5;
-      color: white;
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
       border-color: #4f46e5;
     }
 
-    .empty {
+    .photo-box {
+      border: 2px dashed #d1d5db;
+      border-radius: 14px;
+      padding: 25px;
       text-align: center;
-      padding: 50px 20px;
-      background: white;
-      border: 1px dashed #d1d5db;
-      border-radius: 15px;
       color: #6b7280;
-      display: none;
+    }
+
+    .photo-box input {
+      border: none;
+      margin-top: 12px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 13px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .cancel {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .save {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .note {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      color: #3730a3;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 20px;
     }
 
     footer {
@@ -221,259 +196,468 @@
 
     @media (max-width: 700px) {
 
-      .welcome {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .stats {
+      .grid {
         grid-template-columns: 1fr;
       }
 
-      .clients-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
+      .field.full {
+        grid-column: auto;
       }
 
-      .search {
-        width: 100%;
-      }
-
-      .client {
+      .header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 15px;
       }
 
-      .client-actions {
-        width: 100%;
+      .form-card {
+        padding: 20px;
       }
 
-      .action {
-        flex: 1;
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
         text-align: center;
       }
+
     }
+
   </style>
 </head>
 
 <body>
 
-  <header class="topbar">
+<header class="topbar">
 
-    <div class="logo">
-      TAP<span>NIVO</span>
+  <div class="logo">
+    TAP<span>NIVO</span>
+  </div>
+
+  <div class="admin">
+    Admin
+  </div>
+
+</header>
+
+
+<main class="container">
+
+  <div class="header">
+
+    <div>
+
+      <h1>
+        Ajouter un client
+      </h1>
+
+      <p>
+        Créez le profil digital TAPNIVO de votre client.
+      </p>
+
     </div>
 
-    <div class="admin">
-      Admin
-    </div>
+    <a
+      class="back"
+      href="/admin/"
+    >
+      ← Dashboard
+    </a>
 
-  </header>
-
-
-  <main class="container">
-
-    <section class="welcome">
-
-      <div>
-        <h1>Dashboard</h1>
-        <p>Gérez vos clients et leurs profils TAPNIVO.</p>
-      </div>
-
-      <button class="add-button" onclick="addClient()">
-        + Ajouter un client
-      </button>
-
-    </section>
+  </div>
 
 
-    <section class="stats">
+  <div class="note">
 
-      <div class="stat">
-        <div class="stat-title">
-          Clients
+    ℹ️ Cette première version prépare le formulaire.
+    Les informations seront connectées à une base de données
+    dans l'étape suivante afin de créer automatiquement
+    le profil du client.
+
+  </div>
+
+
+  <form id="clientForm">
+
+
+    <!-- INFORMATIONS -->
+
+    <div class="form-card">
+
+      <h2>
+        Informations professionnelles
+      </h2>
+
+      <p>
+        Les informations principales qui apparaîtront sur le profil.
+      </p>
+
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            Nom complet / Nom commercial
+          </label>
+
+          <input
+            type="text"
+            name="name"
+            placeholder="Ex : Yassine Immobilier"
+            required
+          >
+
         </div>
 
-        <div class="stat-number">
-          1
-        </div>
-      </div>
 
+        <div class="field">
 
-      <div class="stat">
-        <div class="stat-title">
-          Cartes actives
-        </div>
+          <label>
+            Profession
+          </label>
 
-        <div class="stat-number">
-          1
-        </div>
-      </div>
+          <input
+            type="text"
+            name="profession"
+            placeholder="Ex : Agent Immobilier"
+          >
 
-
-      <div class="stat">
-        <div class="stat-title">
-          Vues du profil
         </div>
 
-        <div class="stat-number">
-          0
+
+        <div class="field full">
+
+          <label>
+            Description
+          </label>
+
+          <textarea
+            name="bio"
+            placeholder="Présentez brièvement votre activité..."
+          ></textarea>
+
         </div>
-      </div>
-
-    </section>
 
 
-    <section>
+        <div class="field full">
 
-      <div class="clients-header">
+          <label>
+            Photo de profil
+          </label>
 
-        <h2>
-          Mes clients
-        </h2>
+          <div class="photo-box">
 
-        <input
-          class="search"
-          type="search"
-          placeholder="Rechercher un client..."
-          oninput="searchClients(this.value)"
-        >
-
-      </div>
-
-
-      <div class="clients" id="clients">
-
-
-        <!-- CLIENT 1 -->
-
-        <div class="client" data-name="Yassine Immobilier">
-
-          <div class="client-info">
-
-            <div class="avatar">
-              Y
-            </div>
+            📷
 
             <div>
-
-              <div class="client-name">
-                Yassine Immobilier
-              </div>
-
-              <div class="client-job">
-                Agent Immobilier • Fès
-              </div>
-
-              <div class="status">
-                ● Active
-              </div>
-
+              Choisir une photo
             </div>
 
-          </div>
-
-
-          <div class="client-actions">
-
-            <a
-              class="action primary"
-              href="/yassine/"
-              target="_blank"
+            <input
+              type="file"
+              accept="image/*"
+              name="photo"
             >
-              Voir
-            </a>
-
-            <a
-              class="action"
-              href="#"
-              onclick="editClient()"
-            >
-              Modifier
-            </a>
 
           </div>
 
         </div>
 
+      </div>
+
+    </div>
+
+
+    <!-- CONTACT -->
+
+    <div class="form-card">
+
+      <h2>
+        Contact
+      </h2>
+
+      <p>
+        Coordonnées professionnelles du client.
+      </p>
+
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            Téléphone
+          </label>
+
+          <input
+            type="tel"
+            name="phone"
+            placeholder="+212 6 XX XX XX XX"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            WhatsApp
+          </label>
+
+          <input
+            type="tel"
+            name="whatsapp"
+            placeholder="+212 6 XX XX XX XX"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>
+            Email
+          </label>
+
+          <input
+            type="email"
+            name="email"
+            placeholder="contact@example.com"
+          >
+
+        </div>
 
       </div>
 
+    </div>
 
-      <div class="empty" id="empty">
 
-        Aucun client trouvé.
+    <!-- RESEAUX -->
+
+    <div class="form-card">
+
+      <h2>
+        Réseaux sociaux
+      </h2>
+
+      <p>
+        Ajoutez les comptes que le client souhaite afficher.
+      </p>
+
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            Instagram
+          </label>
+
+          <input
+            type="url"
+            name="instagram"
+            placeholder="https://instagram.com/..."
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Facebook
+          </label>
+
+          <input
+            type="url"
+            name="facebook"
+            placeholder="https://facebook.com/..."
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            TikTok
+          </label>
+
+          <input
+            type="url"
+            name="tiktok"
+            placeholder="https://tiktok.com/@..."
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            LinkedIn
+          </label>
+
+          <input
+            type="url"
+            name="linkedin"
+            placeholder="https://linkedin.com/in/..."
+          >
+
+        </div>
 
       </div>
 
-    </section>
-
-  </main>
+    </div>
 
 
-  <footer>
+    <!-- LOCALISATION -->
 
-    TAPNIVO Dashboard • 2026
+    <div class="form-card">
 
-  </footer>
+      <h2>
+        Localisation
+      </h2>
 
-
-  <script>
-
-    function searchClients(value) {
-
-      const clients =
-        document.querySelectorAll(".client");
-
-      const search =
-        value.toLowerCase().trim();
-
-      let visible = 0;
-
-      clients.forEach(function(client) {
-
-        const name =
-          client.dataset.name.toLowerCase();
-
-        if (name.includes(search)) {
-
-          client.style.display = "flex";
-          visible++;
-
-        } else {
-
-          client.style.display = "none";
-
-        }
-
-      });
+      <p>
+        Permettez aux clients de trouver facilement l'entreprise.
+      </p>
 
 
-      document.getElementById("empty").style.display =
-        visible === 0 ? "block" : "none";
+      <div class="grid">
 
-    }
+        <div class="field full">
+
+          <label>
+            Adresse
+          </label>
+
+          <input
+            type="text"
+            name="address"
+            placeholder="Ex : Avenue Hassan II, Fès"
+          >
+
+        </div>
 
 
-    function addClient() {
+        <div class="field full">
+
+          <label>
+            Lien Google Maps
+          </label>
+
+          <input
+            type="url"
+            name="maps"
+            placeholder="https://maps.google.com/..."
+          >
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- BUSINESS -->
+
+    <div class="form-card">
+
+      <h2>
+        Business
+      </h2>
+
+      <p>
+        Informations supplémentaires sur l'activité.
+      </p>
+
+
+      <div class="grid">
+
+        <div class="field full">
+
+          <label>
+            Site web
+          </label>
+
+          <input
+            type="url"
+            name="website"
+            placeholder="https://..."
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>
+            Lien Google Reviews
+          </label>
+
+          <input
+            type="url"
+            name="reviews"
+            placeholder="https://g.page/..."
+          >
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="actions">
+
+      <a
+        href="/admin/"
+        class="btn cancel"
+      >
+        Annuler
+      </a>
+
+      <button
+        type="submit"
+        class="btn save"
+      >
+        Créer le profil
+      </button>
+
+    </div>
+
+
+  </form>
+
+</main>
+
+
+<footer>
+
+  TAPNIVO • Digital Business Cards
+
+</footer>
+
+
+<script>
+
+  document
+    .getElementById("clientForm")
+    .addEventListener("submit", function(event) {
+
+      event.preventDefault();
 
       alert(
-        "La création de clients sera connectée à la base de données dans la prochaine étape."
+        "Formulaire prêt ! Dans l'étape suivante, nous allons connecter ce formulaire à la base de données TAPNIVO."
       );
 
-    }
+    });
 
+</script>
 
-    function editClient() {
-
-      alert(
-        "La modification des clients sera disponible avec le système de gestion des profils."
-      );
-
-    }
-
-  </script>
 
 </body>
 </html>
