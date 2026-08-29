@@ -962,7 +962,9 @@ export default {
         }
 
 
-        // Stand non activé
+        // =================================================
+        // STAND NON ACTIVÉ
+        // =================================================
 
         if (
           stand.status !==
@@ -1087,7 +1089,40 @@ Ce QR code est prêt à être activé.
         }
 
 
-        // Stand activé
+        // =================================================
+        // TRACK SCAN
+        // =================================================
+
+        try {
+
+          await env.DB
+            .prepare(`
+              INSERT INTO stand_scans (
+                stand_code
+              )
+              VALUES (?)
+            `)
+            .bind(
+              standCode
+            )
+            .run();
+
+        } catch (scanError) {
+
+          // Le tracking ne doit jamais
+          // empêcher la redirection.
+
+          console.error(
+            "Erreur tracking scan:",
+            scanError
+          );
+
+        }
+
+
+        // =================================================
+        // REDIRECT
+        // =================================================
 
         return Response.redirect(
           stand.destination_url,
