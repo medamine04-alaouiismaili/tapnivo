@@ -16,6 +16,7 @@ export default {
       });
     };
 
+
     const base64url = (input) => {
       let binary = "";
 
@@ -32,6 +33,7 @@ export default {
         .replace(/\//g, "_")
         .replace(/=+$/g, "");
     };
+
 
     const fromBase64url = (input) => {
       const base64 =
@@ -54,6 +56,7 @@ export default {
 
       return bytes;
     };
+
 
     const timingSafeEqual = (a, b) => {
       if (a.length !== b.length) {
@@ -81,28 +84,36 @@ export default {
         );
       }
 
-      const timestamp = Date.now().toString();
+      const timestamp =
+        Date.now().toString();
 
-      const encoder = new TextEncoder();
+      const encoder =
+        new TextEncoder();
 
-      const key = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(env.ADMIN_KEY),
-        {
-          name: "HMAC",
-          hash: "SHA-256"
-        },
-        false,
-        ["sign"]
-      );
+      const key =
+        await crypto.subtle.importKey(
+          "raw",
+          encoder.encode(
+            env.ADMIN_KEY
+          ),
+          {
+            name: "HMAC",
+            hash: "SHA-256"
+          },
+          false,
+          ["sign"]
+        );
 
-      const signature = new Uint8Array(
-        await crypto.subtle.sign(
-          "HMAC",
-          key,
-          encoder.encode(timestamp)
-        )
-      );
+      const signature =
+        new Uint8Array(
+          await crypto.subtle.sign(
+            "HMAC",
+            key,
+            encoder.encode(
+              timestamp
+            )
+          )
+        );
 
       return (
         base64url(timestamp) +
@@ -112,114 +123,150 @@ export default {
     };
 
 
-    const verifyAdminToken = async (token) => {
-      if (!token || !env.ADMIN_KEY) {
-        return false;
-      }
+    const verifyAdminToken =
+      async (token) => {
 
-      const parts = token.split(".");
-
-      if (parts.length !== 2) {
-        return false;
-      }
-
-      try {
-        const timestampBytes =
-          fromBase64url(parts[0]);
-
-        const timestamp =
-          new TextDecoder().decode(
-            timestampBytes
-          );
-
-        const time = Number(timestamp);
-
-        if (!Number.isFinite(time)) {
-          return false;
-        }
-
-        // Session valable 8 heures
         if (
-          Date.now() - time >
-          8 * 60 * 60 * 1000
+          !token ||
+          !env.ADMIN_KEY
         ) {
           return false;
         }
 
-        if (time > Date.now() + 60000) {
+        const parts =
+          token.split(".");
+
+        if (parts.length !== 2) {
           return false;
         }
 
-        const encoder = new TextEncoder();
+        try {
+          const timestampBytes =
+            fromBase64url(
+              parts[0]
+            );
 
-        const key = await crypto.subtle.importKey(
-          "raw",
-          encoder.encode(env.ADMIN_KEY),
-          {
-            name: "HMAC",
-            hash: "SHA-256"
-          },
-          false,
-          ["sign"]
-        );
+          const timestamp =
+            new TextDecoder().decode(
+              timestampBytes
+            );
 
-        const expected = new Uint8Array(
-          await crypto.subtle.sign(
-            "HMAC",
-            key,
-            encoder.encode(timestamp)
-          )
-        );
+          const time =
+            Number(timestamp);
 
-        const received =
-          fromBase64url(parts[1]);
+          if (!Number.isFinite(time)) {
+            return false;
+          }
 
-        return timingSafeEqual(
-          expected,
-          received
-        );
+          // Session valable 8 heures
 
-      } catch {
-        return false;
-      }
-    };
+          if (
+            Date.now() - time >
+            8 * 60 * 60 * 1000
+          ) {
+            return false;
+          }
 
+          if (
+            time >
+            Date.now() + 60000
+          ) {
+            return false;
+          }
 
-    const getCookie = (request, name) => {
-      const cookieHeader =
-        request.headers.get("Cookie");
+          const encoder =
+            new TextEncoder();
 
-      if (!cookieHeader) {
-        return null;
-      }
+          const key =
+            await crypto.subtle.importKey(
+              "raw",
+              encoder.encode(
+                env.ADMIN_KEY
+              ),
+              {
+                name: "HMAC",
+                hash: "SHA-256"
+              },
+              false,
+              ["sign"]
+            );
 
-      const cookies =
-        cookieHeader.split(";");
+          const expected =
+            new Uint8Array(
+              await crypto.subtle.sign(
+                "HMAC",
+                key,
+                encoder.encode(
+                  timestamp
+                )
+              )
+            );
 
-      for (const cookie of cookies) {
-        const parts =
-          cookie.trim().split("=");
+          const received =
+            fromBase64url(
+              parts[1]
+            );
 
-        if (parts[0] === name) {
-          return parts
-            .slice(1)
-            .join("=");
+          return timingSafeEqual(
+            expected,
+            received
+          );
+
+        } catch {
+          return false;
         }
-      }
-
-      return null;
-    };
+      };
 
 
-    const isAdmin = async () => {
-      const token =
-        getCookie(
-          request,
-          "tapnivo_admin"
+    const getCookie =
+      (request, name) => {
+
+        const cookieHeader =
+          request.headers.get(
+            "Cookie"
+          );
+
+        if (!cookieHeader) {
+          return null;
+        }
+
+        const cookies =
+          cookieHeader.split(";");
+
+        for (
+          const cookie of cookies
+        ) {
+          const parts =
+            cookie
+              .trim()
+              .split("=");
+
+          if (
+            parts[0] === name
+          ) {
+            return parts
+              .slice(1)
+              .join("=");
+          }
+        }
+
+        return null;
+      };
+
+
+    const isAdmin =
+      async () => {
+
+        const token =
+          getCookie(
+            request,
+            "tapnivo_admin"
+          );
+
+        return await verifyAdminToken(
+          token
         );
-
-      return await verifyAdminToken(token);
-    };
+      };
 
 
     // =====================================================
@@ -231,7 +278,9 @@ export default {
         "/api/admin/login" &&
       request.method === "POST"
     ) {
+
       try {
+
         const data =
           await request.json();
 
@@ -283,6 +332,7 @@ export default {
         );
 
       } catch (error) {
+
         return json(
           {
             success: false,
@@ -304,6 +354,7 @@ export default {
         "/api/admin/me" &&
       request.method === "GET"
     ) {
+
       const authenticated =
         await isAdmin();
 
@@ -323,6 +374,7 @@ export default {
         "/api/admin/logout" &&
       request.method === "POST"
     ) {
+
       return json(
         {
           success: true
@@ -344,11 +396,13 @@ export default {
       url.pathname ===
         "/api/test-db"
     ) {
+
       try {
+
         const result =
           await env.DB
             .prepare(
-              "SELECT name FROM sqlite_master WHERE type='table'"
+              "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
             )
             .all();
 
@@ -361,6 +415,7 @@ export default {
         });
 
       } catch (error) {
+
         return json(
           {
             success: false,
@@ -382,7 +437,9 @@ export default {
         "/api/clients" &&
       request.method === "GET"
     ) {
+
       try {
+
         const result =
           await env.DB
             .prepare(
@@ -397,6 +454,7 @@ export default {
         });
 
       } catch (error) {
+
         return json(
           {
             success: false,
@@ -418,11 +476,14 @@ export default {
         "/api/clients" &&
       request.method === "POST"
     ) {
+
       try {
+
         const data =
           await request.json();
 
         if (!data.name) {
+
           return json(
             {
               success: false,
@@ -507,6 +568,7 @@ export default {
         });
 
       } catch (error) {
+
         return json(
           {
             success: false,
@@ -528,9 +590,11 @@ export default {
         "/api/stands" &&
       request.method === "GET"
     ) {
+
       if (
         !(await isAdmin())
       ) {
+
         return json(
           {
             success: false,
@@ -542,6 +606,7 @@ export default {
       }
 
       try {
+
         const result =
           await env.DB
             .prepare(`
@@ -553,10 +618,28 @@ export default {
                 s.status,
                 s.created_at,
                 s.activated_at,
-                c.name AS client_name
+
+                c.name AS client_name,
+
+                (
+                  SELECT COUNT(*)
+                  FROM stand_scans ss
+                  WHERE ss.stand_code =
+                    s.stand_code
+                ) AS scan_count,
+
+                (
+                  SELECT MAX(ss.scanned_at)
+                  FROM stand_scans ss
+                  WHERE ss.stand_code =
+                    s.stand_code
+                ) AS last_scan
+
               FROM stands s
+
               LEFT JOIN clients c
                 ON s.client_id = c.id
+
               ORDER BY s.id ASC
             `)
             .all();
@@ -568,6 +651,7 @@ export default {
         });
 
       } catch (error) {
+
         return json(
           {
             success: false,
@@ -589,9 +673,11 @@ export default {
         "/api/stands/activate" &&
       request.method === "POST"
     ) {
+
       if (
         !(await isAdmin())
       ) {
+
         return json(
           {
             success: false,
@@ -603,6 +689,7 @@ export default {
       }
 
       try {
+
         const data =
           await request.json();
 
@@ -623,7 +710,9 @@ export default {
               )
             : null;
 
+
         if (!standCode) {
+
           return json(
             {
               success: false,
@@ -634,7 +723,9 @@ export default {
           );
         }
 
+
         if (!destinationUrl) {
+
           return json(
             {
               success: false,
@@ -651,12 +742,14 @@ export default {
         let parsedUrl;
 
         try {
+
           parsedUrl =
             new URL(
               destinationUrl
             );
 
         } catch {
+
           return json(
             {
               success: false,
@@ -667,12 +760,14 @@ export default {
           );
         }
 
+
         if (
           parsedUrl.protocol !==
             "https:" &&
           parsedUrl.protocol !==
             "http:"
         ) {
+
           return json(
             {
               success: false,
@@ -699,7 +794,9 @@ export default {
             )
             .first();
 
+
         if (!stand) {
+
           return json(
             {
               success: false,
@@ -710,10 +807,12 @@ export default {
           );
         }
 
+
         if (
           stand.status ===
             "active"
         ) {
+
           return json(
             {
               success: false,
@@ -730,6 +829,7 @@ export default {
         if (
           clientId !== null
         ) {
+
           const client =
             await env.DB
               .prepare(`
@@ -743,7 +843,9 @@ export default {
               )
               .first();
 
+
           if (!client) {
+
             return json(
               {
                 success: false,
@@ -776,6 +878,7 @@ export default {
           )
           .run();
 
+
         return json({
           success: true,
           message:
@@ -785,6 +888,7 @@ export default {
         });
 
       } catch (error) {
+
         return json(
           {
             success: false,
@@ -806,9 +910,11 @@ export default {
         "/api/stands/reset" &&
       request.method === "POST"
     ) {
+
       if (
         !(await isAdmin())
       ) {
+
         return json(
           {
             success: false,
@@ -820,6 +926,7 @@ export default {
       }
 
       try {
+
         const data =
           await request.json();
 
@@ -828,7 +935,9 @@ export default {
             data.stand_code || ""
           ).trim();
 
+
         if (!standCode) {
+
           return json(
             {
               success: false,
@@ -855,7 +964,9 @@ export default {
             )
             .first();
 
+
         if (!stand) {
+
           return json(
             {
               success: false,
@@ -867,8 +978,11 @@ export default {
         }
 
 
-        // Reset du Stand uniquement
-        // Le client reste dans la base de données
+        // =================================================
+        // IMPORTANT
+        // Le Reset ne supprime PAS les scans.
+        // Il remet uniquement le Stand disponible.
+        // =================================================
 
         await env.DB
           .prepare(`
@@ -885,6 +999,7 @@ export default {
           )
           .run();
 
+
         return json({
           success: true,
           message:
@@ -894,6 +1009,7 @@ export default {
         });
 
       } catch (error) {
+
         return json(
           {
             success: false,
@@ -915,6 +1031,7 @@ export default {
         "/r/"
       )
     ) {
+
       const standCode =
         url.pathname
           .replace(
@@ -926,7 +1043,9 @@ export default {
             ""
           );
 
+
       if (!standCode) {
+
         return new Response(
           "Stand introuvable",
           {
@@ -935,7 +1054,13 @@ export default {
         );
       }
 
+
       try {
+
+        // =================================================
+        // Vérifier le Stand
+        // =================================================
+
         const stand =
           await env.DB
             .prepare(`
@@ -952,7 +1077,9 @@ export default {
             )
             .first();
 
+
         if (!stand) {
+
           return new Response(
             "Stand introuvable",
             {
@@ -963,7 +1090,7 @@ export default {
 
 
         // =================================================
-        // STAND NON ACTIVÉ
+        // Stand non activé
         // =================================================
 
         if (
@@ -971,6 +1098,7 @@ export default {
             "active" ||
           !stand.destination_url
         ) {
+
           return new Response(
 `
 <!DOCTYPE html>
@@ -998,6 +1126,7 @@ TAPNIVO
 
 body {
   margin: 0;
+
   min-height: 100vh;
 
   display: flex;
@@ -1011,45 +1140,59 @@ body {
     Helvetica,
     sans-serif;
 
-  background: #f5f7fb;
+  background:
+    #f5f7fb;
 
-  color: #111827;
+  color:
+    #111827;
 
-  text-align: center;
+  text-align:
+    center;
 }
 
 .box {
-  background: white;
+  background:
+    white;
 
-  padding: 35px 25px;
+  padding:
+    35px 25px;
 
-  border-radius: 20px;
+  border-radius:
+    20px;
 
   box-shadow:
     0 15px 40px
     rgba(0,0,0,0.08);
 
-  max-width: 400px;
+  max-width:
+    400px;
 
-  margin: 20px;
+  margin:
+    20px;
 }
 
 .logo {
-  font-size: 24px;
+  font-size:
+    24px;
 
-  font-weight: 800;
+  font-weight:
+    800;
 
-  margin-bottom: 20px;
+  margin-bottom:
+    20px;
 }
 
 .logo span {
-  color: #4f46e5;
+  color:
+    #4f46e5;
 }
 
 p {
-  color: #6b7280;
+  color:
+    #6b7280;
 
-  line-height: 1.6;
+  line-height:
+    1.6;
 }
 
 </style>
@@ -1080,6 +1223,7 @@ Ce QR code est prêt à être activé.
 `,
             {
               status: 200,
+
               headers: {
                 "Content-Type":
                   "text/html; charset=UTF-8"
@@ -1090,7 +1234,14 @@ Ce QR code est prêt à être activé.
 
 
         // =================================================
-        // TRACK SCAN
+        // SCAN TRACKING
+        // =================================================
+        //
+        // كل زيارة للرابط /r/TNV001
+        // كتسجل Scan جديد.
+        //
+        // ما كنوقفوش Redirect إلا فشل
+        // التسجيل، باش الـQR/NFC يبقى خدام.
         // =================================================
 
         try {
@@ -1098,9 +1249,13 @@ Ce QR code est prêt à être activé.
           await env.DB
             .prepare(`
               INSERT INTO stand_scans (
-                stand_code
+                stand_code,
+                scanned_at
               )
-              VALUES (?)
+              VALUES (
+                ?,
+                CURRENT_TIMESTAMP
+              )
             `)
             .bind(
               standCode
@@ -1109,11 +1264,8 @@ Ce QR code est prêt à être activé.
 
         } catch (scanError) {
 
-          // Le tracking ne doit jamais
-          // empêcher la redirection.
-
           console.error(
-            "Erreur tracking scan:",
+            "Scan tracking error:",
             scanError
           );
 
@@ -1121,7 +1273,7 @@ Ce QR code est prêt à être activé.
 
 
         // =================================================
-        // REDIRECT
+        // Redirect vers destination
         // =================================================
 
         return Response.redirect(
@@ -1129,7 +1281,9 @@ Ce QR code est prêt à être activé.
           302
         );
 
+
       } catch (error) {
+
         return new Response(
           "Erreur serveur : " +
           error.message,
@@ -1150,6 +1304,7 @@ Ce QR code est prêt à être activé.
         "/client/"
       )
     ) {
+
       const slug =
         url.pathname
           .replace(
@@ -1161,7 +1316,9 @@ Ce QR code est prêt à être activé.
             ""
           );
 
+
       if (!slug) {
+
         return new Response(
           "Profil introuvable",
           {
@@ -1170,7 +1327,9 @@ Ce QR code est prêt à être activé.
         );
       }
 
+
       try {
+
         const result =
           await env.DB
             .prepare(`
@@ -1179,10 +1338,14 @@ Ce QR code est prêt à être activé.
               WHERE slug = ?
               LIMIT 1
             `)
-            .bind(slug)
+            .bind(
+              slug
+            )
             .first();
 
+
         if (!result) {
+
           return new Response(
             "Client introuvable",
             {
@@ -1239,7 +1402,9 @@ Ce QR code est prêt à être activé.
 >
 
 <title>
-${escapeHTML(result.name)} | TAPNIVO
+${escapeHTML(
+  result.name
+)} | TAPNIVO
 </title>
 
 <style>
@@ -1263,25 +1428,33 @@ body {
       #eef2ff
     );
 
-  color: #111827;
+  color:
+    #111827;
 }
 
 .container {
-  max-width: 600px;
+  max-width:
+    600px;
 
-  margin: auto;
+  margin:
+    auto;
 
-  padding: 40px 20px;
+  padding:
+    40px 20px;
 }
 
 .profile {
-  background: white;
+  background:
+    white;
 
-  border-radius: 25px;
+  border-radius:
+    25px;
 
-  padding: 35px 25px;
+  padding:
+    35px 25px;
 
-  text-align: center;
+  text-align:
+    center;
 
   box-shadow:
     0 15px 40px
@@ -1289,23 +1462,30 @@ body {
 }
 
 .logo {
-  font-size: 20px;
+  font-size:
+    20px;
 
-  font-weight: 800;
+  font-weight:
+    800;
 
-  margin-bottom: 30px;
+  margin-bottom:
+    30px;
 }
 
 .logo span {
-  color: #4f46e5;
+  color:
+    #4f46e5;
 }
 
 .avatar {
-  width: 100px;
+  width:
+    100px;
 
-  height: 100px;
+  height:
+    100px;
 
-  border-radius: 50%;
+  border-radius:
+    50%;
 
   margin:
     auto auto 20px;
@@ -1313,100 +1493,132 @@ body {
   background:
     #eef2ff;
 
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  justify-content: center;
+  justify-content:
+    center;
 
-  font-size: 40px;
+  font-size:
+    40px;
 }
 
 h1 {
-  margin: 0;
+  margin:
+    0;
 
-  font-size: 28px;
+  font-size:
+    28px;
 }
 
 .profession {
-  color: #4f46e5;
+  color:
+    #4f46e5;
 
-  font-weight: bold;
+  font-weight:
+    bold;
 
-  margin-top: 8px;
+  margin-top:
+    8px;
 }
 
 .bio {
-  color: #6b7280;
+  color:
+    #6b7280;
 
-  line-height: 1.6;
+  line-height:
+    1.6;
 
-  margin: 20px 0;
+  margin:
+    20px 0;
 }
 
 .buttons {
-  display: grid;
+  display:
+    grid;
 
-  gap: 10px;
+  gap:
+    10px;
 
-  margin-top: 25px;
+  margin-top:
+    25px;
 }
 
 .button {
-  display: block;
+  display:
+    block;
 
-  padding: 14px;
+  padding:
+    14px;
 
-  border-radius: 12px;
+  border-radius:
+    12px;
 
-  text-decoration: none;
+  text-decoration:
+    none;
 
-  font-weight: bold;
+  font-weight:
+    bold;
 
   background:
     #4f46e5;
 
-  color: white;
+  color:
+    white;
 }
 
 .button.secondary {
   background:
     #f3f4f6;
 
-  color: #374151;
+  color:
+    #374151;
 }
 
 .info {
-  margin-top: 25px;
+  margin-top:
+    25px;
 
-  text-align: left;
+  text-align:
+    left;
 }
 
 .info div {
-  padding: 12px 0;
+  padding:
+    12px 0;
 
   border-bottom:
     1px solid #eee;
 }
 
 .label {
-  font-size: 12px;
+  font-size:
+    12px;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 }
 
 .value {
-  margin-top: 4px;
+  margin-top:
+    4px;
 
-  font-weight: 600;
+  font-weight:
+    600;
 }
 
 .footer {
-  margin-top: 25px;
+  margin-top:
+    25px;
 
-  color: #9ca3af;
+  color:
+    #9ca3af;
 
-  font-size: 12px;
+  font-size:
+    12px;
 }
 
 </style>
@@ -1428,7 +1640,9 @@ TAP<span>NIVO</span>
 </div>
 
 <h1>
-${escapeHTML(result.name)}
+${escapeHTML(
+  result.name
+)}
 </h1>
 
 ${
@@ -1594,7 +1808,9 @@ Profil digital créé avec TAPNIVO
           }
         );
 
+
       } catch (error) {
+
         return new Response(
           "Erreur serveur : " +
           error.message,
