@@ -3,6 +3,33 @@ export default {
     const url = new URL(request.url);
 
     // =========================
+    // ADMIN AUTHENTICATION
+    // =========================
+    const isAdminApi =
+      url.pathname === "/api/stands" ||
+      url.pathname === "/api/stands/activate";
+
+    if (isAdminApi) {
+      const adminKey = env.ADMIN_KEY;
+      const authorization =
+        request.headers.get("Authorization");
+
+      if (
+        !adminKey ||
+        authorization !== `Bearer ${adminKey}`
+      ) {
+        return Response.json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          { status: 401 }
+        );
+      }
+    }
+
+
+    // =========================
     // TEST DATABASE
     // =========================
     if (url.pathname === "/api/test-db") {
@@ -76,7 +103,8 @@ export default {
           return Response.json(
             {
               success: false,
-              error: "Le nom du client est obligatoire."
+              error:
+                "Le nom du client est obligatoire."
             },
             { status: 400 }
           );
@@ -137,7 +165,8 @@ export default {
 
         return Response.json({
           success: true,
-          message: "Client créé avec succès.",
+          message:
+            "Client créé avec succès.",
           slug: slug
         });
 
@@ -154,13 +183,242 @@ export default {
 
 
     // =========================
-    // DYNAMIC QR / NFC STAND
+    // GET ALL STANDS
     // =========================
-    if (url.pathname.startsWith("/r/")) {
+    if (
+      url.pathname === "/api/stands" &&
+      request.method === "GET"
+    ) {
+      try {
+        const result = await env.DB
+          .prepare(`
+            SELECT
+              s.id,
+              s.stand_code,
+              s.client_id,
+              s.destination_url,
+              s.status,
+              s.created_at,
+              s.activated_at,
+              c.name AS client_name
+            FROM stands s
+            LEFT JOIN clients c
+              ON s.client_id = c.id
+            ORDER BY s.id ASC
+          `)
+          .all();
 
-      const standCode = url.pathname
-        .replace("/r/", "")
-        .replace(/\/$/, "");
+        return Response.json({
+          success: true,
+          stands: result.results
+        });
+
+      } catch (error) {
+        return Response.json(
+          {
+            success: false,
+            error: error.message
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+
+    // =========================
+    // ACTIVATE STAND
+    // =========================
+    if (
+      url.pathname === "/api/stands/activate" &&
+      request.method === "POST"
+    ) {
+      try {
+        const data = await request.json();
+
+        const standCode =
+          String(
+            data.stand_code || ""
+          ).trim();
+
+        const destinationUrl =
+          String(
+            data.destination_url || ""
+          ).trim();
+
+        const clientId =
+          data.client_id
+            ? Number(data.client_id)
+            : null;
+
+        if (!standCode) {
+          return Response.json(
+            {
+              success: false,
+              error:
+                "stand_code est obligatoire."
+            },
+            { status: 400 }
+          );
+        }
+
+        if (!destinationUrl) {
+          return Response.json(
+            {
+              success: false,
+              error:
+                "destination_url est obligatoire."
+            },
+            { status: 400 }
+          );
+        }
+
+
+        // Vérification URL
+        let parsedUrl;
+
+        try {
+          parsedUrl =
+            new URL(destinationUrl);
+        } catch {
+          return Response.json(
+            {
+              success: false,
+              error: "URL invalide."
+            },
+            { status: 400 }
+          );
+        }
+
+        if (
+          parsedUrl.protocol !== "https:" &&
+          parsedUrl.protocol !== "http:"
+        ) {
+          return Response.json(
+            {
+              success: false,
+              error:
+                "Seules les URLs HTTP/HTTPS sont autorisées."
+            },
+            { status: 400 }
+          );
+        }
+
+
+        // Vérifier le Stand
+        const stand =
+          await env.DB
+            .prepare(`
+              SELECT *
+              FROM stands
+              WHERE stand_code = ?
+              LIMIT 1
+            `)
+            .bind(standCode)
+            .first();
+
+        if (!stand) {
+          return Response.json(
+            {
+              success: false,
+              error:
+                "Stand introuvable."
+            },
+            { status: 404 }
+          );
+        }
+
+
+        // Ne pas réactiver un Stand déjà actif
+        if (
+          stand.status === "active"
+        ) {
+          return Response.json(
+            {
+              success: false,
+              error:
+                "Ce Stand est déjà activé."
+            },
+            { status: 409 }
+          );
+        }
+
+
+        // Si client_id fourni,
+        // vérifier que le client existe
+        if (clientId !== null) {
+          const client =
+            await env.DB
+              .prepare(`
+                SELECT id
+                FROM clients
+                WHERE id = ?
+                LIMIT 1
+              `)
+              .bind(clientId)
+              .first();
+
+          if (!client) {
+            return Response.json(
+              {
+                success: false,
+                error:
+                  "Client introuvable."
+              },
+              { status: 404 }
+            );
+          }
+        }
+
+
+        // Activation
+        await env.DB
+          .prepare(`
+            UPDATE stands
+            SET
+              client_id = ?,
+              destination_url = ?,
+              status = 'active',
+              activated_at = CURRENT_TIMESTAMP
+            WHERE stand_code = ?
+          `)
+          .bind(
+            clientId,
+            destinationUrl,
+            standCode
+          )
+          .run();
+
+
+        return Response.json({
+          success: true,
+          message:
+            "Stand activé avec succès.",
+          stand_code: standCode
+        });
+
+      } catch (error) {
+        return Response.json(
+          {
+            success: false,
+            error: error.message
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+
+    // =========================
+    // DYNAMIC QR / NFC
+    // =========================
+    if (
+      url.pathname.startsWith("/r/")
+    ) {
+
+      const standCode =
+        url.pathname
+          .replace("/r/", "")
+          .replace(/\/$/, "");
 
       if (!standCode) {
         return new Response(
@@ -171,20 +429,21 @@ export default {
 
       try {
 
-        const stand = await env.DB
-          .prepare(`
-            SELECT
-              stand_code,
-              destination_url,
-              status
-            FROM stands
-            WHERE stand_code = ?
-            LIMIT 1
-          `)
-          .bind(standCode)
-          .first();
+        const stand =
+          await env.DB
+            .prepare(`
+              SELECT
+                stand_code,
+                destination_url,
+                status
+              FROM stands
+              WHERE stand_code = ?
+              LIMIT 1
+            `)
+            .bind(standCode)
+            .first();
 
-        // Stand غير موجود
+
         if (!stand) {
           return new Response(
             "Stand introuvable",
@@ -192,70 +451,118 @@ export default {
           );
         }
 
-        // Stand موجود ولكن مازال ما تفعلش
+
+        // Stand non activé
         if (
           stand.status !== "active" ||
           !stand.destination_url
         ) {
+
           return new Response(
             `
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
 <title>TAPNIVO</title>
+
 <style>
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: Arial, sans-serif;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
   background: #f5f7fb;
+
   color: #111827;
+
   text-align: center;
 }
+
 .box {
   background: white;
+
   padding: 35px 25px;
+
   border-radius: 20px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+
+  box-shadow:
+    0 15px 40px
+    rgba(0,0,0,0.08);
+
   max-width: 400px;
+
   margin: 20px;
 }
+
 .logo {
   font-size: 24px;
+
   font-weight: 800;
+
   margin-bottom: 20px;
 }
+
 .logo span {
   color: #4f46e5;
 }
+
 p {
   color: #6b7280;
+
   line-height: 1.6;
 }
+
 </style>
+
 </head>
+
 <body>
+
 <div class="box">
-  <div class="logo">
-    TAP<span>NIVO</span>
-  </div>
 
-  <h2>Stand non activé</h2>
-
-  <p>
-    Ce QR code est prêt à être activé.
-  </p>
+<div class="logo">
+TAP<span>NIVO</span>
 </div>
+
+<h2>
+Stand non activé
+</h2>
+
+<p>
+Ce QR code est prêt à être activé.
+</p>
+
+</div>
+
 </body>
+
 </html>
             `,
             {
               status: 200,
+
               headers: {
                 "Content-Type":
                   "text/html; charset=UTF-8"
@@ -264,16 +571,19 @@ p {
           );
         }
 
-        // Stand مفعّل → Redirect
+
+        // Stand activé
         return Response.redirect(
           stand.destination_url,
           302
         );
 
+
       } catch (error) {
 
         return new Response(
-          "Erreur serveur : " + error.message,
+          "Erreur serveur : " +
+          error.message,
           {
             status: 500
           }
@@ -285,7 +595,9 @@ p {
     // =========================
     // CLIENT PROFILE
     // =========================
-    if (url.pathname.startsWith("/client/")) {
+    if (
+      url.pathname.startsWith("/client/")
+    ) {
 
       const slug =
         url.pathname
@@ -299,14 +611,20 @@ p {
         );
       }
 
+
       try {
 
-        const result = await env.DB
-          .prepare(
-            "SELECT * FROM clients WHERE slug = ? LIMIT 1"
-          )
-          .bind(slug)
-          .first();
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT *
+              FROM clients
+              WHERE slug = ?
+              LIMIT 1
+            `)
+            .bind(slug)
+            .first();
+
 
         if (!result) {
           return new Response(
@@ -316,19 +634,37 @@ p {
         }
 
 
-        const escapeHTML = (value) => {
-          if (!value) return "";
+        const escapeHTML =
+          (value) => {
 
-          return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        };
+            if (!value) return "";
+
+            return String(value)
+              .replace(
+                /&/g,
+                "&amp;"
+              )
+              .replace(
+                /</g,
+                "&lt;"
+              )
+              .replace(
+                />/g,
+                "&gt;"
+              )
+              .replace(
+                /"/g,
+                "&quot;"
+              )
+              .replace(
+                /'/g,
+                "&#039;"
+              );
+          };
 
 
         const html = `
+
 <!DOCTYPE html>
 
 <html lang="fr">
@@ -354,6 +690,7 @@ ${escapeHTML(result.name)} | TAPNIVO
 
 body {
   margin: 0;
+
   font-family:
     Arial,
     Helvetica,
@@ -371,15 +708,21 @@ body {
 
 .container {
   max-width: 600px;
+
   margin: auto;
+
   padding: 40px 20px;
 }
 
 .profile {
   background: white;
+
   border-radius: 25px;
+
   padding: 35px 25px;
+
   text-align: center;
+
   box-shadow:
     0 15px 40px
     rgba(0,0,0,0.08);
@@ -387,7 +730,9 @@ body {
 
 .logo {
   font-size: 20px;
+
   font-weight: 800;
+
   margin-bottom: 30px;
 }
 
@@ -398,14 +743,18 @@ body {
 .avatar {
   width: 100px;
   height: 100px;
-  border-radius: 50%;
-  margin: auto auto 20px;
 
-  background:
-    #eef2ff;
+  border-radius: 50%;
+
+  margin:
+    auto auto 20px;
+
+  background: #eef2ff;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   font-size: 40px;
@@ -413,30 +762,39 @@ body {
 
 h1 {
   margin: 0;
+
   font-size: 28px;
 }
 
 .profession {
   color: #4f46e5;
+
   font-weight: bold;
+
   margin-top: 8px;
 }
 
 .bio {
   color: #6b7280;
+
   line-height: 1.6;
+
   margin: 20px 0;
 }
 
 .buttons {
   display: grid;
+
   gap: 10px;
+
   margin-top: 25px;
 }
 
 .button {
   display: block;
+
   padding: 14px;
+
   border-radius: 12px;
 
   text-decoration: none;
@@ -444,37 +802,46 @@ h1 {
   font-weight: bold;
 
   background: #4f46e5;
+
   color: white;
 }
 
 .button.secondary {
   background: #f3f4f6;
+
   color: #374151;
 }
 
 .info {
   margin-top: 25px;
+
   text-align: left;
 }
 
 .info div {
   padding: 12px 0;
-  border-bottom: 1px solid #eee;
+
+  border-bottom:
+    1px solid #eee;
 }
 
 .label {
   font-size: 12px;
+
   color: #9ca3af;
 }
 
 .value {
   margin-top: 4px;
+
   font-weight: 600;
 }
 
 .footer {
   margin-top: 25px;
+
   color: #9ca3af;
+
   font-size: 12px;
 }
 
@@ -502,105 +869,128 @@ ${escapeHTML(result.name)}
 
 ${
   result.profession
-    ? `<div class="profession">
-        ${escapeHTML(result.profession)}
-      </div>`
+    ? `
+<div class="profession">
+${escapeHTML(result.profession)}
+</div>
+`
     : ""
 }
 
 ${
   result.bio
-    ? `<div class="bio">
-        ${escapeHTML(result.bio)}
-      </div>`
+    ? `
+<div class="bio">
+${escapeHTML(result.bio)}
+</div>
+`
     : ""
 }
-
 
 <div class="buttons">
 
 ${
   result.phone
-    ? `<a
-        class="button"
-        href="tel:${escapeHTML(result.phone)}"
-      >
-        📞 Appeler
-      </a>`
+    ? `
+<a
+  class="button"
+  href="tel:${escapeHTML(result.phone)}"
+>
+📞 Appeler
+</a>
+`
     : ""
 }
-
 
 ${
   result.whatsapp
-    ? `<a
-        class="button"
-        href="https://wa.me/${escapeHTML(
-          result.whatsapp.replace(/[^0-9]/g, "")
-        )}"
-        target="_blank"
-      >
-        💬 WhatsApp
-      </a>`
+    ? `
+<a
+  class="button"
+  href="https://wa.me/${escapeHTML(
+    result.whatsapp
+      .replace(
+        /[^0-9]/g,
+        ""
+      )
+  )}"
+  target="_blank"
+>
+💬 WhatsApp
+</a>
+`
     : ""
 }
-
 
 ${
   result.instagram
-    ? `<a
-        class="button secondary"
-        href="${escapeHTML(result.instagram)}"
-        target="_blank"
-      >
-        Instagram
-      </a>`
+    ? `
+<a
+  class="button secondary"
+  href="${escapeHTML(result.instagram)}"
+  target="_blank"
+>
+Instagram
+</a>
+`
     : ""
 }
 
-
 ${
   result.maps
-    ? `<a
-        class="button secondary"
-        href="${escapeHTML(result.maps)}"
-        target="_blank"
-      >
-        📍 Google Maps
-      </a>`
+    ? `
+<a
+  class="button secondary"
+  href="${escapeHTML(result.maps)}"
+  target="_blank"
+>
+📍 Google Maps
+</a>
+`
     : ""
 }
 
 </div>
-
 
 <div class="info">
 
 ${
   result.email
-    ? `<div>
-        <div class="label">Email</div>
-        <div class="value">
-          ${escapeHTML(result.email)}
-        </div>
-      </div>`
+    ? `
+<div>
+
+<div class="label">
+Email
+</div>
+
+<div class="value">
+${escapeHTML(result.email)}
+</div>
+
+</div>
+`
     : ""
 }
 
-
 ${
   result.address
-    ? `<div>
-        <div class="label">Adresse</div>
-        <div class="value">
-          ${escapeHTML(result.address)}
-        </div>
-      </div>`
+    ? `
+<div>
+
+<div class="label">
+Adresse
+</div>
+
+<div class="value">
+${escapeHTML(result.address)}
+</div>
+
+</div>
+`
     : ""
 }
 
 </div>
-
 
 <div class="footer">
 Profil digital créé avec TAPNIVO
@@ -626,6 +1016,7 @@ Profil digital créé avec TAPNIVO
           }
         );
 
+
       } catch (error) {
 
         return new Response(
@@ -635,7 +1026,6 @@ Profil digital créé avec TAPNIVO
             status: 500
           }
         );
-
       }
     }
 
