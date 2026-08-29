@@ -2,111 +2,494 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // =========================
-    // ADMIN AUTHENTICATION
-    // =========================
-    const isAdminApi =
-      url.pathname === "/api/stands" ||
-      url.pathname === "/api/stands/activate";
+    // =====================================================
+    // HELPERS
+    // =====================================================
 
-    if (isAdminApi) {
-      const adminKey = env.ADMIN_KEY;
-      const authorization =
-        request.headers.get("Authorization");
+    const json = (data, status = 200, extraHeaders = {}) => {
+      return new Response(JSON.stringify(data), {
+        status,
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          ...extraHeaders
+        }
+      });
+    };
 
-      if (
-        !adminKey ||
-        authorization !== `Bearer ${adminKey}`
+    const base64url = (input) => {
+      let binary = "";
+
+      if (input instanceof Uint8Array) {
+        for (const byte of input) {
+          binary += String.fromCharCode(byte);
+        }
+      } else {
+        binary = input;
+      }
+
+      return btoa(binary)
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/g, "");
+    };
+
+    const fromBase64url = (input) => {
+      const base64 =
+        input
+          .replace(/-/g, "+")
+          .replace(/_/g, "/") +
+        "===".slice(
+          (input.length + 3) % 4
+        );
+
+      const binary = atob(base64);
+
+      const bytes = new Uint8Array(
+        binary.length
+      );
+
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] =
+          binary.charCodeAt(i);
+      }
+
+      return bytes;
+    };
+
+    const timingSafeEqual = (
+      a,
+      b
+    ) => {
+      if (a.length !== b.length) {
+        return false;
+      }
+
+      let result = 0;
+
+      for (
+        let i = 0;
+        i < a.length;
+        i++
       ) {
-        return Response.json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          { status: 401 }
-        );
+        result |= a[i] ^ b[i];
       }
-    }
+
+      return result === 0;
+    };
 
 
-    // =========================
-    // TEST DATABASE
-    // =========================
-    if (url.pathname === "/api/test-db") {
-      try {
-        const result = await env.DB
-          .prepare(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-          )
-          .all();
+    // =====================================================
+    // ADMIN SESSION
+    // =====================================================
 
-        return Response.json({
-          success: true,
-          database: "tapnivo-db",
-          tables: result.results
-        });
+    const createAdminToken =
+      async () => {
 
-      } catch (error) {
-        return Response.json(
-          {
-            success: false,
-            error: error.message
-          },
-          { status: 500 }
+        if (!env.ADMIN_KEY) {
+          throw new Error(
+            "ADMIN_KEY non configurée."
+          );
+        }
+
+        const timestamp =
+          Date.now().toString();
+
+        const encoder =
+          new TextEncoder();
+
+        const key =
+          await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(
+              env.ADMIN_KEY
+            ),
+            {
+              name: "HMAC",
+              hash: "SHA-256"
+            },
+            false,
+            ["sign"]
+          );
+
+        const signature =
+          new Uint8Array(
+            await crypto.subtle.sign(
+              "HMAC",
+              key,
+              encoder.encode(
+                timestamp
+              )
+            )
+          );
+
+        return (
+          base64url(timestamp) +
+          "." +
+          base64url(signature)
         );
-      }
-    }
+      };
 
 
-    // =========================
-    // GET ALL CLIENTS
-    // =========================
+    const verifyAdminToken =
+      async (token) => {
+
+        if (
+          !token ||
+          !env.ADMIN_KEY
+        ) {
+          return false;
+        }
+
+        const parts =
+          token.split(".");
+
+        if (parts.length !== 2) {
+          return false;
+        }
+
+        try {
+
+          const timestampBytes =
+            fromBase64url(
+              parts[0]
+            );
+
+          const timestamp =
+            new TextDecoder().decode(
+              timestampBytes
+            );
+
+          const time =
+            Number(timestamp);
+
+          if (!Number.isFinite(time)) {
+            return false;
+          }
+
+          // Session valable 8 heures
+          if (
+            Date.now() - time >
+            8 * 60 * 60 * 1000
+          ) {
+            return false;
+          }
+
+          if (time > Date.now() + 60000) {
+            return false;
+          }
+
+          const encoder =
+            new TextEncoder();
+
+          const key =
+            await crypto.subtle.importKey(
+              "raw",
+              encoder.encode(
+                env.ADMIN_KEY
+              ),
+              {
+                name: "HMAC",
+                hash: "SHA-256"
+              },
+              false,
+              ["sign"]
+            );
+
+          const expected =
+            new Uint8Array(
+              await crypto.subtle.sign(
+                "HMAC",
+                key,
+                encoder.encode(
+                  timestamp
+                )
+              )
+            );
+
+          const received =
+            fromBase64url(
+              parts[1]
+            );
+
+          return timingSafeEqual(
+            expected,
+            received
+          );
+
+        } catch {
+          return false;
+        }
+      };
+
+
+    const getCookie =
+      (request, name) => {
+
+        const cookieHeader =
+          request.headers.get(
+            "Cookie"
+          );
+
+        if (!cookieHeader) {
+          return null;
+        }
+
+        const cookies =
+          cookieHeader.split(";");
+
+        for (const cookie of cookies) {
+
+          const parts =
+            cookie.trim().split("=");
+
+          if (parts[0] === name) {
+            return parts
+              .slice(1)
+              .join("=");
+          }
+        }
+
+        return null;
+      };
+
+
+    const isAdmin =
+      async () => {
+
+        const token =
+          getCookie(
+            request,
+            "tapnivo_admin"
+          );
+
+        return await verifyAdminToken(
+          token
+        );
+      };
+
+
+    // =====================================================
+    // ADMIN LOGIN
+    // =====================================================
+
     if (
-      url.pathname === "/api/clients" &&
-      request.method === "GET"
-    ) {
-      try {
-        const result = await env.DB
-          .prepare(
-            "SELECT * FROM clients ORDER BY id DESC"
-          )
-          .all();
-
-        return Response.json({
-          success: true,
-          clients: result.results
-        });
-
-      } catch (error) {
-        return Response.json(
-          {
-            success: false,
-            error: error.message
-          },
-          { status: 500 }
-        );
-      }
-    }
-
-
-    // =========================
-    // CREATE CLIENT
-    // =========================
-    if (
-      url.pathname === "/api/clients" &&
+      url.pathname ===
+        "/api/admin/login" &&
       request.method === "POST"
     ) {
+
       try {
-        const data = await request.json();
+
+        const data =
+          await request.json();
+
+        const password =
+          String(
+            data.password || ""
+          );
+
+        if (!env.ADMIN_KEY) {
+          return json(
+            {
+              success: false,
+              error:
+                "ADMIN_KEY non configurée."
+            },
+            500
+          );
+        }
+
+        if (
+          !password ||
+          password !==
+            env.ADMIN_KEY
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Mot de passe incorrect."
+            },
+            401
+          );
+        }
+
+        const token =
+          await createAdminToken();
+
+        return json(
+          {
+            success: true,
+            message:
+              "Connexion administrateur réussie."
+          },
+          200,
+          {
+            "Set-Cookie":
+              `tapnivo_admin=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=28800`
+          }
+        );
+
+      } catch (error) {
+
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+
+    // =====================================================
+    // ADMIN CHECK
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/me" &&
+      request.method === "GET"
+    ) {
+
+      const authenticated =
+        await isAdmin();
+
+      return json({
+        success: true,
+        authenticated
+      });
+    }
+
+
+    // =====================================================
+    // ADMIN LOGOUT
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/logout" &&
+      request.method === "POST"
+    ) {
+
+      return json(
+        {
+          success: true
+        },
+        200,
+        {
+          "Set-Cookie":
+            "tapnivo_admin=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0"
+        }
+      );
+    }
+
+
+    // =====================================================
+    // TEST DATABASE
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/test-db"
+    ) {
+
+      try {
+
+        const result =
+          await env.DB
+            .prepare(
+              "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+            .all();
+
+        return json({
+          success: true,
+          database:
+            "tapnivo-db",
+          tables:
+            result.results
+        });
+
+      } catch (error) {
+
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+
+    // =====================================================
+    // GET ALL CLIENTS
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/clients" &&
+      request.method === "GET"
+    ) {
+
+      try {
+
+        const result =
+          await env.DB
+            .prepare(
+              "SELECT * FROM clients ORDER BY id DESC"
+            )
+            .all();
+
+        return json({
+          success: true,
+          clients:
+            result.results
+        });
+
+      } catch (error) {
+
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+
+    // =====================================================
+    // CREATE CLIENT
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/clients" &&
+      request.method === "POST"
+    ) {
+
+      try {
+
+        const data =
+          await request.json();
 
         if (!data.name) {
-          return Response.json(
+
+          return json(
             {
               success: false,
               error:
                 "Le nom du client est obligatoire."
             },
-            { status: 400 }
+            400
           );
         }
 
@@ -115,9 +498,18 @@ export default {
           data.name
             .toLowerCase()
             .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "") +
+            .replace(
+              /[\u0300-\u036f]/g,
+              ""
+            )
+            .replace(
+              /[^a-z0-9]+/g,
+              "-"
+            )
+            .replace(
+              /^-|-$/g,
+              ""
+            ) +
           "-" +
           Date.now();
 
@@ -141,7 +533,11 @@ export default {
               photo_url,
               slug
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+              ?, ?, ?, ?, ?,
+              ?, ?, ?, ?, ?,
+              ?, ?, ?, ?, ?, ?
+            )
           `)
           .bind(
             data.name || null,
@@ -163,77 +559,118 @@ export default {
           )
           .run();
 
-        return Response.json({
+        return json({
           success: true,
           message:
             "Client créé avec succès.",
-          slug: slug
+          slug
         });
 
       } catch (error) {
-        return Response.json(
+
+        return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
-          { status: 500 }
+          500
         );
       }
     }
 
 
-    // =========================
+    // =====================================================
     // GET ALL STANDS
-    // =========================
+    // =====================================================
+
     if (
-      url.pathname === "/api/stands" &&
+      url.pathname ===
+        "/api/stands" &&
       request.method === "GET"
     ) {
-      try {
-        const result = await env.DB
-          .prepare(`
-            SELECT
-              s.id,
-              s.stand_code,
-              s.client_id,
-              s.destination_url,
-              s.status,
-              s.created_at,
-              s.activated_at,
-              c.name AS client_name
-            FROM stands s
-            LEFT JOIN clients c
-              ON s.client_id = c.id
-            ORDER BY s.id ASC
-          `)
-          .all();
 
-        return Response.json({
+      if (
+        !(await isAdmin())
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
+
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+                s.id,
+                s.stand_code,
+                s.client_id,
+                s.destination_url,
+                s.status,
+                s.created_at,
+                s.activated_at,
+                c.name AS client_name
+              FROM stands s
+              LEFT JOIN clients c
+                ON s.client_id = c.id
+              ORDER BY s.id ASC
+            `)
+            .all();
+
+        return json({
           success: true,
-          stands: result.results
+          stands:
+            result.results
         });
 
       } catch (error) {
-        return Response.json(
+
+        return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
-          { status: 500 }
+          500
         );
       }
     }
 
 
-    // =========================
+    // =====================================================
     // ACTIVATE STAND
-    // =========================
+    // =====================================================
+
     if (
-      url.pathname === "/api/stands/activate" &&
+      url.pathname ===
+        "/api/stands/activate" &&
       request.method === "POST"
     ) {
+
+      if (
+        !(await isAdmin())
+      ) {
+        return json(
+          {
+            success: false,
+            error:
+              "Non autorisé."
+          },
+          401
+        );
+      }
+
       try {
-        const data = await request.json();
+
+        const data =
+          await request.json();
 
         const standCode =
           String(
@@ -247,64 +684,80 @@ export default {
 
         const clientId =
           data.client_id
-            ? Number(data.client_id)
+            ? Number(
+                data.client_id
+              )
             : null;
 
         if (!standCode) {
-          return Response.json(
+
+          return json(
             {
               success: false,
               error:
                 "stand_code est obligatoire."
             },
-            { status: 400 }
+            400
           );
         }
 
         if (!destinationUrl) {
-          return Response.json(
+
+          return json(
             {
               success: false,
               error:
                 "destination_url est obligatoire."
             },
-            { status: 400 }
+            400
           );
         }
 
 
         // Vérification URL
+
         let parsedUrl;
 
         try {
-          parsedUrl =
-            new URL(destinationUrl);
-        } catch {
-          return Response.json(
-            {
-              success: false,
-              error: "URL invalide."
-            },
-            { status: 400 }
-          );
-        }
 
-        if (
-          parsedUrl.protocol !== "https:" &&
-          parsedUrl.protocol !== "http:"
-        ) {
-          return Response.json(
+          parsedUrl =
+            new URL(
+              destinationUrl
+            );
+
+        } catch {
+
+          return json(
             {
               success: false,
               error:
-                "Seules les URLs HTTP/HTTPS sont autorisées."
+                "URL invalide."
             },
-            { status: 400 }
+            400
+          );
+        }
+
+
+        if (
+          parsedUrl.protocol !==
+            "https:" &&
+          parsedUrl.protocol !==
+            "http:"
+        ) {
+
+          return json(
+            {
+              success: false,
+              error:
+                "URL HTTP/HTTPS uniquement."
+            },
+            400
           );
         }
 
 
         // Vérifier le Stand
+
         const stand =
           await env.DB
             .prepare(`
@@ -313,39 +766,47 @@ export default {
               WHERE stand_code = ?
               LIMIT 1
             `)
-            .bind(standCode)
+            .bind(
+              standCode
+            )
             .first();
 
+
         if (!stand) {
-          return Response.json(
+
+          return json(
             {
               success: false,
               error:
                 "Stand introuvable."
             },
-            { status: 404 }
+            404
           );
         }
 
 
-        // Ne pas réactiver un Stand déjà actif
         if (
-          stand.status === "active"
+          stand.status ===
+            "active"
         ) {
-          return Response.json(
+
+          return json(
             {
               success: false,
               error:
                 "Ce Stand est déjà activé."
             },
-            { status: 409 }
+            409
           );
         }
 
 
-        // Si client_id fourni,
-        // vérifier que le client existe
-        if (clientId !== null) {
+        // Vérifier Client
+
+        if (
+          clientId !== null
+        ) {
+
           const client =
             await env.DB
               .prepare(`
@@ -354,23 +815,28 @@ export default {
                 WHERE id = ?
                 LIMIT 1
               `)
-              .bind(clientId)
+              .bind(
+                clientId
+              )
               .first();
 
+
           if (!client) {
-            return Response.json(
+
+            return json(
               {
                 success: false,
                 error:
                   "Client introuvable."
               },
-              { status: 404 }
+              404
             );
           }
         }
 
 
         // Activation
+
         await env.DB
           .prepare(`
             UPDATE stands
@@ -378,7 +844,8 @@ export default {
               client_id = ?,
               destination_url = ?,
               status = 'active',
-              activated_at = CURRENT_TIMESTAMP
+              activated_at =
+                CURRENT_TIMESTAMP
             WHERE stand_code = ?
           `)
           .bind(
@@ -389,43 +856,60 @@ export default {
           .run();
 
 
-        return Response.json({
+        return json({
           success: true,
           message:
             "Stand activé avec succès.",
-          stand_code: standCode
+          stand_code:
+            standCode
         });
 
       } catch (error) {
-        return Response.json(
+
+        return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
-          { status: 500 }
+          500
         );
       }
     }
 
 
-    // =========================
+    // =====================================================
     // DYNAMIC QR / NFC
-    // =========================
+    // =====================================================
+
     if (
-      url.pathname.startsWith("/r/")
+      url.pathname.startsWith(
+        "/r/"
+      )
     ) {
 
       const standCode =
         url.pathname
-          .replace("/r/", "")
-          .replace(/\/$/, "");
+          .replace(
+            "/r/",
+            ""
+          )
+          .replace(
+            /\/$/,
+            ""
+          );
+
 
       if (!standCode) {
+
         return new Response(
           "Stand introuvable",
-          { status: 404 }
+          {
+            status: 404
+          }
         );
       }
+
 
       try {
 
@@ -440,27 +924,35 @@ export default {
               WHERE stand_code = ?
               LIMIT 1
             `)
-            .bind(standCode)
+            .bind(
+              standCode
+            )
             .first();
 
 
         if (!stand) {
+
           return new Response(
             "Stand introuvable",
-            { status: 404 }
+            {
+              status: 404
+            }
           );
         }
 
 
         // Stand non activé
+
         if (
-          stand.status !== "active" ||
+          stand.status !==
+            "active" ||
           !stand.destination_url
         ) {
 
           return new Response(
-            `
+`
 <!DOCTYPE html>
+
 <html lang="fr">
 
 <head>
@@ -472,7 +964,9 @@ export default {
   content="width=device-width, initial-scale=1.0"
 >
 
-<title>TAPNIVO</title>
+<title>
+TAPNIVO
+</title>
 
 <style>
 
@@ -485,7 +979,9 @@ body {
   min-height: 100vh;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   font-family:
@@ -559,7 +1055,7 @@ Ce QR code est prêt à être activé.
 </body>
 
 </html>
-            `,
+`,
             {
               status: 200,
 
@@ -573,6 +1069,7 @@ Ce QR code est prêt à être activé.
 
 
         // Stand activé
+
         return Response.redirect(
           stand.destination_url,
           302
@@ -592,22 +1089,35 @@ Ce QR code est prêt à être activé.
     }
 
 
-    // =========================
+    // =====================================================
     // CLIENT PROFILE
-    // =========================
+    // =====================================================
+
     if (
-      url.pathname.startsWith("/client/")
+      url.pathname.startsWith(
+        "/client/"
+      )
     ) {
 
       const slug =
         url.pathname
-          .replace("/client/", "")
-          .replace(/\/$/, "");
+          .replace(
+            "/client/",
+            ""
+          )
+          .replace(
+            /\/$/,
+            ""
+          );
+
 
       if (!slug) {
+
         return new Response(
           "Profil introuvable",
-          { status: 404 }
+          {
+            status: 404
+          }
         );
       }
 
@@ -627,9 +1137,12 @@ Ce QR code est prêt à être activé.
 
 
         if (!result) {
+
           return new Response(
             "Client introuvable",
-            { status: 404 }
+            {
+              status: 404
+            }
           );
         }
 
@@ -637,7 +1150,9 @@ Ce QR code est prêt à être activé.
         const escapeHTML =
           (value) => {
 
-            if (!value) return "";
+            if (!value) {
+              return "";
+            }
 
             return String(value)
               .replace(
@@ -742,6 +1257,7 @@ body {
 
 .avatar {
   width: 100px;
+
   height: 100px;
 
   border-radius: 50%;
@@ -749,7 +1265,8 @@ body {
   margin:
     auto auto 20px;
 
-  background: #eef2ff;
+  background:
+    #eef2ff;
 
   display: flex;
 
@@ -801,13 +1318,15 @@ h1 {
 
   font-weight: bold;
 
-  background: #4f46e5;
+  background:
+    #4f46e5;
 
   color: white;
 }
 
 .button.secondary {
-  background: #f3f4f6;
+  background:
+    #f3f4f6;
 
   color: #374151;
 }
@@ -871,7 +1390,9 @@ ${
   result.profession
     ? `
 <div class="profession">
-${escapeHTML(result.profession)}
+${escapeHTML(
+  result.profession
+)}
 </div>
 `
     : ""
@@ -881,7 +1402,9 @@ ${
   result.bio
     ? `
 <div class="bio">
-${escapeHTML(result.bio)}
+${escapeHTML(
+  result.bio
+)}
 </div>
 `
     : ""
@@ -894,7 +1417,9 @@ ${
     ? `
 <a
   class="button"
-  href="tel:${escapeHTML(result.phone)}"
+  href="tel:${escapeHTML(
+    result.phone
+  )}"
 >
 📞 Appeler
 </a>
@@ -927,7 +1452,9 @@ ${
     ? `
 <a
   class="button secondary"
-  href="${escapeHTML(result.instagram)}"
+  href="${escapeHTML(
+    result.instagram
+  )}"
   target="_blank"
 >
 Instagram
@@ -941,7 +1468,9 @@ ${
     ? `
 <a
   class="button secondary"
-  href="${escapeHTML(result.maps)}"
+  href="${escapeHTML(
+    result.maps
+  )}"
   target="_blank"
 >
 📍 Google Maps
@@ -964,7 +1493,9 @@ Email
 </div>
 
 <div class="value">
-${escapeHTML(result.email)}
+${escapeHTML(
+  result.email
+)}
 </div>
 
 </div>
@@ -982,7 +1513,9 @@ Adresse
 </div>
 
 <div class="value">
-${escapeHTML(result.address)}
+${escapeHTML(
+  result.address
+)}
 </div>
 
 </div>
@@ -1030,9 +1563,12 @@ Profil digital créé avec TAPNIVO
     }
 
 
-    // =========================
+    // =====================================================
     // STATIC FILES
-    // =========================
-    return env.ASSETS.fetch(request);
+    // =====================================================
+
+    return env.ASSETS.fetch(
+      request
+    );
   }
 };
