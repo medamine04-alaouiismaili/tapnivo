@@ -1,383 +1,351 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>TAPNIVO | Admin Dashboard</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f5f7fb;
-      color: #111827;
-    }
-
-    .topbar {
-      min-height: 70px;
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 15px 5%;
-    }
-
-    .logo {
-      font-size: 23px;
-      font-weight: 800;
-      letter-spacing: 1px;
-    }
-
-    .logo span {
-      color: #4f46e5;
-    }
-
-    .admin-area {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .admin {
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    .logout {
-      border: none;
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 9px 13px;
-      border-radius: 9px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 35px 20px;
-    }
-
-    .header {
-      margin-bottom: 25px;
-    }
-
-    .header h1 {
-      font-size: 30px;
-      margin-bottom: 7px;
-    }
-
-    .header p {
-      color: #6b7280;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 18px;
-      padding: 25px;
-      margin-bottom: 20px;
-    }
-
-    .card h2 {
-      font-size: 19px;
-      margin-bottom: 6px;
-    }
-
-    .description {
-      color: #6b7280;
-      font-size: 13px;
-      margin-bottom: 22px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 17px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-
-    .full {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      font-size: 13px;
-      font-weight: bold;
-      color: #374151;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      padding: 13px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
-      background: white;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: #4f46e5;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 13px 18px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .primary {
-      background: #4f46e5;
-      color: white;
-    }
-
-    .secondary {
-      background: #e5e7eb;
-      color: #374151;
-    }
-
-    .message {
-      display: none;
-      padding: 14px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-
-    .success {
-      display: block;
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .error {
-      display: block;
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    /* LOGIN */
-
-    #loginScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 420px;
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.07);
-    }
-
-    .login-logo {
-      text-align: center;
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
-
-    .login-logo span {
-      color: #4f46e5;
-    }
-
-    .login-card h1 {
-      text-align: center;
-      font-size: 22px;
-      margin-bottom: 8px;
-    }
-
-    .login-description {
-      text-align: center;
-      color: #6b7280;
-      font-size: 14px;
-      margin-bottom: 25px;
-    }
-
-    .login-card .field {
-      margin-bottom: 15px;
-    }
-
-    .login-card button {
-      width: 100%;
-      margin-top: 5px;
-    }
-
-    /* STANDS */
-
-    .stands-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-    }
-
-    .stand {
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 18px;
-      background: #fafafa;
-    }
-
-    .stand-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .stand-code {
-      font-size: 18px;
-      font-weight: 800;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 5px 9px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
-    }
-
-    .available {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .active {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .stand-info {
-      color: #6b7280;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .stand-actions {
-      margin-top: 14px;
-    }
-
-    .activate-box {
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid #e5e7eb;
-      display: none;
-    }
-
-    .activate-box.show {
-      display: block;
-    }
-
-    .activate-box .field {
-      margin-bottom: 10px;
-    }
-
-    .qr-link {
-      display: block;
-      word-break: break-all;
-      margin-top: 8px;
-      color: #4f46e5;
-      font-size: 12px;
-    }
-
-    .copy-btn {
-      margin-top: 10px;
-      background: #eef2ff;
-      color: #3730a3;
-    }
-
-    .empty {
-      padding: 25px;
-      text-align: center;
-      color: #6b7280;
-      background: #f9fafb;
-      border-radius: 12px;
-    }
-
-    footer {
-      text-align: center;
-      padding: 30px;
-      color: #9ca3af;
-      font-size: 12px;
-    }
-
-    #dashboard {
-      display: none;
-    }
-
-    @media (max-width: 700px) {
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .full {
-        grid-column: auto;
-      }
-
-      .stands-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar {
-        padding: 14px 20px;
-      }
-
-      .admin-area {
-        gap: 6px;
-      }
-
-      .admin {
-        display: none;
-      }
-
-      .card {
-        padding: 20px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TAPNIVO | Admin</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f5f7fb;
+  color:#111827;
+}
+
+.topbar{
+  min-height:70px;
+  background:white;
+  border-bottom:1px solid #e5e7eb;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:15px 5%;
+}
+
+.logo{
+  font-size:23px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+
+.logo span{color:#4f46e5}
+
+.admin-area{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.admin{
+  color:#6b7280;
+  font-size:14px;
+}
+
+.logout{
+  border:0;
+  background:#fee2e2;
+  color:#991b1b;
+  padding:9px 13px;
+  border-radius:9px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:35px 20px;
+}
+
+.header{margin-bottom:25px}
+
+.header h1{
+  font-size:30px;
+  margin-bottom:7px;
+}
+
+.header p{color:#6b7280}
+
+.card{
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  padding:25px;
+  margin-bottom:20px;
+}
+
+.card h2{
+  font-size:19px;
+  margin-bottom:6px;
+}
+
+.description{
+  color:#6b7280;
+  font-size:13px;
+  margin-bottom:22px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:17px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.full{grid-column:1/-1}
+
+label{
+  font-size:13px;
+  font-weight:bold;
+  color:#374151;
+}
+
+input,textarea,select{
+  width:100%;
+  padding:13px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font-family:inherit;
+  font-size:14px;
+  outline:none;
+  background:white;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  border-color:#4f46e5;
+}
+
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:13px 18px;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.primary{
+  background:#4f46e5;
+  color:white;
+}
+
+.secondary{
+  background:#e5e7eb;
+  color:#374151;
+}
+
+.message{
+  display:none;
+  padding:14px;
+  border-radius:10px;
+  margin-bottom:20px;
+  line-height:1.5;
+}
+
+.success{
+  display:block;
+  background:#d1fae5;
+  color:#065f46;
+}
+
+.error{
+  display:block;
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+/* LOGIN */
+
+#loginScreen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.login-card{
+  width:100%;
+  max-width:420px;
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 15px 40px rgba(0,0,0,.07);
+}
+
+.login-logo{
+  text-align:center;
+  font-size:28px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.login-logo span{color:#4f46e5}
+
+.login-card h1{
+  text-align:center;
+  font-size:22px;
+  margin-bottom:8px;
+}
+
+.login-description{
+  text-align:center;
+  color:#6b7280;
+  font-size:14px;
+  margin-bottom:25px;
+}
+
+.login-card .field{margin-bottom:15px}
+
+.login-card button{
+  width:100%;
+  margin-top:5px;
+}
+
+/* STANDS */
+
+.stands-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.stand{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:18px;
+  background:#fafafa;
+}
+
+.stand-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.stand-code{
+  font-size:18px;
+  font-weight:800;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:bold;
+}
+
+.available{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.active{
+  background:#d1fae5;
+  color:#065f46;
+}
+
+.stand-info{
+  color:#6b7280;
+  font-size:13px;
+  line-height:1.6;
+}
+
+.stand-actions{margin-top:14px}
+
+.activate-box{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb;
+  display:none;
+}
+
+.activate-box.show{display:block}
+
+.activate-box .field{margin-bottom:10px}
+
+.qr-link{
+  display:block;
+  word-break:break-all;
+  margin-top:8px;
+  color:#4f46e5;
+  font-size:12px;
+}
+
+.copy-btn{
+  margin-top:10px;
+  background:#eef2ff;
+  color:#3730a3;
+}
+
+.empty{
+  padding:25px;
+  text-align:center;
+  color:#6b7280;
+  background:#f9fafb;
+  border-radius:12px;
+}
+
+footer{
+  text-align:center;
+  padding:30px;
+  color:#9ca3af;
+  font-size:12px;
+}
+
+#dashboard{display:none}
+
+@media(max-width:700px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .full{
+    grid-column:auto;
+  }
+
+  .stands-grid{
+    grid-template-columns:1fr;
+  }
+
+  .topbar{
+    padding:14px 20px;
+  }
+
+  .admin{
+    display:none;
+  }
+
+  .card{
+    padding:20px;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<!-- =====================================================
-     LOGIN
-===================================================== -->
+<!-- LOGIN -->
 
 <div id="loginScreen">
 
@@ -387,9 +355,7 @@
       TAP<span>NIVO</span>
     </div>
 
-    <h1>
-      Administration
-    </h1>
+    <h1>Administration</h1>
 
     <p class="login-description">
       Connectez-vous à votre espace administrateur.
@@ -401,9 +367,7 @@
 
       <div class="field">
 
-        <label>
-          Mot de passe administrateur
-        </label>
+        <label>Mot de passe administrateur</label>
 
         <input
           id="password"
@@ -430,1332 +394,1384 @@
 </div>
 
 
-<!-- =====================================================
-     DASHBOARD
-===================================================== -->
+<!-- DASHBOARD -->
 
 <div id="dashboard">
 
-  <header class="topbar">
+<header class="topbar">
 
-    <div class="logo">
-      TAP<span>NIVO</span>
+  <div class="logo">
+    TAP<span>NIVO</span>
+  </div>
+
+  <div class="admin-area">
+
+    <div class="admin">
+      Administrateur
     </div>
 
-    <div class="admin-area">
+    <button
+      class="logout"
+      id="logoutButton"
+    >
+      Déconnexion
+    </button>
 
-      <div class="admin">
-        Administrateur
-      </div>
+  </div>
 
-      <button
-        class="logout"
-        id="logoutButton"
-      >
-        Déconnexion
-      </button>
+</header>
 
+
+<main class="container">
+
+<div class="header">
+
+  <h1>Dashboard TAPNIVO</h1>
+
+  <p>
+    Gérez vos clients et vos Stands NFC / QR.
+  </p>
+
+</div>
+
+
+<div id="globalMessage" class="message"></div>
+
+
+<!-- STANDS -->
+
+<div class="card">
+
+  <h2>📦 Gestion des Stands</h2>
+
+  <p class="description">
+    Activez vos Stands NFC / QR pour vos clients.
+  </p>
+
+  <div id="standsContainer">
+
+    <div class="empty">
+      Chargement des Stands...
     </div>
 
-  </header>
+  </div>
 
+</div>
 
-  <main class="container">
 
-    <div class="header">
+<!-- CLIENT -->
 
-      <h1>
-        Dashboard TAPNIVO
-      </h1>
+<div class="card">
 
-      <p>
-        Gérez vos clients et vos Stands NFC / QR.
-      </p>
+<h2>👤 Ajouter un client</h2>
 
-    </div>
+<p class="description">
+Créez le profil digital TAPNIVO de votre client.
+</p>
 
+<form id="clientForm">
 
-    <div id="globalMessage" class="message"></div>
+<div class="grid">
 
+<div class="field">
 
-    <!-- =================================================
-         STANDS
-    ================================================= -->
+<label>
+Nom complet / Nom commercial *
+</label>
 
-    <div class="card">
+<input
+type="text"
+name="name"
+placeholder="Ex : Gardenia"
+required
+>
 
-      <h2>
-        📦 Gestion des Stands
-      </h2>
+</div>
 
-      <p class="description">
-        Activez vos Stands NFC / QR pour vos clients.
-      </p>
 
-      <div id="standsContainer">
+<div class="field">
 
-        <div class="empty">
-          Chargement des Stands...
-        </div>
+<label>Profession</label>
 
-      </div>
+<input
+type="text"
+name="profession"
+placeholder="Ex : Restaurant"
+>
 
-    </div>
+</div>
 
 
-    <!-- =================================================
-         CREATE CLIENT
-    ================================================= -->
+<div class="field full">
 
-    <div class="card">
+<label>Description</label>
 
-      <h2>
-        👤 Ajouter un client
-      </h2>
+<textarea
+name="bio"
+placeholder="Présentez l'activité du client..."
+></textarea>
 
-      <p class="description">
-        Créez le profil digital TAPNIVO de votre client.
-      </p>
+</div>
 
 
-      <form id="clientForm">
+<div class="field">
 
+<label>Téléphone</label>
 
-        <div class="grid">
+<input
+type="tel"
+name="phone"
+placeholder="+212 6 XX XX XX XX"
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              Nom complet / Nom commercial *
-            </label>
 
-            <input
-              type="text"
-              name="name"
-              placeholder="Ex : Gardenia"
-              required
-            >
+<div class="field">
 
-          </div>
+<label>WhatsApp</label>
 
+<input
+type="tel"
+name="whatsapp"
+placeholder="+212 6 XX XX XX XX"
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              Profession
-            </label>
 
-            <input
-              type="text"
-              name="profession"
-              placeholder="Ex : Restaurant"
-            >
+<div class="field full">
 
-          </div>
+<label>Email</label>
 
+<input
+type="email"
+name="email"
+placeholder="contact@example.com"
+>
 
-          <div class="field full">
+</div>
 
-            <label>
-              Description
-            </label>
 
-            <textarea
-              name="bio"
-              placeholder="Présentez l'activité du client..."
-            ></textarea>
+<div class="field">
 
-          </div>
+<label>Instagram</label>
 
+<input
+type="url"
+name="instagram"
+placeholder="https://instagram.com/..."
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              Téléphone
-            </label>
 
-            <input
-              type="tel"
-              name="phone"
-              placeholder="+212 6 XX XX XX XX"
-            >
+<div class="field">
 
-          </div>
+<label>Facebook</label>
 
+<input
+type="url"
+name="facebook"
+placeholder="https://facebook.com/..."
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              WhatsApp
-            </label>
 
-            <input
-              type="tel"
-              name="whatsapp"
-              placeholder="+212 6 XX XX XX XX"
-            >
+<div class="field">
 
-          </div>
+<label>TikTok</label>
 
+<input
+type="url"
+name="tiktok"
+placeholder="https://tiktok.com/@..."
+>
 
-          <div class="field full">
+</div>
 
-            <label>
-              Email
-            </label>
 
-            <input
-              type="email"
-              name="email"
-              placeholder="contact@example.com"
-            >
+<div class="field">
 
-          </div>
+<label>LinkedIn</label>
 
+<input
+type="url"
+name="linkedin"
+placeholder="https://linkedin.com/in/..."
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              Instagram
-            </label>
 
-            <input
-              type="url"
-              name="instagram"
-              placeholder="https://instagram.com/..."
-            >
+<div class="field full">
 
-          </div>
+<label>Adresse</label>
 
+<input
+type="text"
+name="address"
+placeholder="Ex : Rabat"
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              Facebook
-            </label>
 
-            <input
-              type="url"
-              name="facebook"
-              placeholder="https://facebook.com/..."
-            >
+<div class="field full">
 
-          </div>
+<label>Google Maps</label>
 
+<input
+type="url"
+name="maps"
+placeholder="https://maps.google.com/..."
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              TikTok
-            </label>
 
-            <input
-              type="url"
-              name="tiktok"
-              placeholder="https://tiktok.com/@..."
-            >
+<div class="field full">
 
-          </div>
+<label>Site web</label>
 
+<input
+type="url"
+name="website"
+placeholder="https://..."
+>
 
-          <div class="field">
+</div>
 
-            <label>
-              LinkedIn
-            </label>
 
-            <input
-              type="url"
-              name="linkedin"
-              placeholder="https://linkedin.com/in/..."
-            >
+<div class="field full">
 
-          </div>
+<label>Google Reviews</label>
 
+<input
+type="url"
+name="reviews"
+placeholder="https://..."
+>
 
-          <div class="field full">
+</div>
 
-            <label>
-              Adresse
-            </label>
+</div>
 
-            <input
-              type="text"
-              name="address"
-              placeholder="Ex : Rabat"
-            >
 
-          </div>
+<div style="margin-top:20px">
 
+<button
+type="submit"
+class="primary"
+id="clientButton"
+>
+Créer le profil
+</button>
 
-          <div class="field full">
+</div>
 
-            <label>
-              Google Maps
-            </label>
+</form>
 
-            <input
-              type="url"
-              name="maps"
-              placeholder="https://maps.google.com/..."
-            >
+</div>
 
-          </div>
+</main>
 
 
-          <div class="field full">
-
-            <label>
-              Site web
-            </label>
-
-            <input
-              type="url"
-              name="website"
-              placeholder="https://..."
-            >
-
-          </div>
-
-
-          <div class="field full">
-
-            <label>
-              Google Reviews
-            </label>
-
-            <input
-              type="url"
-              name="reviews"
-              placeholder="https://g.page/..."
-            >
-
-          </div>
-
-        </div>
-
-
-        <div style="margin-top:20px;">
-
-          <button
-            type="submit"
-            class="primary"
-            id="clientButton"
-          >
-            Créer le profil
-          </button>
-
-        </div>
-
-      </form>
-
-    </div>
-
-  </main>
-
-
-  <footer>
-    TAPNIVO • Digital Business Cards
-  </footer>
+<footer>
+TAPNIVO • Digital Business Cards
+</footer>
 
 </div>
 
 
 <script>
 
-  // =====================================================
-  // ELEMENTS
-  // =====================================================
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
-  const loginScreen =
-    document.getElementById("loginScreen");
+const loginScreen =
+document.getElementById("loginScreen");
 
-  const dashboard =
-    document.getElementById("dashboard");
+const dashboard =
+document.getElementById("dashboard");
 
-  const loginForm =
-    document.getElementById("loginForm");
+const loginForm =
+document.getElementById("loginForm");
 
-  const loginMessage =
-    document.getElementById("loginMessage");
+const loginMessage =
+document.getElementById("loginMessage");
 
-  const loginButton =
-    document.getElementById("loginButton");
+const loginButton =
+document.getElementById("loginButton");
 
-  const logoutButton =
-    document.getElementById("logoutButton");
+const logoutButton =
+document.getElementById("logoutButton");
 
-  const standsContainer =
-    document.getElementById("standsContainer");
+const standsContainer =
+document.getElementById("standsContainer");
 
-  const clientForm =
-    document.getElementById("clientForm");
+const clientForm =
+document.getElementById("clientForm");
 
-  const clientButton =
-    document.getElementById("clientButton");
+const clientButton =
+document.getElementById("clientButton");
 
-  const globalMessage =
-    document.getElementById("globalMessage");
+const globalMessage =
+document.getElementById("globalMessage");
 
 
-  // =====================================================
-  // MESSAGE
-  // =====================================================
+/* =====================================================
+   MESSAGES
+===================================================== */
 
-  function showMessage(
-    element,
-    text,
-    type
-  ) {
+function showMessage(
+element,
+text,
+type
+){
 
-    element.className =
-      "message " + type;
+element.className =
+"message " + type;
 
-    element.textContent =
-      text;
-  }
+element.textContent =
+text;
 
+}
 
-  function clearMessage(element) {
 
-    element.className =
-      "message";
+function clearMessage(element){
 
-    element.textContent =
-      "";
-  }
+element.className =
+"message";
 
+element.textContent =
+"";
 
-  // =====================================================
-  // CHECK ADMIN SESSION
-  // =====================================================
+}
 
-  async function checkAdmin() {
 
-    try {
+/* =====================================================
+   ADMIN SESSION
+===================================================== */
 
-      const response =
-        await fetch(
-          "/api/admin/me",
-          {
-            method: "GET",
-            credentials: "same-origin"
-          }
-        );
+async function checkAdmin(){
 
-      const result =
-        await response.json();
+try{
 
-      if (
-        result.success &&
-        result.authenticated
-      ) {
+const response =
+await fetch(
+"/api/admin/me",
+{
+method:"GET",
+credentials:"same-origin"
+}
+);
 
-        showDashboard();
+const result =
+await response.json();
 
-      } else {
+if(
+result.success &&
+result.authenticated
+){
 
-        showLogin();
+showDashboard();
 
-      }
+}else{
 
-    } catch {
+showLogin();
 
-      showLogin();
+}
 
-    }
-  }
+}catch{
 
+showLogin();
 
-  // =====================================================
-  // SHOW LOGIN
-  // =====================================================
+}
 
-  function showLogin() {
+}
 
-    loginScreen.style.display =
-      "flex";
 
-    dashboard.style.display =
-      "none";
-  }
+function showLogin(){
 
+loginScreen.style.display =
+"flex";
 
-  // =====================================================
-  // SHOW DASHBOARD
-  // =====================================================
+dashboard.style.display =
+"none";
 
-  function showDashboard() {
+}
 
-    loginScreen.style.display =
-      "none";
 
-    dashboard.style.display =
-      "block";
+function showDashboard(){
 
-    loadStands();
-  }
+loginScreen.style.display =
+"none";
 
+dashboard.style.display =
+"block";
 
-  // =====================================================
-  // LOGIN
-  // =====================================================
+loadStands();
 
-  loginForm.addEventListener(
-    "submit",
-    async function(event) {
+}
 
-      event.preventDefault();
 
-      clearMessage(loginMessage);
+/* =====================================================
+   LOGIN
+===================================================== */
 
-      loginButton.disabled =
-        true;
+loginForm.addEventListener(
+"submit",
+async function(event){
 
-      loginButton.textContent =
-        "Connexion...";
+event.preventDefault();
 
+clearMessage(loginMessage);
 
-      const password =
-        document.getElementById(
-          "password"
-        ).value;
+loginButton.disabled =
+true;
 
+loginButton.textContent =
+"Connexion...";
 
-      try {
 
-        const response =
-          await fetch(
-            "/api/admin/login",
-            {
-              method: "POST",
+const password =
+document.getElementById(
+"password"
+).value;
 
-              credentials:
-                "same-origin",
 
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
+try{
 
-              body:
-                JSON.stringify({
-                  password
-                })
-            }
-          );
+const response =
+await fetch(
+"/api/admin/login",
+{
+method:"POST",
+credentials:"same-origin",
+headers:{
+"Content-Type":
+"application/json"
+},
+body:
+JSON.stringify({
+password
+})
+}
+);
 
 
-        const result =
-          await response.json();
+const result =
+await response.json();
 
 
-        if (
-          !response.ok ||
-          !result.success
-        ) {
+if(
+!response.ok ||
+!result.success
+){
 
-          throw new Error(
-            result.error ||
-            "Connexion impossible."
-          );
-        }
+throw new Error(
+result.error ||
+"Connexion impossible."
+);
 
+}
 
-        document.getElementById(
-          "password"
-        ).value = "";
 
+document.getElementById(
+"password"
+).value =
+"";
 
-        showDashboard();
+showDashboard();
 
 
-      } catch (error) {
+}catch(error){
 
-        showMessage(
-          loginMessage,
-          "❌ " +
-            error.message,
-          "error"
-        );
+showMessage(
+loginMessage,
+"❌ " + error.message,
+"error"
+);
 
-      }
+}
 
 
-      loginButton.disabled =
-        false;
+loginButton.disabled =
+false;
 
-      loginButton.textContent =
-        "Se connecter";
+loginButton.textContent =
+"Se connecter";
 
-    }
-  );
+}
+);
 
 
-  // =====================================================
-  // LOGOUT
-  // =====================================================
+/* =====================================================
+   LOGOUT
+===================================================== */
 
-  logoutButton.addEventListener(
-    "click",
-    async function() {
+logoutButton.addEventListener(
+"click",
+async function(){
 
-      try {
+try{
 
-        await fetch(
-          "/api/admin/logout",
-          {
-            method: "POST",
-            credentials:
-              "same-origin"
-          }
-        );
+await fetch(
+"/api/admin/logout",
+{
+method:"POST",
+credentials:
+"same-origin"
+}
+);
 
-      } finally {
+}finally{
 
-        showLogin();
+showLogin();
 
-      }
+}
 
-    }
-  );
+}
+);
 
 
-  // =====================================================
-  // LOAD STANDS
-  // =====================================================
+/* =====================================================
+   LOAD CLIENTS
+===================================================== */
 
-  async function loadStands() {
+async function loadClients(){
 
-    standsContainer.innerHTML =
-      `
-      <div class="empty">
-        Chargement...
-      </div>
-      `;
+const response =
+await fetch(
+"/api/clients",
+{
+method:"GET",
+credentials:
+"same-origin"
+}
+);
 
+if(!response.ok){
 
-    try {
+throw new Error(
+"Impossible de charger les clients."
+);
 
-      const response =
-        await fetch(
-          "/api/stands",
-          {
-            method: "GET",
-            credentials:
-              "same-origin"
-          }
-        );
+}
 
+const result =
+await response.json();
 
-      if (
-        response.status === 401
-      ) {
+if(
+!result.success
+){
 
-        showLogin();
+throw new Error(
+result.error ||
+"Impossible de charger les clients."
+);
 
-        return;
-      }
+}
 
+return result.clients || [];
 
-      const result =
-        await response.json();
+}
 
 
-      if (
-        !response.ok ||
-        !result.success
-      ) {
+/* =====================================================
+   LOAD STANDS
+===================================================== */
 
-        throw new Error(
-          result.error ||
-          "Impossible de charger les Stands."
-        );
-      }
+async function loadStands(){
 
+standsContainer.innerHTML =
+`
+<div class="empty">
+Chargement...
+</div>
+`;
 
-      renderStands(
-        result.stands || []
-      );
 
+try{
 
-    } catch (error) {
+const [
+standsResult,
+clients
+] =
+await Promise.all([
 
-      standsContainer.innerHTML =
-        `
-        <div class="message error">
-          ❌ ${escapeHtml(
-            error.message
-          )}
-        </div>
-        `;
+fetch(
+"/api/stands",
+{
+method:"GET",
+credentials:
+"same-origin"
+}
+).then(
+response =>
+response.json()
+),
 
-    }
-  }
+loadClients()
 
+]);
 
-  // =====================================================
-  // RENDER STANDS
-  // =====================================================
 
-  function renderStands(
-    stands
-  ) {
+if(
+!standsResult.success
+){
 
-    if (!stands.length) {
+throw new Error(
+standsResult.error ||
+"Impossible de charger les Stands."
+);
 
-      standsContainer.innerHTML =
-        `
-        <div class="empty">
-          Aucun Stand trouvé dans la base de données.
-        </div>
-        `;
+}
 
-      return;
-    }
 
+renderStands(
+standsResult.stands || [],
+clients
+);
 
-    const wrapper =
-      document.createElement(
-        "div"
-      );
 
-    wrapper.className =
-      "stands-grid";
+}catch(error){
 
+standsContainer.innerHTML =
+`
+<div class="message error">
+❌ ${escapeHtml(
+error.message
+)}
+</div>
+`;
 
-    stands.forEach(
-      function(stand) {
+}
 
-        const box =
-          document.createElement(
-            "div"
-          );
+}
 
-        box.className =
-          "stand";
 
+/* =====================================================
+   RENDER STANDS
+===================================================== */
 
-        const isActive =
-          stand.status ===
-          "active";
+function renderStands(
+stands,
+clients
+){
 
+if(!stands.length){
 
-        box.innerHTML =
-          `
-          <div class="stand-top">
+standsContainer.innerHTML =
+`
+<div class="empty">
+Aucun Stand trouvé dans la base de données.
+</div>
+`;
 
-            <div class="stand-code">
-              ${escapeHtml(
-                stand.stand_code
-              )}
-            </div>
+return;
 
-            <span class="badge ${
-              isActive
-                ? "active"
-                : "available"
-            }">
-              ${
-                isActive
-                  ? "ACTIF"
-                  : "DISPONIBLE"
-              }
-            </span>
+}
 
-          </div>
 
-          <div class="stand-info">
+const wrapper =
+document.createElement(
+"div"
+);
 
-            ${
-              isActive
-                ? `
-                  Client :
-                  <strong>
-                    ${escapeHtml(
-                      stand.client_name ||
-                      "Client"
-                    )}
-                  </strong>
-                  <br>
+wrapper.className =
+"stands-grid";
 
-                  Destination :
-                  <br>
 
-                  <span class="qr-link">
-                    ${escapeHtml(
-                      stand.destination_url ||
-                      ""
-                    )}
-                  </span>
+stands.forEach(
+function(stand){
 
-                  <button
-                    class="copy-btn"
-                    data-copy="${
-                      escapeHtml(
-                        stand.destination_url ||
-                        ""
-                      )
-                    }"
-                  >
-                    Copier le lien
-                  </button>
-                `
-                : `
-                  Ce Stand est disponible
-                  et prêt à être attribué.
-                `
-            }
+const box =
+document.createElement(
+"div"
+);
 
-          </div>
+box.className =
+"stand";
 
-          ${
-            !isActive
-              ? `
-                <div class="stand-actions">
 
-                  <button
-                    class="primary activate-toggle"
-                    data-stand="${
-                      escapeHtml(
-                        stand.stand_code
-                      )
-                    }"
-                  >
-                    Activer ce Stand
-                  </button>
+const isActive =
+stand.status === "active";
 
-                </div>
 
-                <div
-                  class="activate-box"
-                  id="activate-${
-                    escapeHtml(
-                      stand.stand_code
-                    )
-                  }"
-                >
+let clientOptions =
+`
+<option value="">
+-- Sélectionner un client --
+</option>
+`;
 
-                  <div class="field">
 
-                    <label>
-                      Client ID
-                    </label>
+clients.forEach(
+function(client){
 
-                    <input
-                      type="number"
-                      class="client-id"
-                      placeholder="Ex : 1"
-                    >
+clientOptions +=
+`
+<option value="${
+client.id
+}">
+${escapeHtml(
+client.name
+)}
+</option>
+`;
 
-                  </div>
+});
 
 
-                  <div class="field">
+box.innerHTML =
+`
 
-                    <label>
-                      Destination URL
-                    </label>
+<div class="stand-top">
 
-                    <input
-                      type="url"
-                      class="destination-url"
-                      placeholder="https://..."
-                    >
+<div class="stand-code">
+${escapeHtml(
+stand.stand_code
+)}
+</div>
 
-                  </div>
+<span class="badge ${
+isActive
+? "active"
+: "available"
+}">
 
+${
+isActive
+? "ACTIF"
+: "DISPONIBLE"
+}
 
-                  <button
-                    class="primary activate-submit"
-                    data-stand="${
-                      escapeHtml(
-                        stand.stand_code
-                      )
-                    }"
-                  >
-                    Activer maintenant
-                  </button>
+</span>
 
-                </div>
-              `
-              : ""
-          }
-          `;
+</div>
 
 
-        wrapper.appendChild(
-          box
-        );
+<div class="stand-info">
 
-      }
-    );
+${
+isActive
 
+? `
 
-    standsContainer.innerHTML =
-      "";
+Client :
+<strong>
+${escapeHtml(
+stand.client_name ||
+"Client"
+)}
+</strong>
 
-    standsContainer.appendChild(
-      wrapper
-    );
+<br>
 
+Destination :
 
-    // Toggle activation box
+<span class="qr-link">
+${escapeHtml(
+stand.destination_url ||
+""
+)}
+</span>
 
-    document
-      .querySelectorAll(
-        ".activate-toggle"
-      )
-      .forEach(
-        function(button) {
+<button
+class="copy-btn"
+data-copy="${
+escapeHtml(
+stand.destination_url ||
+""
+)
+}"
+>
+Copier le lien
+</button>
 
-          button.addEventListener(
-            "click",
-            function() {
+`
 
-              const code =
-                button.dataset.stand;
+: `
 
-              const box =
-                document.getElementById(
-                  "activate-" +
-                  code
-                );
+Ce Stand est disponible
+et prêt à être attribué.
 
-              box.classList.toggle(
-                "show"
-              );
+`
 
-            }
-          );
+}
 
-        }
-      );
+</div>
 
 
-    // Activate
+${
+!isActive
 
-    document
-      .querySelectorAll(
-        ".activate-submit"
-      )
-      .forEach(
-        function(button) {
+? `
 
-          button.addEventListener(
-            "click",
-            async function() {
+<div class="stand-actions">
 
-              const code =
-                button.dataset.stand;
+<button
+class="primary activate-toggle"
+data-stand="${
+escapeHtml(
+stand.stand_code
+)
+}"
+>
+Activer ce Stand
+</button>
 
-              const parent =
-                button.closest(
-                  ".activate-box"
-                );
+</div>
 
-              const clientIdInput =
-                parent.querySelector(
-                  ".client-id"
-                );
 
-              const destinationInput =
-                parent.querySelector(
-                  ".destination-url"
-                );
+<div
+class="activate-box"
+id="activate-${
+escapeHtml(
+stand.stand_code
+)
+}"
+>
 
+<div class="field">
 
-              const clientId =
-                clientIdInput.value.trim();
+<label>
+Client
+</label>
 
-              const destinationUrl =
-                destinationInput.value.trim();
+<select class="client-select">
 
+${clientOptions}
 
-              if (
-                !destinationUrl
-              ) {
+</select>
 
-                alert(
-                  "Entrez la destination URL."
-                );
+</div>
 
-                return;
-              }
 
+<div class="field">
 
-              button.disabled =
-                true;
+<label>
+Destination URL
+</label>
 
-              button.textContent =
-                "Activation...";
+<input
+type="url"
+class="destination-url"
+placeholder="https://..."
+>
 
+</div>
 
-              try {
 
-                const response =
-                  await fetch(
-                    "/api/stands/activate",
-                    {
-                      method: "POST",
+<button
+class="primary activate-submit"
+data-stand="${
+escapeHtml(
+stand.stand_code
+)
+}"
+>
+Activer maintenant
+</button>
 
-                      credentials:
-                        "same-origin",
+</div>
 
-                      headers: {
-                        "Content-Type":
-                          "application/json"
-                      },
+`
 
-                      body:
-                        JSON.stringify({
-                          stand_code:
-                            code,
+: ""
 
-                          client_id:
-                            clientId
-                              ? Number(
-                                  clientId
-                                )
-                              : null,
+}
 
-                          destination_url:
-                            destinationUrl
-                        })
-                    }
-                  );
+`;
 
 
-                if (
-                  response.status ===
-                  401
-                ) {
+wrapper.appendChild(
+box
+);
 
-                  showLogin();
+});
 
-                  return;
-                }
 
+standsContainer.innerHTML =
+"";
 
-                const result =
-                  await response.json();
+standsContainer.appendChild(
+wrapper
+);
 
 
-                if (
-                  !response.ok ||
-                  !result.success
-                ) {
+/* =====================================================
+   TOGGLE
+===================================================== */
 
-                  throw new Error(
-                    result.error ||
-                    "Activation impossible."
-                  );
-                }
+document
+.querySelectorAll(
+".activate-toggle"
+)
+.forEach(
+function(button){
 
+button.addEventListener(
+"click",
+function(){
 
-                showMessage(
-                  globalMessage,
-                  "✅ " +
-                    code +
-                    " activé avec succès.",
-                  "success"
-                );
+const code =
+button.dataset.stand;
 
+const box =
+document.getElementById(
+"activate-" +
+code
+);
 
-                await loadStands();
+box.classList.toggle(
+"show"
+);
 
+}
+);
 
-              } catch (error) {
+}
+);
 
-                showMessage(
-                  globalMessage,
-                  "❌ " +
-                    error.message,
-                  "error"
-                );
 
+/* =====================================================
+   ACTIVATE
+===================================================== */
 
-              } finally {
+document
+.querySelectorAll(
+".activate-submit"
+)
+.forEach(
+function(button){
 
-                button.disabled =
-                  false;
+button.addEventListener(
+"click",
+async function(){
 
-                button.textContent =
-                  "Activer maintenant";
+const code =
+button.dataset.stand;
 
-              }
+const parent =
+button.closest(
+".activate-box"
+);
 
-            }
-          );
 
-        }
-      );
+const clientSelect =
+parent.querySelector(
+".client-select"
+);
 
+const destinationInput =
+parent.querySelector(
+".destination-url"
+);
 
-    // Copy links
 
-    document
-      .querySelectorAll(
-        ".copy-btn"
-      )
-      .forEach(
-        function(button) {
+const clientId =
+clientSelect.value;
 
-          button.addEventListener(
-            "click",
-            async function() {
+const destinationUrl =
+destinationInput.value.trim();
 
-              const value =
-                button.dataset.copy;
 
-              try {
+if(!clientId){
 
-                await navigator.clipboard
-                  .writeText(value);
+alert(
+"Sélectionnez un client."
+);
 
-                button.textContent =
-                  "Copié ✓";
+return;
 
-                setTimeout(
-                  function() {
+}
 
-                    button.textContent =
-                      "Copier le lien";
 
-                  },
-                  1500
-                );
+if(!destinationUrl){
 
-              } catch {
+alert(
+"Entrez la destination URL."
+);
 
-                alert(
-                  "Impossible de copier le lien."
-                );
+return;
 
-              }
+}
 
-            }
-          );
 
-        }
-      );
+button.disabled =
+true;
 
-  }
+button.textContent =
+"Activation...";
 
 
-  // =====================================================
-  // CREATE CLIENT
-  // =====================================================
+try{
 
-  clientForm.addEventListener(
-    "submit",
-    async function(event) {
+const response =
+await fetch(
+"/api/stands/activate",
+{
+method:"POST",
+credentials:
+"same-origin",
+headers:{
+"Content-Type":
+"application/json"
+},
+body:
+JSON.stringify({
 
-      event.preventDefault();
+stand_code:
+code,
 
+client_id:
+Number(clientId),
 
-      clientButton.disabled =
-        true;
+destination_url:
+destinationUrl
 
-      clientButton.textContent =
-        "Création...";
+})
+}
+);
 
 
-      clearMessage(
-        globalMessage
-      );
+if(
+response.status === 401
+){
 
+showLogin();
 
-      const data = {
+return;
 
-        name:
-          clientForm.elements[
-            "name"
-          ].value.trim(),
+}
 
-        profession:
-          clientForm.elements[
-            "profession"
-          ].value.trim(),
 
-        bio:
-          clientForm.elements[
-            "bio"
-          ].value.trim(),
+const result =
+await response.json();
 
-        phone:
-          clientForm.elements[
-            "phone"
-          ].value.trim(),
 
-        whatsapp:
-          clientForm.elements[
-            "whatsapp"
-          ].value.trim(),
+if(
+!response.ok ||
+!result.success
+){
 
-        email:
-          clientForm.elements[
-            "email"
-          ].value.trim(),
+throw new Error(
+result.error ||
+"Activation impossible."
+);
 
-        instagram:
-          clientForm.elements[
-            "instagram"
-          ].value.trim(),
+}
 
-        facebook:
-          clientForm.elements[
-            "facebook"
-          ].value.trim(),
 
-        tiktok:
-          clientForm.elements[
-            "tiktok"
-          ].value.trim(),
+showMessage(
+globalMessage,
+"✅ " +
+code +
+" activé avec succès.",
+"success"
+);
 
-        linkedin:
-          clientForm.elements[
-            "linkedin"
-          ].value.trim(),
 
-        address:
-          clientForm.elements[
-            "address"
-          ].value.trim(),
+await loadStands();
 
-        maps:
-          clientForm.elements[
-            "maps"
-          ].value.trim(),
 
-        website:
-          clientForm.elements[
-            "website"
-          ].value.trim(),
+}catch(error){
 
-        reviews:
-          clientForm.elements[
-            "reviews"
-          ].value.trim()
+showMessage(
+globalMessage,
+"❌ " +
+error.message,
+"error"
+);
 
-      };
+}finally{
 
+button.disabled =
+false;
 
-      try {
+button.textContent =
+"Activer maintenant";
 
-        const response =
-          await fetch(
-            "/api/clients",
-            {
-              method: "POST",
+}
 
-              credentials:
-                "same-origin",
+}
+);
 
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
+}
+);
 
-              body:
-                JSON.stringify(data)
-            }
-          );
 
+/* =====================================================
+   COPY
+===================================================== */
 
-        const result =
-          await response.json();
+document
+.querySelectorAll(
+".copy-btn"
+)
+.forEach(
+function(button){
 
+button.addEventListener(
+"click",
+async function(){
 
-        if (
-          !response.ok ||
-          !result.success
-        ) {
+const value =
+button.dataset.copy;
 
-          throw new Error(
-            result.error ||
-            "Une erreur est survenue."
-          );
-        }
+try{
 
+await navigator.clipboard
+.writeText(value);
 
-        showMessage(
-          globalMessage,
-          "✅ Client créé avec succès ! Profil : /client/" +
-            result.slug,
-          "success"
-        );
+button.textContent =
+"Copié ✓";
 
+setTimeout(
+function(){
 
-        clientForm.reset();
+button.textContent =
+"Copier le lien";
 
+},
+1500
+);
 
-      } catch (error) {
+}catch{
 
-        showMessage(
-          globalMessage,
-          "❌ " +
-            error.message,
-          "error"
-        );
+alert(
+"Impossible de copier le lien."
+);
 
-      }
+}
 
+}
+);
 
-      clientButton.disabled =
-        false;
+}
+);
 
-      clientButton.textContent =
-        "Créer le profil";
+}
 
-    }
-  );
 
+/* =====================================================
+   CREATE CLIENT
+===================================================== */
 
-  // =====================================================
-  // ESCAPE HTML
-  // =====================================================
+clientForm.addEventListener(
+"submit",
+async function(event){
 
-  function escapeHtml(
-    value
-  ) {
+event.preventDefault();
 
-    if (
-      value === null ||
-      value === undefined
-    ) {
-      return "";
-    }
 
-    return String(value)
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-      .replace(
-        /</g,
-        "&lt;"
-      )
-      .replace(
-        />/g,
-        "&gt;"
-      )
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-  }
+clientButton.disabled =
+true;
 
+clientButton.textContent =
+"Création...";
 
-  // =====================================================
-  // START
-  // =====================================================
 
-  checkAdmin();
+clearMessage(
+globalMessage
+);
+
+
+const data = {
+
+name:
+clientForm.elements[
+"name"
+].value.trim(),
+
+profession:
+clientForm.elements[
+"profession"
+].value.trim(),
+
+bio:
+clientForm.elements[
+"bio"
+].value.trim(),
+
+phone:
+clientForm.elements[
+"phone"
+].value.trim(),
+
+whatsapp:
+clientForm.elements[
+"whatsapp"
+].value.trim(),
+
+email:
+clientForm.elements[
+"email"
+].value.trim(),
+
+instagram:
+clientForm.elements[
+"instagram"
+].value.trim(),
+
+facebook:
+clientForm.elements[
+"facebook"
+].value.trim(),
+
+tiktok:
+clientForm.elements[
+"tiktok"
+].value.trim(),
+
+linkedin:
+clientForm.elements[
+"linkedin"
+].value.trim(),
+
+address:
+clientForm.elements[
+"address"
+].value.trim(),
+
+maps:
+clientForm.elements[
+"maps"
+].value.trim(),
+
+website:
+clientForm.elements[
+"website"
+].value.trim(),
+
+reviews:
+clientForm.elements[
+"reviews"
+].value.trim()
+
+};
+
+
+try{
+
+const response =
+await fetch(
+"/api/clients",
+{
+method:"POST",
+credentials:
+"same-origin",
+headers:{
+"Content-Type":
+"application/json"
+},
+body:
+JSON.stringify(data)
+}
+);
+
+
+const result =
+await response.json();
+
+
+if(
+!response.ok ||
+!result.success
+){
+
+throw new Error(
+result.error ||
+"Une erreur est survenue."
+);
+
+}
+
+
+showMessage(
+globalMessage,
+"✅ Client créé avec succès.",
+"success"
+);
+
+
+clientForm.reset();
+
+await loadStands();
+
+
+}catch(error){
+
+showMessage(
+globalMessage,
+"❌ " +
+error.message,
+"error"
+);
+
+}
+
+
+clientButton.disabled =
+false;
+
+clientButton.textContent =
+"Créer le profil";
+
+}
+);
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHtml(value){
+
+if(
+value === null ||
+value === undefined
+){
+
+return "";
+
+}
+
+return String(value)
+.replace(
+/&/g,
+"&amp;"
+)
+.replace(
+/</g,
+"&lt;"
+)
+.replace(
+/>/g,
+"&gt;"
+)
+.replace(
+/"/g,
+"&quot;"
+)
+.replace(
+/'/g,
+"&#039;"
+);
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+checkAdmin();
 
 </script>
 
