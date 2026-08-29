@@ -16,7 +16,6 @@ export default {
       });
     };
 
-
     const base64url = (input) => {
       let binary = "";
 
@@ -34,21 +33,13 @@ export default {
         .replace(/=+$/g, "");
     };
 
-
     const fromBase64url = (input) => {
       const base64 =
-        input
-          .replace(/-/g, "+")
-          .replace(/_/g, "/") +
-        "===".slice(
-          (input.length + 3) % 4
-        );
+        input.replace(/-/g, "+").replace(/_/g, "/") +
+        "===".slice((input.length + 3) % 4);
 
       const binary = atob(base64);
-
-      const bytes = new Uint8Array(
-        binary.length
-      );
+      const bytes = new Uint8Array(binary.length);
 
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
@@ -56,7 +47,6 @@ export default {
 
       return bytes;
     };
-
 
     const timingSafeEqual = (a, b) => {
       if (a.length !== b.length) {
@@ -72,6 +62,25 @@ export default {
       return result === 0;
     };
 
+    const getCookie = (request, name) => {
+      const cookieHeader = request.headers.get("Cookie");
+
+      if (!cookieHeader) {
+        return null;
+      }
+
+      const cookies = cookieHeader.split(";");
+
+      for (const cookie of cookies) {
+        const parts = cookie.trim().split("=");
+
+        if (parts[0] === name) {
+          return parts.slice(1).join("=");
+        }
+      }
+
+      return null;
+    };
 
     // =====================================================
     // ADMIN SESSION
@@ -79,41 +88,30 @@ export default {
 
     const createAdminToken = async () => {
       if (!env.ADMIN_KEY) {
-        throw new Error(
-          "ADMIN_KEY non configurée."
-        );
+        throw new Error("ADMIN_KEY non configurée.");
       }
 
-      const timestamp =
-        Date.now().toString();
+      const timestamp = Date.now().toString();
+      const encoder = new TextEncoder();
 
-      const encoder =
-        new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(env.ADMIN_KEY),
+        {
+          name: "HMAC",
+          hash: "SHA-256"
+        },
+        false,
+        ["sign"]
+      );
 
-      const key =
-        await crypto.subtle.importKey(
-          "raw",
-          encoder.encode(
-            env.ADMIN_KEY
-          ),
-          {
-            name: "HMAC",
-            hash: "SHA-256"
-          },
-          false,
-          ["sign"]
-        );
-
-      const signature =
-        new Uint8Array(
-          await crypto.subtle.sign(
-            "HMAC",
-            key,
-            encoder.encode(
-              timestamp
-            )
-          )
-        );
+      const signature = new Uint8Array(
+        await crypto.subtle.sign(
+          "HMAC",
+          key,
+          encoder.encode(timestamp)
+        )
+      );
 
       return (
         base64url(timestamp) +
@@ -122,179 +120,103 @@ export default {
       );
     };
 
+    const verifyAdminToken = async (token) => {
+      if (!token || !env.ADMIN_KEY) {
+        return false;
+      }
 
-    const verifyAdminToken =
-      async (token) => {
+      const parts = token.split(".");
+
+      if (parts.length !== 2) {
+        return false;
+      }
+
+      try {
+        const timestampBytes = fromBase64url(parts[0]);
+
+        const timestamp =
+          new TextDecoder().decode(timestampBytes);
+
+        const time = Number(timestamp);
+
+        if (!Number.isFinite(time)) {
+          return false;
+        }
 
         if (
-          !token ||
-          !env.ADMIN_KEY
+          Date.now() - time >
+          8 * 60 * 60 * 1000
         ) {
           return false;
         }
 
-        const parts =
-          token.split(".");
-
-        if (parts.length !== 2) {
+        if (time > Date.now() + 60000) {
           return false;
         }
 
-        try {
-          const timestampBytes =
-            fromBase64url(
-              parts[0]
-            );
+        const encoder = new TextEncoder();
 
-          const timestamp =
-            new TextDecoder().decode(
-              timestampBytes
-            );
-
-          const time =
-            Number(timestamp);
-
-          if (!Number.isFinite(time)) {
-            return false;
-          }
-
-          // Session valable 8 heures
-
-          if (
-            Date.now() - time >
-            8 * 60 * 60 * 1000
-          ) {
-            return false;
-          }
-
-          if (
-            time >
-            Date.now() + 60000
-          ) {
-            return false;
-          }
-
-          const encoder =
-            new TextEncoder();
-
-          const key =
-            await crypto.subtle.importKey(
-              "raw",
-              encoder.encode(
-                env.ADMIN_KEY
-              ),
-              {
-                name: "HMAC",
-                hash: "SHA-256"
-              },
-              false,
-              ["sign"]
-            );
-
-          const expected =
-            new Uint8Array(
-              await crypto.subtle.sign(
-                "HMAC",
-                key,
-                encoder.encode(
-                  timestamp
-                )
-              )
-            );
-
-          const received =
-            fromBase64url(
-              parts[1]
-            );
-
-          return timingSafeEqual(
-            expected,
-            received
-          );
-
-        } catch {
-          return false;
-        }
-      };
-
-
-    const getCookie =
-      (request, name) => {
-
-        const cookieHeader =
-          request.headers.get(
-            "Cookie"
-          );
-
-        if (!cookieHeader) {
-          return null;
-        }
-
-        const cookies =
-          cookieHeader.split(";");
-
-        for (
-          const cookie of cookies
-        ) {
-          const parts =
-            cookie
-              .trim()
-              .split("=");
-
-          if (
-            parts[0] === name
-          ) {
-            return parts
-              .slice(1)
-              .join("=");
-          }
-        }
-
-        return null;
-      };
-
-
-    const isAdmin =
-      async () => {
-
-        const token =
-          getCookie(
-            request,
-            "tapnivo_admin"
-          );
-
-        return await verifyAdminToken(
-          token
+        const key = await crypto.subtle.importKey(
+          "raw",
+          encoder.encode(env.ADMIN_KEY),
+          {
+            name: "HMAC",
+            hash: "SHA-256"
+          },
+          false,
+          ["sign"]
         );
-      };
 
+        const expected = new Uint8Array(
+          await crypto.subtle.sign(
+            "HMAC",
+            key,
+            encoder.encode(timestamp)
+          )
+        );
+
+        const received =
+          fromBase64url(parts[1]);
+
+        return timingSafeEqual(
+          expected,
+          received
+        );
+
+      } catch {
+        return false;
+      }
+    };
+
+    const isAdmin = async () => {
+      const token =
+        getCookie(
+          request,
+          "tapnivo_admin"
+        );
+
+      return await verifyAdminToken(token);
+    };
 
     // =====================================================
     // ADMIN LOGIN
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/admin/login" &&
+      url.pathname === "/api/admin/login" &&
       request.method === "POST"
     ) {
-
       try {
-
-        const data =
-          await request.json();
+        const data = await request.json();
 
         const password =
-          String(
-            data.password || ""
-          );
+          String(data.password || "");
 
         if (!env.ADMIN_KEY) {
           return json(
             {
               success: false,
-              error:
-                "ADMIN_KEY non configurée."
+              error: "ADMIN_KEY non configurée."
             },
             500
           );
@@ -302,14 +224,12 @@ export default {
 
         if (
           !password ||
-          password !==
-            env.ADMIN_KEY
+          password !== env.ADMIN_KEY
         ) {
           return json(
             {
               success: false,
-              error:
-                "Mot de passe incorrect."
+              error: "Mot de passe incorrect."
             },
             401
           );
@@ -332,29 +252,24 @@ export default {
         );
 
       } catch (error) {
-
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
       }
     }
 
-
     // =====================================================
     // ADMIN CHECK
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/admin/me" &&
+      url.pathname === "/api/admin/me" &&
       request.method === "GET"
     ) {
-
       const authenticated =
         await isAdmin();
 
@@ -364,17 +279,14 @@ export default {
       });
     }
 
-
     // =====================================================
     // ADMIN LOGOUT
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/admin/logout" &&
+      url.pathname === "/api/admin/logout" &&
       request.method === "POST"
     ) {
-
       return json(
         {
           success: true
@@ -387,18 +299,12 @@ export default {
       );
     }
 
-
     // =====================================================
     // TEST DATABASE
     // =====================================================
 
-    if (
-      url.pathname ===
-        "/api/test-db"
-    ) {
-
+    if (url.pathname === "/api/test-db") {
       try {
-
         const result =
           await env.DB
             .prepare(
@@ -408,38 +314,30 @@ export default {
 
         return json({
           success: true,
-          database:
-            "tapnivo-db",
-          tables:
-            result.results
+          database: "tapnivo-db",
+          tables: result.results
         });
 
       } catch (error) {
-
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
       }
     }
 
-
     // =====================================================
     // GET ALL CLIENTS
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/clients" &&
+      url.pathname === "/api/clients" &&
       request.method === "GET"
     ) {
-
       try {
-
         const result =
           await env.DB
             .prepare(
@@ -449,41 +347,33 @@ export default {
 
         return json({
           success: true,
-          clients:
-            result.results
+          clients: result.results
         });
 
       } catch (error) {
-
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
       }
     }
 
-
     // =====================================================
     // CREATE CLIENT
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/clients" &&
+      url.pathname === "/api/clients" &&
       request.method === "POST"
     ) {
-
       try {
-
         const data =
           await request.json();
 
         if (!data.name) {
-
           return json(
             {
               success: false,
@@ -568,45 +458,35 @@ export default {
         });
 
       } catch (error) {
-
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
       }
     }
 
-
     // =====================================================
-    // GET ALL STANDS
+    // GET ALL STANDS + SCAN STATISTICS
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/stands" &&
+      url.pathname === "/api/stands" &&
       request.method === "GET"
     ) {
-
-      if (
-        !(await isAdmin())
-      ) {
-
+      if (!(await isAdmin())) {
         return json(
           {
             success: false,
-            error:
-              "Non autorisé."
+            error: "Non autorisé."
           },
           401
         );
       }
 
       try {
-
         const result =
           await env.DB
             .prepare(`
@@ -618,22 +498,19 @@ export default {
                 s.status,
                 s.created_at,
                 s.activated_at,
-
                 c.name AS client_name,
 
                 (
                   SELECT COUNT(*)
                   FROM stand_scans ss
-                  WHERE ss.stand_code =
-                    s.stand_code
-                ) AS scan_count,
+                  WHERE ss.stand_code = s.stand_code
+                ) AS scans_count,
 
                 (
                   SELECT MAX(ss.scanned_at)
                   FROM stand_scans ss
-                  WHERE ss.stand_code =
-                    s.stand_code
-                ) AS last_scan
+                  WHERE ss.stand_code = s.stand_code
+                ) AS last_scan_at
 
               FROM stands s
 
@@ -646,50 +523,108 @@ export default {
 
         return json({
           success: true,
-          stands:
-            result.results
+          stands: result.results
         });
 
       } catch (error) {
-
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
       }
     }
 
-
     // =====================================================
-    // ACTIVATE STAND
+    // GET SCANS FOR ONE STAND
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/stands/activate" &&
-      request.method === "POST"
+      url.pathname === "/api/stands/scans" &&
+      request.method === "GET"
     ) {
-
-      if (
-        !(await isAdmin())
-      ) {
-
+      if (!(await isAdmin())) {
         return json(
           {
             success: false,
-            error:
-              "Non autorisé."
+            error: "Non autorisé."
           },
           401
         );
       }
 
       try {
+        const standCode =
+          String(
+            url.searchParams.get(
+              "stand_code"
+            ) || ""
+          ).trim();
 
+        if (!standCode) {
+          return json(
+            {
+              success: false,
+              error:
+                "stand_code est obligatoire."
+            },
+            400
+          );
+        }
+
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+                id,
+                stand_code,
+                scanned_at
+              FROM stand_scans
+              WHERE stand_code = ?
+              ORDER BY id DESC
+            `)
+            .bind(standCode)
+            .all();
+
+        return json({
+          success: true,
+          stand_code: standCode,
+          scans: result.results,
+          scans_count: result.results.length
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ACTIVATE STAND
+    // =====================================================
+
+    if (
+      url.pathname === "/api/stands/activate" &&
+      request.method === "POST"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
         const data =
           await request.json();
 
@@ -705,14 +640,10 @@ export default {
 
         const clientId =
           data.client_id
-            ? Number(
-                data.client_id
-              )
+            ? Number(data.client_id)
             : null;
 
-
         if (!standCode) {
-
           return json(
             {
               success: false,
@@ -723,9 +654,7 @@ export default {
           );
         }
 
-
         if (!destinationUrl) {
-
           return json(
             {
               success: false,
@@ -736,38 +665,25 @@ export default {
           );
         }
 
-
-        // Vérification URL
-
         let parsedUrl;
 
         try {
-
           parsedUrl =
-            new URL(
-              destinationUrl
-            );
-
+            new URL(destinationUrl);
         } catch {
-
           return json(
             {
               success: false,
-              error:
-                "URL invalide."
+              error: "URL invalide."
             },
             400
           );
         }
 
-
         if (
-          parsedUrl.protocol !==
-            "https:" &&
-          parsedUrl.protocol !==
-            "http:"
+          parsedUrl.protocol !== "https:" &&
+          parsedUrl.protocol !== "http:"
         ) {
-
           return json(
             {
               success: false,
@@ -778,9 +694,6 @@ export default {
           );
         }
 
-
-        // Vérifier le Stand
-
         const stand =
           await env.DB
             .prepare(`
@@ -789,30 +702,20 @@ export default {
               WHERE stand_code = ?
               LIMIT 1
             `)
-            .bind(
-              standCode
-            )
+            .bind(standCode)
             .first();
 
-
         if (!stand) {
-
           return json(
             {
               success: false,
-              error:
-                "Stand introuvable."
+              error: "Stand introuvable."
             },
             404
           );
         }
 
-
-        if (
-          stand.status ===
-            "active"
-        ) {
-
+        if (stand.status === "active") {
           return json(
             {
               success: false,
@@ -823,13 +726,7 @@ export default {
           );
         }
 
-
-        // Vérifier Client
-
-        if (
-          clientId !== null
-        ) {
-
+        if (clientId !== null) {
           const client =
             await env.DB
               .prepare(`
@@ -838,27 +735,19 @@ export default {
                 WHERE id = ?
                 LIMIT 1
               `)
-              .bind(
-                clientId
-              )
+              .bind(clientId)
               .first();
 
-
           if (!client) {
-
             return json(
               {
                 success: false,
-                error:
-                  "Client introuvable."
+                error: "Client introuvable."
               },
               404
             );
           }
         }
-
-
-        // Activation
 
         await env.DB
           .prepare(`
@@ -867,8 +756,7 @@ export default {
               client_id = ?,
               destination_url = ?,
               status = 'active',
-              activated_at =
-                CURRENT_TIMESTAMP
+              activated_at = CURRENT_TIMESTAMP
             WHERE stand_code = ?
           `)
           .bind(
@@ -878,55 +766,43 @@ export default {
           )
           .run();
 
-
         return json({
           success: true,
           message:
             "Stand activé avec succès.",
-          stand_code:
-            standCode
+          stand_code: standCode
         });
 
       } catch (error) {
-
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
       }
     }
 
-
     // =====================================================
     // RESET STAND
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/stands/reset" &&
+      url.pathname === "/api/stands/reset" &&
       request.method === "POST"
     ) {
-
-      if (
-        !(await isAdmin())
-      ) {
-
+      if (!(await isAdmin())) {
         return json(
           {
             success: false,
-            error:
-              "Non autorisé."
+            error: "Non autorisé."
           },
           401
         );
       }
 
       try {
-
         const data =
           await request.json();
 
@@ -935,9 +811,7 @@ export default {
             data.stand_code || ""
           ).trim();
 
-
         if (!standCode) {
-
           return json(
             {
               success: false,
@@ -948,9 +822,6 @@ export default {
           );
         }
 
-
-        // Vérifier le Stand
-
         const stand =
           await env.DB
             .prepare(`
@@ -959,30 +830,18 @@ export default {
               WHERE stand_code = ?
               LIMIT 1
             `)
-            .bind(
-              standCode
-            )
+            .bind(standCode)
             .first();
 
-
         if (!stand) {
-
           return json(
             {
               success: false,
-              error:
-                "Stand introuvable."
+              error: "Stand introuvable."
             },
             404
           );
         }
-
-
-        // =================================================
-        // IMPORTANT
-        // Le Reset ne supprime PAS les scans.
-        // Il remet uniquement le Stand disponible.
-        // =================================================
 
         await env.DB
           .prepare(`
@@ -994,58 +853,40 @@ export default {
               activated_at = NULL
             WHERE stand_code = ?
           `)
-          .bind(
-            standCode
-          )
+          .bind(standCode)
           .run();
-
 
         return json({
           success: true,
           message:
             "Stand réinitialisé avec succès.",
-          stand_code:
-            standCode
+          stand_code: standCode
         });
 
       } catch (error) {
-
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
       }
     }
 
-
     // =====================================================
     // DYNAMIC QR / NFC
     // =====================================================
 
     if (
-      url.pathname.startsWith(
-        "/r/"
-      )
+      url.pathname.startsWith("/r/")
     ) {
-
       const standCode =
         url.pathname
-          .replace(
-            "/r/",
-            ""
-          )
-          .replace(
-            /\/$/,
-            ""
-          );
-
+          .replace("/r/", "")
+          .replace(/\/$/, "");
 
       if (!standCode) {
-
         return new Response(
           "Stand introuvable",
           {
@@ -1054,13 +895,7 @@ export default {
         );
       }
 
-
       try {
-
-        // =================================================
-        // Vérifier le Stand
-        // =================================================
-
         const stand =
           await env.DB
             .prepare(`
@@ -1072,14 +907,10 @@ export default {
               WHERE stand_code = ?
               LIMIT 1
             `)
-            .bind(
-              standCode
-            )
+            .bind(standCode)
             .first();
 
-
         if (!stand) {
-
           return new Response(
             "Stand introuvable",
             {
@@ -1088,115 +919,62 @@ export default {
           );
         }
 
-
         // =================================================
-        // Stand non activé
+        // STAND NON ACTIVE
         // =================================================
 
         if (
-          stand.status !==
-            "active" ||
+          stand.status !== "active" ||
           !stand.destination_url
         ) {
-
           return new Response(
-`
+            `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<title>
-TAPNIVO
-</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAPNIVO</title>
 
 <style>
+*{box-sizing:border-box}
 
-* {
-  box-sizing: border-box;
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f5f7fb;
+  color:#111827;
+  text-align:center;
 }
 
-body {
-  margin: 0;
-
-  min-height: 100vh;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  background:
-    #f5f7fb;
-
-  color:
-    #111827;
-
-  text-align:
-    center;
+.box{
+  background:white;
+  padding:35px 25px;
+  border-radius:20px;
+  box-shadow:0 15px 40px rgba(0,0,0,.08);
+  max-width:400px;
+  margin:20px;
 }
 
-.box {
-  background:
-    white;
-
-  padding:
-    35px 25px;
-
-  border-radius:
-    20px;
-
-  box-shadow:
-    0 15px 40px
-    rgba(0,0,0,0.08);
-
-  max-width:
-    400px;
-
-  margin:
-    20px;
+.logo{
+  font-size:24px;
+  font-weight:800;
+  margin-bottom:20px;
 }
 
-.logo {
-  font-size:
-    24px;
-
-  font-weight:
-    800;
-
-  margin-bottom:
-    20px;
+.logo span{
+  color:#4f46e5;
 }
 
-.logo span {
-  color:
-    #4f46e5;
+p{
+  color:#6b7280;
+  line-height:1.6;
 }
-
-p {
-  color:
-    #6b7280;
-
-  line-height:
-    1.6;
-}
-
 </style>
-
 </head>
 
 <body>
@@ -1218,12 +996,10 @@ Ce QR code est prêt à être activé.
 </div>
 
 </body>
-
 </html>
 `,
             {
               status: 200,
-
               headers: {
                 "Content-Type":
                   "text/html; charset=UTF-8"
@@ -1232,48 +1008,26 @@ Ce QR code est prêt à être activé.
           );
         }
 
-
         // =================================================
-        // SCAN TRACKING
-        // =================================================
-        //
-        // كل زيارة للرابط /r/TNV001
-        // كتسجل Scan جديد.
-        //
-        // ما كنوقفوش Redirect إلا فشل
-        // التسجيل، باش الـQR/NFC يبقى خدام.
+        // ENREGISTRER LE SCAN
         // =================================================
 
-        try {
-
-          await env.DB
-            .prepare(`
-              INSERT INTO stand_scans (
-                stand_code,
-                scanned_at
-              )
-              VALUES (
-                ?,
-                CURRENT_TIMESTAMP
-              )
-            `)
-            .bind(
-              standCode
+        await env.DB
+          .prepare(`
+            INSERT INTO stand_scans (
+              stand_code,
+              scanned_at
             )
-            .run();
-
-        } catch (scanError) {
-
-          console.error(
-            "Scan tracking error:",
-            scanError
-          );
-
-        }
-
+            VALUES (
+              ?,
+              CURRENT_TIMESTAMP
+            )
+          `)
+          .bind(standCode)
+          .run();
 
         // =================================================
-        // Redirect vers destination
+        // REDIRECTION
         // =================================================
 
         return Response.redirect(
@@ -1281,9 +1035,7 @@ Ce QR code est prêt à être activé.
           302
         );
 
-
       } catch (error) {
-
         return new Response(
           "Erreur serveur : " +
           error.message,
@@ -1294,31 +1046,19 @@ Ce QR code est prêt à être activé.
       }
     }
 
-
     // =====================================================
     // CLIENT PROFILE
     // =====================================================
 
     if (
-      url.pathname.startsWith(
-        "/client/"
-      )
+      url.pathname.startsWith("/client/")
     ) {
-
       const slug =
         url.pathname
-          .replace(
-            "/client/",
-            ""
-          )
-          .replace(
-            /\/$/,
-            ""
-          );
-
+          .replace("/client/", "")
+          .replace(/\/$/, "");
 
       if (!slug) {
-
         return new Response(
           "Profil introuvable",
           {
@@ -1327,9 +1067,7 @@ Ce QR code est prêt à être activé.
         );
       }
 
-
       try {
-
         const result =
           await env.DB
             .prepare(`
@@ -1338,14 +1076,10 @@ Ce QR code est prêt à être activé.
               WHERE slug = ?
               LIMIT 1
             `)
-            .bind(
-              slug
-            )
+            .bind(slug)
             .first();
 
-
         if (!result) {
-
           return new Response(
             "Client introuvable",
             {
@@ -1354,40 +1088,20 @@ Ce QR code est prêt à être activé.
           );
         }
 
+        const escapeHTML = (value) => {
+          if (!value) {
+            return "";
+          }
 
-        const escapeHTML =
-          (value) => {
-
-            if (!value) {
-              return "";
-            }
-
-            return String(value)
-              .replace(
-                /&/g,
-                "&amp;"
-              )
-              .replace(
-                /</g,
-                "&lt;"
-              )
-              .replace(
-                />/g,
-                "&gt;"
-              )
-              .replace(
-                /"/g,
-                "&quot;"
-              )
-              .replace(
-                /'/g,
-                "&#039;"
-              );
-          };
-
+          return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        };
 
         const html = `
-
 <!DOCTYPE html>
 
 <html lang="fr">
@@ -1402,19 +1116,17 @@ Ce QR code est prêt à être activé.
 >
 
 <title>
-${escapeHTML(
-  result.name
-)} | TAPNIVO
+${escapeHTML(result.name)} | TAPNIVO
 </title>
 
 <style>
 
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
 }
 
-body {
-  margin: 0;
+body{
+  margin:0;
 
   font-family:
     Arial,
@@ -1428,197 +1140,147 @@ body {
       #eef2ff
     );
 
-  color:
-    #111827;
+  color:#111827;
 }
 
-.container {
-  max-width:
-    600px;
+.container{
+  max-width:600px;
 
-  margin:
-    auto;
+  margin:auto;
 
-  padding:
-    40px 20px;
+  padding:40px 20px;
 }
 
-.profile {
-  background:
-    white;
+.profile{
+  background:white;
 
-  border-radius:
-    25px;
+  border-radius:25px;
 
-  padding:
-    35px 25px;
+  padding:35px 25px;
 
-  text-align:
-    center;
+  text-align:center;
 
   box-shadow:
     0 15px 40px
     rgba(0,0,0,0.08);
 }
 
-.logo {
-  font-size:
-    20px;
+.logo{
+  font-size:20px;
 
-  font-weight:
-    800;
+  font-weight:800;
 
-  margin-bottom:
-    30px;
+  margin-bottom:30px;
 }
 
-.logo span {
-  color:
-    #4f46e5;
+.logo span{
+  color:#4f46e5;
 }
 
-.avatar {
-  width:
-    100px;
+.avatar{
+  width:100px;
 
-  height:
-    100px;
+  height:100px;
 
-  border-radius:
-    50%;
+  border-radius:50%;
 
   margin:
     auto auto 20px;
 
-  background:
-    #eef2ff;
+  background:#eef2ff;
 
-  display:
-    flex;
+  display:flex;
 
-  align-items:
-    center;
+  align-items:center;
 
-  justify-content:
-    center;
+  justify-content:center;
 
-  font-size:
-    40px;
+  font-size:40px;
 }
 
-h1 {
-  margin:
-    0;
+h1{
+  margin:0;
 
-  font-size:
-    28px;
+  font-size:28px;
 }
 
-.profession {
-  color:
-    #4f46e5;
+.profession{
+  color:#4f46e5;
 
-  font-weight:
-    bold;
+  font-weight:bold;
 
-  margin-top:
-    8px;
+  margin-top:8px;
 }
 
-.bio {
-  color:
-    #6b7280;
+.bio{
+  color:#6b7280;
 
-  line-height:
-    1.6;
+  line-height:1.6;
 
-  margin:
-    20px 0;
+  margin:20px 0;
 }
 
-.buttons {
-  display:
-    grid;
+.buttons{
+  display:grid;
 
-  gap:
-    10px;
+  gap:10px;
 
-  margin-top:
-    25px;
+  margin-top:25px;
 }
 
-.button {
-  display:
-    block;
+.button{
+  display:block;
 
-  padding:
-    14px;
+  padding:14px;
 
-  border-radius:
-    12px;
+  border-radius:12px;
 
-  text-decoration:
-    none;
+  text-decoration:none;
 
-  font-weight:
-    bold;
+  font-weight:bold;
 
-  background:
-    #4f46e5;
+  background:#4f46e5;
 
-  color:
-    white;
+  color:white;
 }
 
-.button.secondary {
-  background:
-    #f3f4f6;
+.button.secondary{
+  background:#f3f4f6;
 
-  color:
-    #374151;
+  color:#374151;
 }
 
-.info {
-  margin-top:
-    25px;
+.info{
+  margin-top:25px;
 
-  text-align:
-    left;
+  text-align:left;
 }
 
-.info div {
-  padding:
-    12px 0;
+.info div{
+  padding:12px 0;
 
   border-bottom:
     1px solid #eee;
 }
 
-.label {
-  font-size:
-    12px;
+.label{
+  font-size:12px;
 
-  color:
-    #9ca3af;
+  color:#9ca3af;
 }
 
-.value {
-  margin-top:
-    4px;
+.value{
+  margin-top:4px;
 
-  font-weight:
-    600;
+  font-weight:600;
 }
 
-.footer {
-  margin-top:
-    25px;
+.footer{
+  margin-top:25px;
 
-  color:
-    #9ca3af;
+  color:#9ca3af;
 
-  font-size:
-    12px;
+  font-size:12px;
 }
 
 </style>
@@ -1640,18 +1302,14 @@ TAP<span>NIVO</span>
 </div>
 
 <h1>
-${escapeHTML(
-  result.name
-)}
+${escapeHTML(result.name)}
 </h1>
 
 ${
   result.profession
     ? `
 <div class="profession">
-${escapeHTML(
-  result.profession
-)}
+${escapeHTML(result.profession)}
 </div>
 `
     : ""
@@ -1661,9 +1319,7 @@ ${
   result.bio
     ? `
 <div class="bio">
-${escapeHTML(
-  result.bio
-)}
+${escapeHTML(result.bio)}
 </div>
 `
     : ""
@@ -1676,9 +1332,7 @@ ${
     ? `
 <a
   class="button"
-  href="tel:${escapeHTML(
-    result.phone
-  )}"
+  href="tel:${escapeHTML(result.phone)}"
 >
 📞 Appeler
 </a>
@@ -1692,11 +1346,10 @@ ${
 <a
   class="button"
   href="https://wa.me/${escapeHTML(
-    result.whatsapp
-      .replace(
-        /[^0-9]/g,
-        ""
-      )
+    result.whatsapp.replace(
+      /[^0-9]/g,
+      ""
+    )
   )}"
   target="_blank"
 >
@@ -1711,12 +1364,52 @@ ${
     ? `
 <a
   class="button secondary"
-  href="${escapeHTML(
-    result.instagram
-  )}"
+  href="${escapeHTML(result.instagram)}"
   target="_blank"
 >
 Instagram
+</a>
+`
+    : ""
+}
+
+${
+  result.facebook
+    ? `
+<a
+  class="button secondary"
+  href="${escapeHTML(result.facebook)}"
+  target="_blank"
+>
+Facebook
+</a>
+`
+    : ""
+}
+
+${
+  result.tiktok
+    ? `
+<a
+  class="button secondary"
+  href="${escapeHTML(result.tiktok)}"
+  target="_blank"
+>
+TikTok
+</a>
+`
+    : ""
+}
+
+${
+  result.linkedin
+    ? `
+<a
+  class="button secondary"
+  href="${escapeHTML(result.linkedin)}"
+  target="_blank"
+>
+LinkedIn
 </a>
 `
     : ""
@@ -1727,12 +1420,38 @@ ${
     ? `
 <a
   class="button secondary"
-  href="${escapeHTML(
-    result.maps
-  )}"
+  href="${escapeHTML(result.maps)}"
   target="_blank"
 >
 📍 Google Maps
+</a>
+`
+    : ""
+}
+
+${
+  result.website
+    ? `
+<a
+  class="button secondary"
+  href="${escapeHTML(result.website)}"
+  target="_blank"
+>
+🌐 Site web
+</a>
+`
+    : ""
+}
+
+${
+  result.reviews
+    ? `
+<a
+  class="button secondary"
+  href="${escapeHTML(result.reviews)}"
+  target="_blank"
+>
+⭐ Google Reviews
 </a>
 `
     : ""
@@ -1752,9 +1471,7 @@ Email
 </div>
 
 <div class="value">
-${escapeHTML(
-  result.email
-)}
+${escapeHTML(result.email)}
 </div>
 
 </div>
@@ -1772,9 +1489,7 @@ Adresse
 </div>
 
 <div class="value">
-${escapeHTML(
-  result.address
-)}
+${escapeHTML(result.address)}
 </div>
 
 </div>
@@ -1797,7 +1512,6 @@ Profil digital créé avec TAPNIVO
 </html>
 `;
 
-
         return new Response(
           html,
           {
@@ -1808,9 +1522,7 @@ Profil digital créé avec TAPNIVO
           }
         );
 
-
       } catch (error) {
-
         return new Response(
           "Erreur serveur : " +
           error.message,
@@ -1821,13 +1533,10 @@ Profil digital créé avec TAPNIVO
       }
     }
 
-
     // =====================================================
     // STATIC FILES
     // =====================================================
 
-    return env.ASSETS.fetch(
-      request
-    );
+    return env.ASSETS.fetch(request);
   }
 };
