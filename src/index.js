@@ -2,6 +2,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
     const json = (data, status = 200, extraHeaders = {}) => {
       return new Response(JSON.stringify(data), {
         status,
@@ -31,12 +35,18 @@ export default {
 
     const fromBase64url = (input) => {
       const base64 =
-        input.replace(/-/g, "+").replace(/_/g, "/") +
-        "===".slice((input.length + 3) % 4);
+        input
+          .replace(/-/g, "+")
+          .replace(/_/g, "/") +
+        "===".slice(
+          (input.length + 3) % 4
+        );
 
       const binary = atob(base64);
 
-      const bytes = new Uint8Array(binary.length);
+      const bytes = new Uint8Array(
+        binary.length
+      );
 
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
@@ -59,9 +69,16 @@ export default {
       return result === 0;
     };
 
+
+    // =====================================================
+    // ADMIN SESSION
+    // =====================================================
+
     const createAdminToken = async () => {
       if (!env.ADMIN_KEY) {
-        throw new Error("ADMIN_KEY non configurée.");
+        throw new Error(
+          "ADMIN_KEY non configurée."
+        );
       }
 
       const timestamp = Date.now().toString();
@@ -94,6 +111,7 @@ export default {
       );
     };
 
+
     const verifyAdminToken = async (token) => {
       if (!token || !env.ADMIN_KEY) {
         return false;
@@ -110,7 +128,9 @@ export default {
           fromBase64url(parts[0]);
 
         const timestamp =
-          new TextDecoder().decode(timestampBytes);
+          new TextDecoder().decode(
+            timestampBytes
+          );
 
         const time = Number(timestamp);
 
@@ -118,6 +138,7 @@ export default {
           return false;
         }
 
+        // Session valable 8 heures
         if (
           Date.now() - time >
           8 * 60 * 60 * 1000
@@ -163,6 +184,7 @@ export default {
       }
     };
 
+
     const getCookie = (request, name) => {
       const cookieHeader =
         request.headers.get("Cookie");
@@ -188,6 +210,7 @@ export default {
       return null;
     };
 
+
     const isAdmin = async () => {
       const token =
         getCookie(
@@ -197,6 +220,7 @@ export default {
 
       return await verifyAdminToken(token);
     };
+
 
     // =====================================================
     // ADMIN LOGIN
@@ -212,7 +236,9 @@ export default {
           await request.json();
 
         const password =
-          String(data.password || "");
+          String(
+            data.password || ""
+          );
 
         if (!env.ADMIN_KEY) {
           return json(
@@ -227,7 +253,8 @@ export default {
 
         if (
           !password ||
-          password !== env.ADMIN_KEY
+          password !==
+            env.ADMIN_KEY
         ) {
           return json(
             {
@@ -259,12 +286,14 @@ export default {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
       }
     }
+
 
     // =====================================================
     // ADMIN CHECK
@@ -283,6 +312,7 @@ export default {
         authenticated
       });
     }
+
 
     // =====================================================
     // ADMIN LOGOUT
@@ -305,13 +335,14 @@ export default {
       );
     }
 
+
     // =====================================================
     // TEST DATABASE
     // =====================================================
 
     if (
       url.pathname ===
-      "/api/test-db"
+        "/api/test-db"
     ) {
       try {
         const result =
@@ -323,20 +354,26 @@ export default {
 
         return json({
           success: true,
-          database: "tapnivo-db",
-          tables: result.results
+          database:
+            "tapnivo-db",
+          tables:
+            result.results
         });
 
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
       }
-    }    // =====================================================
+    }
+
+
+    // =====================================================
     // GET ALL CLIENTS
     // =====================================================
 
@@ -370,6 +407,7 @@ export default {
         );
       }
     }
+
 
     // =====================================================
     // CREATE CLIENT
@@ -480,6 +518,7 @@ export default {
       }
     }
 
+
     // =====================================================
     // GET ALL STANDS
     // =====================================================
@@ -540,6 +579,7 @@ export default {
       }
     }
 
+
     // =====================================================
     // ACTIVATE STAND
     // =====================================================
@@ -578,7 +618,9 @@ export default {
 
         const clientId =
           data.client_id
-            ? Number(data.client_id)
+            ? Number(
+                data.client_id
+              )
             : null;
 
         if (!standCode) {
@@ -603,11 +645,17 @@ export default {
           );
         }
 
+
+        // Vérification URL
+
         let parsedUrl;
 
         try {
           parsedUrl =
-            new URL(destinationUrl);
+            new URL(
+              destinationUrl
+            );
+
         } catch {
           return json(
             {
@@ -634,6 +682,9 @@ export default {
             400
           );
         }
+
+
+        // Vérifier le Stand
 
         const stand =
           await env.DB
@@ -673,6 +724,9 @@ export default {
           );
         }
 
+
+        // Vérifier Client
+
         if (
           clientId !== null
         ) {
@@ -700,6 +754,9 @@ export default {
             );
           }
         }
+
+
+        // Activation
 
         await env.DB
           .prepare(`
@@ -739,8 +796,9 @@ export default {
       }
     }
 
+
     // =====================================================
-    // RESET / DEACTIVATE STAND
+    // RESET STAND
     // =====================================================
 
     if (
@@ -781,13 +839,13 @@ export default {
           );
         }
 
+
+        // Vérifier le Stand
+
         const stand =
           await env.DB
             .prepare(`
-              SELECT
-                id,
-                stand_code,
-                status
+              SELECT *
               FROM stands
               WHERE stand_code = ?
               LIMIT 1
@@ -807,6 +865,10 @@ export default {
             404
           );
         }
+
+
+        // Reset du Stand uniquement
+        // Le client reste dans la base de données
 
         await env.DB
           .prepare(`
@@ -828,9 +890,7 @@ export default {
           message:
             "Stand réinitialisé avec succès.",
           stand_code:
-            standCode,
-          status:
-            "available"
+            standCode
         });
 
       } catch (error) {
@@ -843,7 +903,10 @@ export default {
           500
         );
       }
-    }    // =====================================================
+    }
+
+
+    // =====================================================
     // DYNAMIC QR / NFC
     // =====================================================
 
@@ -866,7 +929,9 @@ export default {
       if (!standCode) {
         return new Response(
           "Stand introuvable",
-          { status: 404 }
+          {
+            status: 404
+          }
         );
       }
 
@@ -890,9 +955,14 @@ export default {
         if (!stand) {
           return new Response(
             "Stand introuvable",
-            { status: 404 }
+            {
+              status: 404
+            }
           );
         }
+
+
+        // Stand non activé
 
         if (
           stand.status !==
@@ -902,59 +972,108 @@ export default {
           return new Response(
 `
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-<title>TAPNIVO</title>
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+TAPNIVO
+</title>
+
 <style>
-body{
-margin:0;
-min-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-font-family:Arial,sans-serif;
-background:#f5f7fb;
-color:#111827;
-text-align:center
+
+* {
+  box-sizing: border-box;
 }
-.box{
-background:white;
-padding:35px 25px;
-border-radius:20px;
-box-shadow:0 15px 40px rgba(0,0,0,.08);
-max-width:400px;
-margin:20px
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background: #f5f7fb;
+
+  color: #111827;
+
+  text-align: center;
 }
-.logo{
-font-size:24px;
-font-weight:800;
-margin-bottom:20px
+
+.box {
+  background: white;
+
+  padding: 35px 25px;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 15px 40px
+    rgba(0,0,0,0.08);
+
+  max-width: 400px;
+
+  margin: 20px;
 }
-.logo span{
-color:#4f46e5
+
+.logo {
+  font-size: 24px;
+
+  font-weight: 800;
+
+  margin-bottom: 20px;
 }
-p{
-color:#6b7280;
-line-height:1.6
+
+.logo span {
+  color: #4f46e5;
 }
+
+p {
+  color: #6b7280;
+
+  line-height: 1.6;
+}
+
 </style>
+
 </head>
+
 <body>
+
 <div class="box">
+
 <div class="logo">
 TAP<span>NIVO</span>
 </div>
+
 <h2>
 Stand non activé
 </h2>
+
 <p>
 Ce QR code est prêt à être activé.
 </p>
+
 </div>
+
 </body>
+
 </html>
 `,
             {
@@ -967,6 +1086,9 @@ Ce QR code est prêt à être activé.
           );
         }
 
+
+        // Stand activé
+
         return Response.redirect(
           stand.destination_url,
           302
@@ -976,10 +1098,13 @@ Ce QR code est prêt à être activé.
         return new Response(
           "Erreur serveur : " +
           error.message,
-          { status: 500 }
+          {
+            status: 500
+          }
         );
       }
     }
+
 
     // =====================================================
     // CLIENT PROFILE
@@ -1004,7 +1129,9 @@ Ce QR code est prêt à être activé.
       if (!slug) {
         return new Response(
           "Profil introuvable",
-          { status: 404 }
+          {
+            status: 404
+          }
         );
       }
 
@@ -1017,21 +1144,25 @@ Ce QR code est prêt à être activé.
               WHERE slug = ?
               LIMIT 1
             `)
-            .bind(
-              slug
-            )
+            .bind(slug)
             .first();
 
         if (!result) {
           return new Response(
             "Client introuvable",
-            { status: 404 }
+            {
+              status: 404
+            }
           );
         }
 
+
         const escapeHTML =
           (value) => {
-            if (!value) return "";
+
+            if (!value) {
+              return "";
+            }
 
             return String(value)
               .replace(
@@ -1056,16 +1187,20 @@ Ce QR code est prêt à être activé.
               );
           };
 
+
         const html = `
+
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
 
 <meta charset="UTF-8">
 
 <meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
 >
 
 <title>
@@ -1074,122 +1209,169 @@ ${escapeHTML(result.name)} | TAPNIVO
 
 <style>
 
-*{
-box-sizing:border-box
+* {
+  box-sizing: border-box;
 }
 
-body{
-margin:0;
-font-family:Arial,Helvetica,sans-serif;
-background:
-linear-gradient(
-135deg,
-#f5f7fb,
-#eef2ff
-);
-color:#111827
+body {
+  margin: 0;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5f7fb,
+      #eef2ff
+    );
+
+  color: #111827;
 }
 
-.container{
-max-width:600px;
-margin:auto;
-padding:40px 20px
+.container {
+  max-width: 600px;
+
+  margin: auto;
+
+  padding: 40px 20px;
 }
 
-.profile{
-background:white;
-border-radius:25px;
-padding:35px 25px;
-text-align:center;
-box-shadow:
-0 15px 40px
-rgba(0,0,0,0.08)
+.profile {
+  background: white;
+
+  border-radius: 25px;
+
+  padding: 35px 25px;
+
+  text-align: center;
+
+  box-shadow:
+    0 15px 40px
+    rgba(0,0,0,0.08);
 }
 
-.logo{
-font-size:20px;
-font-weight:800;
-margin-bottom:30px
+.logo {
+  font-size: 20px;
+
+  font-weight: 800;
+
+  margin-bottom: 30px;
 }
 
-.logo span{
-color:#4f46e5
+.logo span {
+  color: #4f46e5;
 }
 
-.avatar{
-width:100px;
-height:100px;
-border-radius:50%;
-margin:auto auto 20px;
-background:#eef2ff;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:40px
+.avatar {
+  width: 100px;
+
+  height: 100px;
+
+  border-radius: 50%;
+
+  margin:
+    auto auto 20px;
+
+  background:
+    #eef2ff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 40px;
 }
 
-h1{
-margin:0;
-font-size:28px
+h1 {
+  margin: 0;
+
+  font-size: 28px;
 }
 
-.profession{
-color:#4f46e5;
-font-weight:bold;
-margin-top:8px
+.profession {
+  color: #4f46e5;
+
+  font-weight: bold;
+
+  margin-top: 8px;
 }
 
-.bio{
-color:#6b7280;
-line-height:1.6;
-margin:20px 0
+.bio {
+  color: #6b7280;
+
+  line-height: 1.6;
+
+  margin: 20px 0;
 }
 
-.buttons{
-display:grid;
-gap:10px;
-margin-top:25px
+.buttons {
+  display: grid;
+
+  gap: 10px;
+
+  margin-top: 25px;
 }
 
-.button{
-display:block;
-padding:14px;
-border-radius:12px;
-text-decoration:none;
-font-weight:bold;
-background:#4f46e5;
-color:white
+.button {
+  display: block;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  text-decoration: none;
+
+  font-weight: bold;
+
+  background:
+    #4f46e5;
+
+  color: white;
 }
 
-.button.secondary{
-background:#f3f4f6;
-color:#374151
+.button.secondary {
+  background:
+    #f3f4f6;
+
+  color: #374151;
 }
 
-.info{
-margin-top:25px;
-text-align:left
+.info {
+  margin-top: 25px;
+
+  text-align: left;
 }
 
-.info div{
-padding:12px 0;
-border-bottom:1px solid #eee
+.info div {
+  padding: 12px 0;
+
+  border-bottom:
+    1px solid #eee;
 }
 
-.label{
-font-size:12px;
-color:#9ca3af
+.label {
+  font-size: 12px;
+
+  color: #9ca3af;
 }
 
-.value{
-margin-top:4px;
-font-weight:600
+.value {
+  margin-top: 4px;
+
+  font-weight: 600;
 }
 
-.footer{
-margin-top:25px;
-color:#9ca3af;
-font-size:12px
+.footer {
+  margin-top: 25px;
+
+  color: #9ca3af;
+
+  font-size: 12px;
 }
 
 </style>
@@ -1215,97 +1397,96 @@ ${escapeHTML(result.name)}
 </h1>
 
 ${
-result.profession
-?
-`
+  result.profession
+    ? `
 <div class="profession">
-${escapeHTML(result.profession)}
+${escapeHTML(
+  result.profession
+)}
 </div>
 `
-:
-""
+    : ""
 }
 
 ${
-result.bio
-?
-`
+  result.bio
+    ? `
 <div class="bio">
-${escapeHTML(result.bio)}
+${escapeHTML(
+  result.bio
+)}
 </div>
 `
-:
-""
+    : ""
 }
 
 <div class="buttons">
 
 ${
-result.phone
-?
-`
+  result.phone
+    ? `
 <a
-class="button"
-href="tel:${escapeHTML(result.phone)}"
+  class="button"
+  href="tel:${escapeHTML(
+    result.phone
+  )}"
 >
 📞 Appeler
 </a>
 `
-:
-""
+    : ""
 }
 
 ${
-result.whatsapp
-?
-`
+  result.whatsapp
+    ? `
 <a
-class="button"
-href="https://wa.me/${escapeHTML(
-result.whatsapp.replace(
-/[^0-9]/g,
-""
-)
-)}"
-target="_blank"
+  class="button"
+  href="https://wa.me/${escapeHTML(
+    result.whatsapp
+      .replace(
+        /[^0-9]/g,
+        ""
+      )
+  )}"
+  target="_blank"
 >
 💬 WhatsApp
 </a>
 `
-:
-""
+    : ""
 }
 
 ${
-result.instagram
-?
-`
+  result.instagram
+    ? `
 <a
-class="button secondary"
-href="${escapeHTML(result.instagram)}"
-target="_blank"
+  class="button secondary"
+  href="${escapeHTML(
+    result.instagram
+  )}"
+  target="_blank"
 >
 Instagram
 </a>
 `
-:
-""
+    : ""
 }
 
 ${
-result.maps
-?
-`
+  result.maps
+    ? `
 <a
-class="button secondary"
-href="${escapeHTML(result.maps)}"
-target="_blank"
+  class="button secondary"
+  href="${escapeHTML(
+    result.maps
+  )}"
+  target="_blank"
 >
 📍 Google Maps
 </a>
 `
-:
-""
+    : ""
 }
 
 </div>
@@ -1313,9 +1494,8 @@ target="_blank"
 <div class="info">
 
 ${
-result.email
-?
-`
+  result.email
+    ? `
 <div>
 
 <div class="label">
@@ -1323,19 +1503,19 @@ Email
 </div>
 
 <div class="value">
-${escapeHTML(result.email)}
+${escapeHTML(
+  result.email
+)}
 </div>
 
 </div>
 `
-:
-""
+    : ""
 }
 
 ${
-result.address
-?
-`
+  result.address
+    ? `
 <div>
 
 <div class="label">
@@ -1343,13 +1523,14 @@ Adresse
 </div>
 
 <div class="value">
-${escapeHTML(result.address)}
+${escapeHTML(
+  result.address
+)}
 </div>
 
 </div>
 `
-:
-""
+    : ""
 }
 
 </div>
@@ -1363,8 +1544,10 @@ Profil digital créé avec TAPNIVO
 </div>
 
 </body>
+
 </html>
 `;
+
 
         return new Response(
           html,
@@ -1380,10 +1563,15 @@ Profil digital créé avec TAPNIVO
         return new Response(
           "Erreur serveur : " +
           error.message,
-          { status: 500 }
+          {
+            status: 500
+          }
         );
       }
-    }    // =====================================================
+    }
+
+
+    // =====================================================
     // STATIC FILES
     // =====================================================
 
