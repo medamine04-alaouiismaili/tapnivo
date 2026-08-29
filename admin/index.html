@@ -149,6 +149,11 @@ button{
   color:#374151;
 }
 
+.danger{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
 .message{
   display:none;
   padding:14px;
@@ -270,7 +275,12 @@ button{
   line-height:1.6;
 }
 
-.stand-actions{margin-top:14px}
+.stand-actions{
+  margin-top:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
 
 .activate-box{
   margin-top:14px;
@@ -295,6 +305,11 @@ button{
   margin-top:10px;
   background:#eef2ff;
   color:#3730a3;
+}
+
+.reset-btn{
+  background:#fee2e2;
+  color:#991b1b;
 }
 
 .empty{
@@ -338,6 +353,14 @@ footer{
 
   .card{
     padding:20px;
+  }
+
+  .stand-actions{
+    flex-direction:column;
+  }
+
+  .stand-actions button{
+    width:100%;
   }
 }
 </style>
@@ -445,7 +468,7 @@ footer{
   <h2>📦 Gestion des Stands</h2>
 
   <p class="description">
-    Activez vos Stands NFC / QR pour vos clients.
+    Activez, gérez et réinitialisez vos Stands NFC / QR.
   </p>
 
   <div id="standsContainer">
@@ -1181,18 +1204,6 @@ stand.destination_url ||
 )}
 </span>
 
-<button
-class="copy-btn"
-data-copy="${
-escapeHtml(
-stand.destination_url ||
-""
-)
-}"
->
-Copier le lien
-</button>
-
 `
 
 : `
@@ -1207,12 +1218,39 @@ et prêt à être attribué.
 </div>
 
 
+<div class="stand-actions">
+
 ${
-!isActive
+isActive
 
 ? `
 
-<div class="stand-actions">
+<button
+class="copy-btn"
+data-copy="${
+escapeHtml(
+stand.destination_url ||
+""
+)
+}"
+>
+Copier le lien
+</button>
+
+<button
+class="danger reset-btn"
+data-stand="${
+escapeHtml(
+stand.stand_code
+)
+}"
+>
+🔄 Réinitialiser
+</button>
+
+`
+
+: `
 
 <button
 class="primary activate-toggle"
@@ -1225,8 +1263,17 @@ stand.stand_code
 Activer ce Stand
 </button>
 
+`
+
+}
+
 </div>
 
+
+${
+!isActive
+
+? `
 
 <div
 class="activate-box"
@@ -1305,7 +1352,7 @@ wrapper
 
 
 /* =====================================================
-   TOGGLE
+   TOGGLE ACTIVATION
 ===================================================== */
 
 document
@@ -1340,7 +1387,7 @@ box.classList.toggle(
 
 
 /* =====================================================
-   ACTIVATE
+   ACTIVATE STAND
 ===================================================== */
 
 document
@@ -1507,7 +1554,140 @@ button.textContent =
 
 
 /* =====================================================
-   COPY
+   RESET STAND
+===================================================== */
+
+document
+.querySelectorAll(
+".reset-btn"
+)
+.forEach(
+function(button){
+
+button.addEventListener(
+"click",
+async function(){
+
+const code =
+button.dataset.stand;
+
+
+const confirmed =
+confirm(
+"⚠️ Réinitialiser le Stand " +
+code +
+" ?\n\n" +
+"Le Stand redeviendra DISPONIBLE.\n" +
+"Le client ne sera PAS supprimé."
+);
+
+
+if(!confirmed){
+
+return;
+
+}
+
+
+button.disabled =
+true;
+
+button.textContent =
+"Réinitialisation...";
+
+
+try{
+
+const response =
+await fetch(
+"/api/stands/reset",
+{
+method:"POST",
+credentials:
+"same-origin",
+headers:{
+"Content-Type":
+"application/json"
+},
+body:
+JSON.stringify({
+
+stand_code:
+code
+
+})
+}
+);
+
+
+if(
+response.status === 401
+){
+
+showLogin();
+
+return;
+
+}
+
+
+const result =
+await response.json();
+
+
+if(
+!response.ok ||
+!result.success
+){
+
+throw new Error(
+result.error ||
+"Réinitialisation impossible."
+);
+
+}
+
+
+showMessage(
+globalMessage,
+"✅ " +
+code +
+" réinitialisé avec succès.",
+"success"
+);
+
+
+await loadStands();
+
+
+}catch(error){
+
+showMessage(
+globalMessage,
+"❌ " +
+error.message,
+"error"
+);
+
+}finally{
+
+button.disabled =
+false;
+
+button.textContent =
+"🔄 Réinitialiser";
+
+}
+
+}
+);
+
+}
+);
+
+
+/* =====================================================
+   COPY LINK
 ===================================================== */
 
 document
