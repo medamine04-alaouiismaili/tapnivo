@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>TAPNIVO | Ajouter un client</title>
+  <title>TAPNIVO | Admin Dashboard</title>
 
   <style>
     * {
@@ -20,13 +20,13 @@
     }
 
     .topbar {
-      height: 70px;
+      min-height: 70px;
       background: white;
       border-bottom: 1px solid #e5e7eb;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 5%;
+      padding: 15px 5%;
     }
 
     .logo {
@@ -39,13 +39,29 @@
       color: #4f46e5;
     }
 
+    .admin-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .admin {
       color: #6b7280;
       font-size: 14px;
     }
 
+    .logout {
+      border: none;
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 9px 13px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
     .container {
-      max-width: 950px;
+      max-width: 1100px;
       margin: auto;
       padding: 35px 20px;
     }
@@ -67,7 +83,7 @@
       background: white;
       border: 1px solid #e5e7eb;
       border-radius: 18px;
-      padding: 28px;
+      padding: 25px;
       margin-bottom: 20px;
     }
 
@@ -105,7 +121,8 @@
     }
 
     input,
-    textarea {
+    textarea,
+    select {
       width: 100%;
       padding: 13px;
       border: 1px solid #d1d5db;
@@ -117,7 +134,8 @@
     }
 
     input:focus,
-    textarea:focus {
+    textarea:focus,
+    select:focus {
       border-color: #4f46e5;
     }
 
@@ -126,23 +144,28 @@
       resize: vertical;
     }
 
-    .photo-box {
-      border: 2px dashed #d1d5db;
-      border-radius: 14px;
-      padding: 25px;
-      text-align: center;
-      color: #6b7280;
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
     }
 
-    .photo-box input {
-      margin-top: 12px;
-      border: none;
-      padding: 0;
+    .primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #374151;
     }
 
     .message {
       display: none;
-      padding: 15px;
+      padding: 14px;
       border-radius: 10px;
       margin-bottom: 20px;
       line-height: 1.5;
@@ -160,43 +183,150 @@
       color: #991b1b;
     }
 
-    .profile-link {
-      display: inline-block;
-      margin-top: 10px;
-      color: #4f46e5;
-      font-weight: bold;
-      text-decoration: none;
-    }
+    /* LOGIN */
 
-    .actions {
+    #loginScreen {
+      min-height: 100vh;
       display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 25px;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 14px 22px;
-      font-weight: bold;
-      cursor: pointer;
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.07);
+    }
+
+    .login-logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .login-logo span {
+      color: #4f46e5;
+    }
+
+    .login-card h1 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .login-description {
+      text-align: center;
+      color: #6b7280;
       font-size: 14px;
+      margin-bottom: 25px;
     }
 
-    .cancel {
-      background: #e5e7eb;
-      color: #374151;
+    .login-card .field {
+      margin-bottom: 15px;
     }
 
-    .save {
-      background: #4f46e5;
-      color: white;
+    .login-card button {
+      width: 100%;
+      margin-top: 5px;
     }
 
-    .save:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    /* STANDS */
+
+    .stands-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .stand {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 18px;
+      background: #fafafa;
+    }
+
+    .stand-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stand-code {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .available {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .stand-info {
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .stand-actions {
+      margin-top: 14px;
+    }
+
+    .activate-box {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #e5e7eb;
+      display: none;
+    }
+
+    .activate-box.show {
+      display: block;
+    }
+
+    .activate-box .field {
+      margin-bottom: 10px;
+    }
+
+    .qr-link {
+      display: block;
+      word-break: break-all;
+      margin-top: 8px;
+      color: #4f46e5;
+      font-size: 12px;
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .empty {
+      padding: 25px;
+      text-align: center;
+      color: #6b7280;
+      background: #f9fafb;
+      border-radius: 12px;
     }
 
     footer {
@@ -206,7 +336,12 @@
       font-size: 12px;
     }
 
+    #dashboard {
+      display: none;
+    }
+
     @media (max-width: 700px) {
+
       .grid {
         grid-template-columns: 1fr;
       }
@@ -215,16 +350,24 @@
         grid-column: auto;
       }
 
+      .stands-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        padding: 14px 20px;
+      }
+
+      .admin-area {
+        gap: 6px;
+      }
+
+      .admin {
+        display: none;
+      }
+
       .card {
         padding: 20px;
-      }
-
-      .actions {
-        flex-direction: column;
-      }
-
-      button {
-        width: 100%;
       }
     }
   </style>
@@ -232,14 +375,86 @@
 
 <body>
 
+<!-- =====================================================
+     LOGIN
+===================================================== -->
+
+<div id="loginScreen">
+
+  <div class="login-card">
+
+    <div class="login-logo">
+      TAP<span>NIVO</span>
+    </div>
+
+    <h1>
+      Administration
+    </h1>
+
+    <p class="login-description">
+      Connectez-vous à votre espace administrateur.
+    </p>
+
+    <div id="loginMessage" class="message"></div>
+
+    <form id="loginForm">
+
+      <div class="field">
+
+        <label>
+          Mot de passe administrateur
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          placeholder="Votre mot de passe"
+          autocomplete="current-password"
+          required
+        >
+
+      </div>
+
+      <button
+        type="submit"
+        class="primary"
+        id="loginButton"
+      >
+        Se connecter
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
+
+<div id="dashboard">
+
   <header class="topbar">
 
     <div class="logo">
       TAP<span>NIVO</span>
     </div>
 
-    <div class="admin">
-      Admin
+    <div class="admin-area">
+
+      <div class="admin">
+        Administrateur
+      </div>
+
+      <button
+        class="logout"
+        id="logoutButton"
+      >
+        Déconnexion
+      </button>
+
     </div>
 
   </header>
@@ -250,33 +465,60 @@
     <div class="header">
 
       <h1>
-        Ajouter un client
+        Dashboard TAPNIVO
       </h1>
 
       <p>
-        Créez le profil digital TAPNIVO de votre client.
+        Gérez vos clients et vos Stands NFC / QR.
       </p>
 
     </div>
 
 
-    <div id="message" class="message"></div>
+    <div id="globalMessage" class="message"></div>
 
 
-    <form id="clientForm">
+    <!-- =================================================
+         STANDS
+    ================================================= -->
+
+    <div class="card">
+
+      <h2>
+        📦 Gestion des Stands
+      </h2>
+
+      <p class="description">
+        Activez vos Stands NFC / QR pour vos clients.
+      </p>
+
+      <div id="standsContainer">
+
+        <div class="empty">
+          Chargement des Stands...
+        </div>
+
+      </div>
+
+    </div>
 
 
-      <!-- INFORMATIONS -->
+    <!-- =================================================
+         CREATE CLIENT
+    ================================================= -->
 
-      <div class="card">
+    <div class="card">
 
-        <h2>
-          Informations professionnelles
-        </h2>
+      <h2>
+        👤 Ajouter un client
+      </h2>
 
-        <p class="description">
-          Informations principales du client.
-        </p>
+      <p class="description">
+        Créez le profil digital TAPNIVO de votre client.
+      </p>
+
+
+      <form id="clientForm">
 
 
         <div class="grid">
@@ -290,7 +532,7 @@
             <input
               type="text"
               name="name"
-              placeholder="Ex : Yassine Immobilier"
+              placeholder="Ex : Gardenia"
               required
             >
 
@@ -306,7 +548,7 @@
             <input
               type="text"
               name="profession"
-              placeholder="Ex : Agent Immobilier"
+              placeholder="Ex : Restaurant"
             >
 
           </div>
@@ -325,50 +567,6 @@
 
           </div>
 
-
-          <div class="field full">
-
-            <label>
-              Photo de profil
-            </label>
-
-            <div class="photo-box">
-
-              📷
-
-              <div>
-                Choisir une photo
-              </div>
-
-              <input
-                type="file"
-                name="photo"
-                accept="image/*"
-              >
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- CONTACT -->
-
-      <div class="card">
-
-        <h2>
-          Contact
-        </h2>
-
-        <p class="description">
-          Coordonnées professionnelles.
-        </p>
-
-
-        <div class="grid">
 
           <div class="field">
 
@@ -414,25 +612,6 @@
 
           </div>
 
-        </div>
-
-      </div>
-
-
-      <!-- RESEAUX SOCIAUX -->
-
-      <div class="card">
-
-        <h2>
-          Réseaux sociaux
-        </h2>
-
-        <p class="description">
-          Liens vers les réseaux sociaux du client.
-        </p>
-
-
-        <div class="grid">
 
           <div class="field">
 
@@ -493,25 +672,6 @@
 
           </div>
 
-        </div>
-
-      </div>
-
-
-      <!-- LOCALISATION -->
-
-      <div class="card">
-
-        <h2>
-          Localisation
-        </h2>
-
-        <p class="description">
-          Adresse et position du client.
-        </p>
-
-
-        <div class="grid">
 
           <div class="field full">
 
@@ -522,7 +682,7 @@
             <input
               type="text"
               name="address"
-              placeholder="Ex : Avenue Hassan II, Fès"
+              placeholder="Ex : Rabat"
             >
 
           </div>
@@ -542,25 +702,6 @@
 
           </div>
 
-        </div>
-
-      </div>
-
-
-      <!-- BUSINESS -->
-
-      <div class="card">
-
-        <h2>
-          Business
-        </h2>
-
-        <p class="description">
-          Informations supplémentaires.
-        </p>
-
-
-        <div class="grid">
 
           <div class="field full">
 
@@ -593,30 +734,22 @@
 
         </div>
 
-      </div>
 
+        <div style="margin-top:20px;">
 
-      <div class="actions">
+          <button
+            type="submit"
+            class="primary"
+            id="clientButton"
+          >
+            Créer le profil
+          </button>
 
-        <button
-          type="reset"
-          class="cancel"
-        >
-          Effacer
-        </button>
+        </div>
 
+      </form>
 
-        <button
-          type="submit"
-          class="save"
-        >
-          Créer le profil
-        </button>
-
-      </div>
-
-
-    </form>
+    </div>
 
   </main>
 
@@ -625,181 +758,1006 @@
     TAPNIVO • Digital Business Cards
   </footer>
 
-
-  <script>
-
-    const form =
-      document.getElementById("clientForm");
-
-    const message =
-      document.getElementById("message");
+</div>
 
 
-    form.addEventListener(
-      "submit",
-      async function(event) {
+<script>
 
-        event.preventDefault();
+  // =====================================================
+  // ELEMENTS
+  // =====================================================
+
+  const loginScreen =
+    document.getElementById("loginScreen");
+
+  const dashboard =
+    document.getElementById("dashboard");
+
+  const loginForm =
+    document.getElementById("loginForm");
+
+  const loginMessage =
+    document.getElementById("loginMessage");
+
+  const loginButton =
+    document.getElementById("loginButton");
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+  const standsContainer =
+    document.getElementById("standsContainer");
+
+  const clientForm =
+    document.getElementById("clientForm");
+
+  const clientButton =
+    document.getElementById("clientButton");
+
+  const globalMessage =
+    document.getElementById("globalMessage");
 
 
-        const button =
-          form.querySelector(
-            "button[type='submit']"
+  // =====================================================
+  // MESSAGE
+  // =====================================================
+
+  function showMessage(
+    element,
+    text,
+    type
+  ) {
+
+    element.className =
+      "message " + type;
+
+    element.textContent =
+      text;
+  }
+
+
+  function clearMessage(element) {
+
+    element.className =
+      "message";
+
+    element.textContent =
+      "";
+  }
+
+
+  // =====================================================
+  // CHECK ADMIN SESSION
+  // =====================================================
+
+  async function checkAdmin() {
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/admin/me",
+          {
+            method: "GET",
+            credentials: "same-origin"
+          }
+        );
+
+      const result =
+        await response.json();
+
+      if (
+        result.success &&
+        result.authenticated
+      ) {
+
+        showDashboard();
+
+      } else {
+
+        showLogin();
+
+      }
+
+    } catch {
+
+      showLogin();
+
+    }
+  }
+
+
+  // =====================================================
+  // SHOW LOGIN
+  // =====================================================
+
+  function showLogin() {
+
+    loginScreen.style.display =
+      "flex";
+
+    dashboard.style.display =
+      "none";
+  }
+
+
+  // =====================================================
+  // SHOW DASHBOARD
+  // =====================================================
+
+  function showDashboard() {
+
+    loginScreen.style.display =
+      "none";
+
+    dashboard.style.display =
+      "block";
+
+    loadStands();
+  }
+
+
+  // =====================================================
+  // LOGIN
+  // =====================================================
+
+  loginForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      clearMessage(loginMessage);
+
+      loginButton.disabled =
+        true;
+
+      loginButton.textContent =
+        "Connexion...";
+
+
+      const password =
+        document.getElementById(
+          "password"
+        ).value;
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/admin/login",
+            {
+              method: "POST",
+
+              credentials:
+                "same-origin",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  password
+                })
+            }
           );
 
 
-        button.disabled = true;
-
-        button.textContent =
-          "Création...";
+        const result =
+          await response.json();
 
 
-        message.className =
-          "message";
+        if (
+          !response.ok ||
+          !result.success
+        ) {
 
-        message.textContent = "";
-
-
-        const data = {
-
-          name:
-            form.elements["name"].value.trim(),
-
-          profession:
-            form.elements["profession"].value.trim(),
-
-          bio:
-            form.elements["bio"].value.trim(),
-
-          phone:
-            form.elements["phone"].value.trim(),
-
-          whatsapp:
-            form.elements["whatsapp"].value.trim(),
-
-          email:
-            form.elements["email"].value.trim(),
-
-          instagram:
-            form.elements["instagram"].value.trim(),
-
-          facebook:
-            form.elements["facebook"].value.trim(),
-
-          tiktok:
-            form.elements["tiktok"].value.trim(),
-
-          linkedin:
-            form.elements["linkedin"].value.trim(),
-
-          address:
-            form.elements["address"].value.trim(),
-
-          maps:
-            form.elements["maps"].value.trim(),
-
-          website:
-            form.elements["website"].value.trim(),
-
-          reviews:
-            form.elements["reviews"].value.trim()
-
-        };
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/clients",
-              {
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json"
-                },
-
-                body:
-                  JSON.stringify(data)
-              }
-            );
-
-
-          const result =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !result.success
-          ) {
-
-            throw new Error(
-              result.error ||
-              "Une erreur est survenue."
-            );
-
-          }
-
-
-          message.className =
-            "message success";
-
-
-          message.innerHTML =
-            "✅ Client créé avec succès !";
-
-
-          const link =
-            document.createElement("a");
-
-
-          link.className =
-            "profile-link";
-
-
-          link.href =
-            "/client/" +
-            result.slug;
-
-
-          link.target =
-            "_blank";
-
-
-          link.textContent =
-            "Voir le profil →";
-
-
-          message.appendChild(link);
-
-
-          form.reset();
-
-
-        } catch (error) {
-
-          message.className =
-            "message error";
-
-
-          message.textContent =
-            "❌ Erreur : " +
-            error.message;
-
+          throw new Error(
+            result.error ||
+            "Connexion impossible."
+          );
         }
 
 
-        button.disabled = false;
+        document.getElementById(
+          "password"
+        ).value = "";
 
-        button.textContent =
-          "Créer le profil";
+
+        showDashboard();
+
+
+      } catch (error) {
+
+        showMessage(
+          loginMessage,
+          "❌ " +
+            error.message,
+          "error"
+        );
+
+      }
+
+
+      loginButton.disabled =
+        false;
+
+      loginButton.textContent =
+        "Se connecter";
+
+    }
+  );
+
+
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
+  logoutButton.addEventListener(
+    "click",
+    async function() {
+
+      try {
+
+        await fetch(
+          "/api/admin/logout",
+          {
+            method: "POST",
+            credentials:
+              "same-origin"
+          }
+        );
+
+      } finally {
+
+        showLogin();
+
+      }
+
+    }
+  );
+
+
+  // =====================================================
+  // LOAD STANDS
+  // =====================================================
+
+  async function loadStands() {
+
+    standsContainer.innerHTML =
+      `
+      <div class="empty">
+        Chargement...
+      </div>
+      `;
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/stands",
+          {
+            method: "GET",
+            credentials:
+              "same-origin"
+          }
+        );
+
+
+      if (
+        response.status === 401
+      ) {
+
+        showLogin();
+
+        return;
+      }
+
+
+      const result =
+        await response.json();
+
+
+      if (
+        !response.ok ||
+        !result.success
+      ) {
+
+        throw new Error(
+          result.error ||
+          "Impossible de charger les Stands."
+        );
+      }
+
+
+      renderStands(
+        result.stands || []
+      );
+
+
+    } catch (error) {
+
+      standsContainer.innerHTML =
+        `
+        <div class="message error">
+          ❌ ${escapeHtml(
+            error.message
+          )}
+        </div>
+        `;
+
+    }
+  }
+
+
+  // =====================================================
+  // RENDER STANDS
+  // =====================================================
+
+  function renderStands(
+    stands
+  ) {
+
+    if (!stands.length) {
+
+      standsContainer.innerHTML =
+        `
+        <div class="empty">
+          Aucun Stand trouvé dans la base de données.
+        </div>
+        `;
+
+      return;
+    }
+
+
+    const wrapper =
+      document.createElement(
+        "div"
+      );
+
+    wrapper.className =
+      "stands-grid";
+
+
+    stands.forEach(
+      function(stand) {
+
+        const box =
+          document.createElement(
+            "div"
+          );
+
+        box.className =
+          "stand";
+
+
+        const isActive =
+          stand.status ===
+          "active";
+
+
+        box.innerHTML =
+          `
+          <div class="stand-top">
+
+            <div class="stand-code">
+              ${escapeHtml(
+                stand.stand_code
+              )}
+            </div>
+
+            <span class="badge ${
+              isActive
+                ? "active"
+                : "available"
+            }">
+              ${
+                isActive
+                  ? "ACTIF"
+                  : "DISPONIBLE"
+              }
+            </span>
+
+          </div>
+
+          <div class="stand-info">
+
+            ${
+              isActive
+                ? `
+                  Client :
+                  <strong>
+                    ${escapeHtml(
+                      stand.client_name ||
+                      "Client"
+                    )}
+                  </strong>
+                  <br>
+
+                  Destination :
+                  <br>
+
+                  <span class="qr-link">
+                    ${escapeHtml(
+                      stand.destination_url ||
+                      ""
+                    )}
+                  </span>
+
+                  <button
+                    class="copy-btn"
+                    data-copy="${
+                      escapeHtml(
+                        stand.destination_url ||
+                        ""
+                      )
+                    }"
+                  >
+                    Copier le lien
+                  </button>
+                `
+                : `
+                  Ce Stand est disponible
+                  et prêt à être attribué.
+                `
+            }
+
+          </div>
+
+          ${
+            !isActive
+              ? `
+                <div class="stand-actions">
+
+                  <button
+                    class="primary activate-toggle"
+                    data-stand="${
+                      escapeHtml(
+                        stand.stand_code
+                      )
+                    }"
+                  >
+                    Activer ce Stand
+                  </button>
+
+                </div>
+
+                <div
+                  class="activate-box"
+                  id="activate-${
+                    escapeHtml(
+                      stand.stand_code
+                    )
+                  }"
+                >
+
+                  <div class="field">
+
+                    <label>
+                      Client ID
+                    </label>
+
+                    <input
+                      type="number"
+                      class="client-id"
+                      placeholder="Ex : 1"
+                    >
+
+                  </div>
+
+
+                  <div class="field">
+
+                    <label>
+                      Destination URL
+                    </label>
+
+                    <input
+                      type="url"
+                      class="destination-url"
+                      placeholder="https://..."
+                    >
+
+                  </div>
+
+
+                  <button
+                    class="primary activate-submit"
+                    data-stand="${
+                      escapeHtml(
+                        stand.stand_code
+                      )
+                    }"
+                  >
+                    Activer maintenant
+                  </button>
+
+                </div>
+              `
+              : ""
+          }
+          `;
+
+
+        wrapper.appendChild(
+          box
+        );
 
       }
     );
 
-  </script>
+
+    standsContainer.innerHTML =
+      "";
+
+    standsContainer.appendChild(
+      wrapper
+    );
+
+
+    // Toggle activation box
+
+    document
+      .querySelectorAll(
+        ".activate-toggle"
+      )
+      .forEach(
+        function(button) {
+
+          button.addEventListener(
+            "click",
+            function() {
+
+              const code =
+                button.dataset.stand;
+
+              const box =
+                document.getElementById(
+                  "activate-" +
+                  code
+                );
+
+              box.classList.toggle(
+                "show"
+              );
+
+            }
+          );
+
+        }
+      );
+
+
+    // Activate
+
+    document
+      .querySelectorAll(
+        ".activate-submit"
+      )
+      .forEach(
+        function(button) {
+
+          button.addEventListener(
+            "click",
+            async function() {
+
+              const code =
+                button.dataset.stand;
+
+              const parent =
+                button.closest(
+                  ".activate-box"
+                );
+
+              const clientIdInput =
+                parent.querySelector(
+                  ".client-id"
+                );
+
+              const destinationInput =
+                parent.querySelector(
+                  ".destination-url"
+                );
+
+
+              const clientId =
+                clientIdInput.value.trim();
+
+              const destinationUrl =
+                destinationInput.value.trim();
+
+
+              if (
+                !destinationUrl
+              ) {
+
+                alert(
+                  "Entrez la destination URL."
+                );
+
+                return;
+              }
+
+
+              button.disabled =
+                true;
+
+              button.textContent =
+                "Activation...";
+
+
+              try {
+
+                const response =
+                  await fetch(
+                    "/api/stands/activate",
+                    {
+                      method: "POST",
+
+                      credentials:
+                        "same-origin",
+
+                      headers: {
+                        "Content-Type":
+                          "application/json"
+                      },
+
+                      body:
+                        JSON.stringify({
+                          stand_code:
+                            code,
+
+                          client_id:
+                            clientId
+                              ? Number(
+                                  clientId
+                                )
+                              : null,
+
+                          destination_url:
+                            destinationUrl
+                        })
+                    }
+                  );
+
+
+                if (
+                  response.status ===
+                  401
+                ) {
+
+                  showLogin();
+
+                  return;
+                }
+
+
+                const result =
+                  await response.json();
+
+
+                if (
+                  !response.ok ||
+                  !result.success
+                ) {
+
+                  throw new Error(
+                    result.error ||
+                    "Activation impossible."
+                  );
+                }
+
+
+                showMessage(
+                  globalMessage,
+                  "✅ " +
+                    code +
+                    " activé avec succès.",
+                  "success"
+                );
+
+
+                await loadStands();
+
+
+              } catch (error) {
+
+                showMessage(
+                  globalMessage,
+                  "❌ " +
+                    error.message,
+                  "error"
+                );
+
+
+              } finally {
+
+                button.disabled =
+                  false;
+
+                button.textContent =
+                  "Activer maintenant";
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+    // Copy links
+
+    document
+      .querySelectorAll(
+        ".copy-btn"
+      )
+      .forEach(
+        function(button) {
+
+          button.addEventListener(
+            "click",
+            async function() {
+
+              const value =
+                button.dataset.copy;
+
+              try {
+
+                await navigator.clipboard
+                  .writeText(value);
+
+                button.textContent =
+                  "Copié ✓";
+
+                setTimeout(
+                  function() {
+
+                    button.textContent =
+                      "Copier le lien";
+
+                  },
+                  1500
+                );
+
+              } catch {
+
+                alert(
+                  "Impossible de copier le lien."
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+  }
+
+
+  // =====================================================
+  // CREATE CLIENT
+  // =====================================================
+
+  clientForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      clientButton.disabled =
+        true;
+
+      clientButton.textContent =
+        "Création...";
+
+
+      clearMessage(
+        globalMessage
+      );
+
+
+      const data = {
+
+        name:
+          clientForm.elements[
+            "name"
+          ].value.trim(),
+
+        profession:
+          clientForm.elements[
+            "profession"
+          ].value.trim(),
+
+        bio:
+          clientForm.elements[
+            "bio"
+          ].value.trim(),
+
+        phone:
+          clientForm.elements[
+            "phone"
+          ].value.trim(),
+
+        whatsapp:
+          clientForm.elements[
+            "whatsapp"
+          ].value.trim(),
+
+        email:
+          clientForm.elements[
+            "email"
+          ].value.trim(),
+
+        instagram:
+          clientForm.elements[
+            "instagram"
+          ].value.trim(),
+
+        facebook:
+          clientForm.elements[
+            "facebook"
+          ].value.trim(),
+
+        tiktok:
+          clientForm.elements[
+            "tiktok"
+          ].value.trim(),
+
+        linkedin:
+          clientForm.elements[
+            "linkedin"
+          ].value.trim(),
+
+        address:
+          clientForm.elements[
+            "address"
+          ].value.trim(),
+
+        maps:
+          clientForm.elements[
+            "maps"
+          ].value.trim(),
+
+        website:
+          clientForm.elements[
+            "website"
+          ].value.trim(),
+
+        reviews:
+          clientForm.elements[
+            "reviews"
+          ].value.trim()
+
+      };
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/clients",
+            {
+              method: "POST",
+
+              credentials:
+                "same-origin",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(data)
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+
+          throw new Error(
+            result.error ||
+            "Une erreur est survenue."
+          );
+        }
+
+
+        showMessage(
+          globalMessage,
+          "✅ Client créé avec succès ! Profil : /client/" +
+            result.slug,
+          "success"
+        );
+
+
+        clientForm.reset();
+
+
+      } catch (error) {
+
+        showMessage(
+          globalMessage,
+          "❌ " +
+            error.message,
+          "error"
+        );
+
+      }
+
+
+      clientButton.disabled =
+        false;
+
+      clientButton.textContent =
+        "Créer le profil";
+
+    }
+  );
+
+
+  // =====================================================
+  // ESCAPE HTML
+  // =====================================================
+
+  function escapeHtml(
+    value
+  ) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return "";
+    }
+
+    return String(value)
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+  }
+
+
+  // =====================================================
+  // START
+  // =====================================================
+
+  checkAdmin();
+
+</script>
 
 </body>
 </html>
