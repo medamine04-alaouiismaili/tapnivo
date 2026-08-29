@@ -154,6 +154,135 @@ export default {
 
 
     // =========================
+    // DYNAMIC QR / NFC STAND
+    // =========================
+    if (url.pathname.startsWith("/r/")) {
+
+      const standCode = url.pathname
+        .replace("/r/", "")
+        .replace(/\/$/, "");
+
+      if (!standCode) {
+        return new Response(
+          "Stand introuvable",
+          { status: 404 }
+        );
+      }
+
+      try {
+
+        const stand = await env.DB
+          .prepare(`
+            SELECT
+              stand_code,
+              destination_url,
+              status
+            FROM stands
+            WHERE stand_code = ?
+            LIMIT 1
+          `)
+          .bind(standCode)
+          .first();
+
+        // Stand غير موجود
+        if (!stand) {
+          return new Response(
+            "Stand introuvable",
+            { status: 404 }
+          );
+        }
+
+        // Stand موجود ولكن مازال ما تفعلش
+        if (
+          stand.status !== "active" ||
+          !stand.destination_url
+        ) {
+          return new Response(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAPNIVO</title>
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+  color: #111827;
+  text-align: center;
+}
+.box {
+  background: white;
+  padding: 35px 25px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+  max-width: 400px;
+  margin: 20px;
+}
+.logo {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+.logo span {
+  color: #4f46e5;
+}
+p {
+  color: #6b7280;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">
+    TAP<span>NIVO</span>
+  </div>
+
+  <h2>Stand non activé</h2>
+
+  <p>
+    Ce QR code est prêt à être activé.
+  </p>
+</div>
+</body>
+</html>
+            `,
+            {
+              status: 200,
+              headers: {
+                "Content-Type":
+                  "text/html; charset=UTF-8"
+              }
+            }
+          );
+        }
+
+        // Stand مفعّل → Redirect
+        return Response.redirect(
+          stand.destination_url,
+          302
+        );
+
+      } catch (error) {
+
+        return new Response(
+          "Erreur serveur : " + error.message,
+          {
+            status: 500
+          }
+        );
+      }
+    }
+
+
+    // =========================
     // CLIENT PROFILE
     // =========================
     if (url.pathname.startsWith("/client/")) {
