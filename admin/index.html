@@ -7,12 +7,28 @@
 <title>TAPNIVO | Admin</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
 body{
   font-family:Arial,Helvetica,sans-serif;
   background:#f5f7fb;
   color:#111827;
+}
+
+button,
+input,
+select,
+textarea{
+  font-family:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
 }
 
 .topbar{
@@ -31,7 +47,9 @@ body{
   letter-spacing:1px;
 }
 
-.logo span{color:#4f46e5}
+.logo span{
+  color:#4f46e5;
+}
 
 .admin-area{
   display:flex;
@@ -45,17 +63,15 @@ body{
 }
 
 .logout{
-  border:0;
   background:#fee2e2;
   color:#991b1b;
   padding:9px 13px;
   border-radius:9px;
-  cursor:pointer;
   font-weight:bold;
 }
 
 .container{
-  max-width:1100px;
+  max-width:1200px;
   margin:auto;
   padding:35px 20px;
 }
@@ -92,81 +108,6 @@ body{
   margin-bottom:22px;
 }
 
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:17px;
-}
-
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-
-.full{
-  grid-column:1/-1;
-}
-
-label{
-  font-size:13px;
-  font-weight:bold;
-  color:#374151;
-}
-
-input,
-textarea,
-select{
-  width:100%;
-  padding:13px;
-  border:1px solid #d1d5db;
-  border-radius:10px;
-  font-family:inherit;
-  font-size:14px;
-  outline:none;
-  background:white;
-}
-
-input:focus,
-textarea:focus,
-select:focus{
-  border-color:#4f46e5;
-}
-
-textarea{
-  min-height:110px;
-  resize:vertical;
-}
-
-button{
-  border:0;
-  border-radius:10px;
-  padding:13px 18px;
-  font-weight:bold;
-  cursor:pointer;
-  font-size:14px;
-}
-
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
-
-.primary{
-  background:#4f46e5;
-  color:white;
-}
-
-.secondary{
-  background:#e5e7eb;
-  color:#374151;
-}
-
-.danger{
-  background:#fee2e2;
-  color:#991b1b;
-}
-
 .message{
   display:none;
   padding:14px;
@@ -187,9 +128,74 @@ button:disabled{
   color:#991b1b;
 }
 
-/* =====================================================
-   LOGIN
-===================================================== */
+.primary{
+  background:#4f46e5;
+  color:white;
+  padding:12px 17px;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.secondary{
+  background:#e5e7eb;
+  color:#374151;
+  padding:12px 17px;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.danger{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:10px 14px;
+  border-radius:9px;
+  font-weight:bold;
+}
+
+.small-btn{
+  padding:9px 12px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-bottom:15px;
+}
+
+label{
+  font-size:13px;
+  font-weight:bold;
+  color:#374151;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  padding:13px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font-size:14px;
+  outline:none;
+  background:white;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  border-color:#4f46e5;
+}
+
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+/* LOGIN */
 
 #loginScreen{
   min-height:100vh;
@@ -233,18 +239,220 @@ button:disabled{
   margin-bottom:25px;
 }
 
-.login-card .field{
-  margin-bottom:15px;
-}
-
 .login-card button{
   width:100%;
   margin-top:5px;
 }
 
-/* =====================================================
-   STANDS
-===================================================== */
+/* DASHBOARD */
+
+#dashboard{
+  display:none;
+}
+
+/* STATS */
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.stat{
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:15px;
+  padding:20px;
+}
+
+.stat-label{
+  color:#6b7280;
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.stat-value{
+  font-size:27px;
+  font-weight:800;
+}
+
+/* SERVICES */
+
+.services-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.services-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.service{
+  border:1px solid #e5e7eb;
+  border-radius:15px;
+  padding:18px;
+  background:#fafafa;
+}
+
+.service-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.service-title{
+  font-size:17px;
+  font-weight:800;
+}
+
+.service-client{
+  color:#6b7280;
+  font-size:13px;
+  margin-top:4px;
+}
+
+.service-type{
+  color:#4f46e5;
+  font-size:12px;
+  font-weight:bold;
+  margin-top:7px;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:10px;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+.badge-active{
+  background:#d1fae5;
+  color:#065f46;
+}
+
+.badge-draft{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.badge-inactive{
+  background:#e5e7eb;
+  color:#374151;
+}
+
+.service-info{
+  color:#6b7280;
+  font-size:12px;
+  line-height:1.7;
+  margin-bottom:12px;
+}
+
+.dynamic-link{
+  display:block;
+  background:#eef2ff;
+  color:#3730a3;
+  padding:9px;
+  border-radius:8px;
+  font-size:11px;
+  word-break:break-all;
+  margin-top:8px;
+}
+
+.service-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:14px;
+}
+
+.copy{
+  background:#eef2ff;
+  color:#3730a3;
+}
+
+.edit{
+  background:#e0e7ff;
+  color:#3730a3;
+}
+
+.activate{
+  background:#d1fae5;
+  color:#065f46;
+}
+
+.disable{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.stats{
+  background:#f3f4f6;
+  color:#374151;
+}
+
+/* MODAL */
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(17,24,39,.55);
+  z-index:1000;
+  padding:20px;
+  overflow:auto;
+}
+
+.modal.show{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.modal-card{
+  width:100%;
+  max-width:600px;
+  background:white;
+  border-radius:18px;
+  padding:25px;
+}
+
+.modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+
+.modal-header h2{
+  font-size:20px;
+}
+
+.close{
+  background:#f3f4f6;
+  width:35px;
+  height:35px;
+  border-radius:9px;
+  font-size:18px;
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:20px;
+}
+
+/* STANDS */
 
 .stands-grid{
   display:grid;
@@ -272,20 +480,12 @@ button:disabled{
   font-weight:800;
 }
 
-.badge{
-  display:inline-block;
-  padding:5px 9px;
-  border-radius:20px;
-  font-size:11px;
-  font-weight:bold;
-}
-
 .available{
   background:#fef3c7;
   color:#92400e;
 }
 
-.active{
+.active-stand{
   background:#d1fae5;
   color:#065f46;
 }
@@ -294,63 +494,6 @@ button:disabled{
   color:#6b7280;
   font-size:13px;
   line-height:1.6;
-}
-
-/* =====================================================
-   SCAN STATISTICS
-===================================================== */
-
-.scan-stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-top:14px;
-}
-
-.scan-stat{
-  background:white;
-  border:1px solid #e5e7eb;
-  border-radius:12px;
-  padding:12px;
-}
-
-.scan-label{
-  font-size:11px;
-  color:#9ca3af;
-  margin-bottom:6px;
-}
-
-.scan-value{
-  font-size:18px;
-  font-weight:800;
-  color:#111827;
-}
-
-.last-scan{
-  margin-top:10px;
-  padding:11px;
-  background:#eef2ff;
-  border-radius:10px;
-}
-
-.last-scan-label{
-  font-size:11px;
-  color:#6b7280;
-  margin-bottom:4px;
-}
-
-.last-scan-value{
-  font-size:13px;
-  font-weight:bold;
-  color:#3730a3;
-}
-
-.qr-link{
-  display:block;
-  word-break:break-all;
-  margin-top:8px;
-  color:#4f46e5;
-  font-size:12px;
 }
 
 .stand-actions{
@@ -371,19 +514,19 @@ button:disabled{
   display:block;
 }
 
-.activate-box .field{
-  margin-bottom:10px;
+/* CLIENT */
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:17px;
 }
 
-.copy-btn{
-  background:#eef2ff;
-  color:#3730a3;
+.full{
+  grid-column:1/-1;
 }
 
-.reset-btn{
-  background:#fee2e2;
-  color:#991b1b;
-}
+/* EMPTY */
 
 .empty{
   padding:25px;
@@ -393,6 +536,8 @@ button:disabled{
   border-radius:12px;
 }
 
+/* FOOTER */
+
 footer{
   text-align:center;
   padding:30px;
@@ -400,13 +545,19 @@ footer{
   font-size:12px;
 }
 
-#dashboard{
-  display:none;
-}
+/* MOBILE */
 
-/* =====================================================
-   MOBILE
-===================================================== */
+@media(max-width:800px){
+
+  .stats-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .services-grid,
+  .stands-grid{
+    grid-template-columns:1fr;
+  }
+}
 
 @media(max-width:700px){
 
@@ -416,10 +567,6 @@ footer{
 
   .full{
     grid-column:auto;
-  }
-
-  .stands-grid{
-    grid-template-columns:1fr;
   }
 
   .topbar{
@@ -434,18 +581,24 @@ footer{
     padding:20px;
   }
 
-  .stand-actions{
+  .services-toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .service-actions{
     flex-direction:column;
   }
 
-  .stand-actions button{
+  .service-actions button{
     width:100%;
   }
 
-  .scan-stats{
-    grid-template-columns:1fr;
+  .stats-grid{
+    grid-template-columns:1fr 1fr;
   }
 }
+
 </style>
 </head>
 
@@ -463,18 +616,13 @@ footer{
       TAP<span>NIVO</span>
     </div>
 
-    <h1>
-      Administration
-    </h1>
+    <h1>Administration</h1>
 
     <p class="login-description">
       Connectez-vous à votre espace administrateur.
     </p>
 
-    <div
-      id="loginMessage"
-      class="message"
-    ></div>
+    <div id="loginMessage" class="message"></div>
 
     <form id="loginForm">
 
@@ -548,16 +696,126 @@ footer{
   </h1>
 
   <p>
-    Gérez vos clients et vos Stands NFC / QR.
+    Gérez vos Clients, Services et Stands NFC / QR.
   </p>
 
 </div>
 
 
-<div
-  id="globalMessage"
-  class="message"
-></div>
+<div id="globalMessage" class="message"></div>
+
+
+<!-- =====================================================
+     GLOBAL STATS
+===================================================== -->
+
+<div class="stats-grid">
+
+  <div class="stat">
+
+    <div class="stat-label">
+      Clients
+    </div>
+
+    <div
+      class="stat-value"
+      id="totalClients"
+    >
+      0
+    </div>
+
+  </div>
+
+
+  <div class="stat">
+
+    <div class="stat-label">
+      Services
+    </div>
+
+    <div
+      class="stat-value"
+      id="totalServices"
+    >
+      0
+    </div>
+
+  </div>
+
+
+  <div class="stat">
+
+    <div class="stat-label">
+      Services actifs
+    </div>
+
+    <div
+      class="stat-value"
+      id="activeServices"
+    >
+      0
+    </div>
+
+  </div>
+
+
+  <div class="stat">
+
+    <div class="stat-label">
+      Stands
+    </div>
+
+    <div
+      class="stat-value"
+      id="totalStands"
+    >
+      0
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     SERVICES
+===================================================== -->
+
+<div class="card">
+
+  <div class="services-toolbar">
+
+    <div>
+
+      <h2>
+        ⚙️ Services TAPNIVO
+      </h2>
+
+      <p class="description">
+        Gérez les services de vos clients.
+      </p>
+
+    </div>
+
+    <button
+      class="primary"
+      id="addServiceButton"
+    >
+      + Ajouter un service
+    </button>
+
+  </div>
+
+
+  <div id="servicesContainer">
+
+    <div class="empty">
+      Chargement des services...
+    </div>
+
+  </div>
+
+</div>
 
 
 <!-- =====================================================
@@ -571,7 +829,7 @@ footer{
   </h2>
 
   <p class="description">
-    Activez, gérez et consultez les statistiques de vos Stands NFC / QR.
+    Activez, gérez et réinitialisez vos Stands NFC / QR.
   </p>
 
   <div id="standsContainer">
@@ -592,28 +850,30 @@ footer{
 <div class="card">
 
 <h2>
-  👤 Ajouter un client
+👤 Ajouter un client
 </h2>
 
 <p class="description">
-  Créez le profil digital TAPNIVO de votre client.
+Créez le profil digital TAPNIVO de votre client.
 </p>
+
 
 <form id="clientForm">
 
 <div class="grid">
 
+
 <div class="field">
 
 <label>
-  Nom complet / Nom commercial *
+Nom complet / Nom commercial *
 </label>
 
 <input
-  type="text"
-  name="name"
-  placeholder="Ex : Gardenia"
-  required
+type="text"
+name="name"
+placeholder="Ex : Gardenia"
+required
 >
 
 </div>
@@ -622,13 +882,13 @@ footer{
 <div class="field">
 
 <label>
-  Profession
+Profession
 </label>
 
 <input
-  type="text"
-  name="profession"
-  placeholder="Ex : Restaurant"
+type="text"
+name="profession"
+placeholder="Ex : Restaurant"
 >
 
 </div>
@@ -637,12 +897,12 @@ footer{
 <div class="field full">
 
 <label>
-  Description
+Description
 </label>
 
 <textarea
-  name="bio"
-  placeholder="Présentez l'activité du client..."
+name="bio"
+placeholder="Présentez l'activité du client..."
 ></textarea>
 
 </div>
@@ -651,13 +911,13 @@ footer{
 <div class="field">
 
 <label>
-  Téléphone
+Téléphone
 </label>
 
 <input
-  type="tel"
-  name="phone"
-  placeholder="+212 6 XX XX XX XX"
+type="tel"
+name="phone"
+placeholder="+212 6 XX XX XX XX"
 >
 
 </div>
@@ -666,13 +926,13 @@ footer{
 <div class="field">
 
 <label>
-  WhatsApp
+WhatsApp
 </label>
 
 <input
-  type="tel"
-  name="whatsapp"
-  placeholder="+212 6 XX XX XX XX"
+type="tel"
+name="whatsapp"
+placeholder="+212 6 XX XX XX XX"
 >
 
 </div>
@@ -681,13 +941,13 @@ footer{
 <div class="field full">
 
 <label>
-  Email
+Email
 </label>
 
 <input
-  type="email"
-  name="email"
-  placeholder="contact@example.com"
+type="email"
+name="email"
+placeholder="contact@example.com"
 >
 
 </div>
@@ -696,13 +956,13 @@ footer{
 <div class="field">
 
 <label>
-  Instagram
+Instagram
 </label>
 
 <input
-  type="url"
-  name="instagram"
-  placeholder="https://instagram.com/..."
+type="url"
+name="instagram"
+placeholder="https://instagram.com/..."
 >
 
 </div>
@@ -711,13 +971,13 @@ footer{
 <div class="field">
 
 <label>
-  Facebook
+Facebook
 </label>
 
 <input
-  type="url"
-  name="facebook"
-  placeholder="https://facebook.com/..."
+type="url"
+name="facebook"
+placeholder="https://facebook.com/..."
 >
 
 </div>
@@ -726,13 +986,13 @@ footer{
 <div class="field">
 
 <label>
-  TikTok
+TikTok
 </label>
 
 <input
-  type="url"
-  name="tiktok"
-  placeholder="https://tiktok.com/@..."
+type="url"
+name="tiktok"
+placeholder="https://tiktok.com/@..."
 >
 
 </div>
@@ -741,13 +1001,13 @@ footer{
 <div class="field">
 
 <label>
-  LinkedIn
+LinkedIn
 </label>
 
 <input
-  type="url"
-  name="linkedin"
-  placeholder="https://linkedin.com/in/..."
+type="url"
+name="linkedin"
+placeholder="https://linkedin.com/in/..."
 >
 
 </div>
@@ -756,13 +1016,13 @@ footer{
 <div class="field full">
 
 <label>
-  Adresse
+Adresse
 </label>
 
 <input
-  type="text"
-  name="address"
-  placeholder="Ex : Rabat"
+type="text"
+name="address"
+placeholder="Ex : Laayoune"
 >
 
 </div>
@@ -771,13 +1031,13 @@ footer{
 <div class="field full">
 
 <label>
-  Google Maps
+Google Maps
 </label>
 
 <input
-  type="url"
-  name="maps"
-  placeholder="https://maps.google.com/..."
+type="url"
+name="maps"
+placeholder="https://maps.google.com/..."
 >
 
 </div>
@@ -786,13 +1046,13 @@ footer{
 <div class="field full">
 
 <label>
-  Site web
+Site web
 </label>
 
 <input
-  type="url"
-  name="website"
-  placeholder="https://..."
+type="url"
+name="website"
+placeholder="https://..."
 >
 
 </div>
@@ -801,16 +1061,17 @@ footer{
 <div class="field full">
 
 <label>
-  Google Reviews
+Google Reviews
 </label>
 
 <input
-  type="url"
-  name="reviews"
-  placeholder="https://..."
+type="url"
+name="reviews"
+placeholder="https://..."
 >
 
 </div>
+
 
 </div>
 
@@ -818,11 +1079,11 @@ footer{
 <div style="margin-top:20px">
 
 <button
-  type="submit"
-  class="primary"
-  id="clientButton"
+type="submit"
+class="primary"
+id="clientButton"
 >
-  Créer le profil
+Créer le profil
 </button>
 
 </div>
@@ -835,8 +1096,215 @@ footer{
 
 
 <footer>
-  TAPNIVO • Digital Business Cards
+TAPNIVO • Digital Business Cards & Smart Services
 </footer>
+
+</div>
+
+
+<!-- =====================================================
+     SERVICE MODAL
+===================================================== -->
+
+<div
+  class="modal"
+  id="serviceModal"
+>
+
+<div class="modal-card">
+
+<div class="modal-header">
+
+<h2 id="serviceModalTitle">
+Ajouter un service
+</h2>
+
+<button
+  class="close"
+  id="closeServiceModal"
+>
+×
+</button>
+
+</div>
+
+
+<form id="serviceForm">
+
+
+<div class="field">
+
+<label>
+Client *
+</label>
+
+<select
+  id="serviceClient"
+  required
+>
+
+<option value="">
+-- Sélectionner un client --
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Type de service *
+</label>
+
+<select
+  id="serviceType"
+  required
+>
+
+<option value="">
+-- Sélectionner --
+</option>
+
+<option value="google_review">
+⭐ Google Review
+</option>
+
+<option value="wifi">
+📶 Wi-Fi
+</option>
+
+<option value="menu">
+🍽️ Menu
+</option>
+
+<option value="digital_card">
+💳 Digital Business Card
+</option>
+
+<option value="custom_link">
+🔗 Lien personnalisé
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Nom du service
+</label>
+
+<input
+  type="text"
+  id="serviceName"
+  placeholder="Ex : Wi-Fi Gardenia"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Destination URL
+</label>
+
+<input
+  type="url"
+  id="serviceDestination"
+  placeholder="https://..."
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Stand associé
+</label>
+
+<select
+  id="serviceStand"
+>
+
+<option value="">
+Aucun Stand
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Statut
+</label>
+
+<select
+  id="serviceStatus"
+>
+
+<option value="draft">
+Brouillon
+</option>
+
+<option value="active">
+Actif
+</option>
+
+<option value="inactive">
+Inactif
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Configuration JSON
+</label>
+
+<textarea
+  id="serviceConfig"
+  placeholder='Ex : {"wifi_name":"Gardenia","password":"12345678"}'
+></textarea>
+
+</div>
+
+
+<div class="modal-actions">
+
+<button
+  type="button"
+  class="secondary"
+  id="cancelServiceButton"
+>
+Annuler
+</button>
+
+<button
+  type="submit"
+  class="primary"
+  id="saveServiceButton"
+>
+Créer le service
+</button>
+
+</div>
+
+</form>
+
+</div>
 
 </div>
 
@@ -848,34 +1316,159 @@ footer{
 ===================================================== */
 
 const loginScreen =
-document.getElementById("loginScreen");
+document.getElementById(
+  "loginScreen"
+);
 
 const dashboard =
-document.getElementById("dashboard");
+document.getElementById(
+  "dashboard"
+);
 
 const loginForm =
-document.getElementById("loginForm");
+document.getElementById(
+  "loginForm"
+);
 
 const loginMessage =
-document.getElementById("loginMessage");
+document.getElementById(
+  "loginMessage"
+);
 
 const loginButton =
-document.getElementById("loginButton");
+document.getElementById(
+  "loginButton"
+);
 
 const logoutButton =
-document.getElementById("logoutButton");
-
-const standsContainer =
-document.getElementById("standsContainer");
-
-const clientForm =
-document.getElementById("clientForm");
-
-const clientButton =
-document.getElementById("clientButton");
+document.getElementById(
+  "logoutButton"
+);
 
 const globalMessage =
-document.getElementById("globalMessage");
+document.getElementById(
+  "globalMessage"
+);
+
+const servicesContainer =
+document.getElementById(
+  "servicesContainer"
+);
+
+const standsContainer =
+document.getElementById(
+  "standsContainer"
+);
+
+const clientForm =
+document.getElementById(
+  "clientForm"
+);
+
+const clientButton =
+document.getElementById(
+  "clientButton"
+);
+
+const totalClients =
+document.getElementById(
+  "totalClients"
+);
+
+const totalServices =
+document.getElementById(
+  "totalServices"
+);
+
+const activeServices =
+document.getElementById(
+  "activeServices"
+);
+
+const totalStands =
+document.getElementById(
+  "totalStands"
+);
+
+const serviceModal =
+document.getElementById(
+  "serviceModal"
+);
+
+const serviceModalTitle =
+document.getElementById(
+  "serviceModalTitle"
+);
+
+const serviceForm =
+document.getElementById(
+  "serviceForm"
+);
+
+const serviceClient =
+document.getElementById(
+  "serviceClient"
+);
+
+const serviceType =
+document.getElementById(
+  "serviceType"
+);
+
+const serviceName =
+document.getElementById(
+  "serviceName"
+);
+
+const serviceDestination =
+document.getElementById(
+  "serviceDestination"
+);
+
+const serviceStand =
+document.getElementById(
+  "serviceStand"
+);
+
+const serviceStatus =
+document.getElementById(
+  "serviceStatus"
+);
+
+const serviceConfig =
+document.getElementById(
+  "serviceConfig"
+);
+
+const saveServiceButton =
+document.getElementById(
+  "saveServiceButton"
+);
+
+const addServiceButton =
+document.getElementById(
+  "addServiceButton"
+);
+
+const closeServiceModal =
+document.getElementById(
+  "closeServiceModal"
+);
+
+const cancelServiceButton =
+document.getElementById(
+  "cancelServiceButton"
+);
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let clients = [];
+let stands = [];
+let services = [];
+let editingServiceId = null;
 
 
 /* =====================================================
@@ -889,27 +1482,29 @@ function showMessage(
 ){
 
   element.className =
-  "message " + type;
+    "message " + type;
 
   element.textContent =
-  text;
+    text;
 
 }
 
 
-function clearMessage(element){
+function clearMessage(
+  element
+){
 
   element.className =
-  "message";
+    "message";
 
   element.textContent =
-  "";
+    "";
 
 }
 
 
 /* =====================================================
-   ADMIN SESSION
+   AUTH
 ===================================================== */
 
 async function checkAdmin(){
@@ -917,16 +1512,16 @@ async function checkAdmin(){
   try{
 
     const response =
-    await fetch(
-      "/api/admin/me",
-      {
-        method:"GET",
-        credentials:"same-origin"
-      }
-    );
+      await fetch(
+        "/api/admin/me",
+        {
+          method:"GET",
+          credentials:"same-origin"
+        }
+      );
 
     const result =
-    await response.json();
+      await response.json();
 
     if(
       result.success &&
@@ -953,10 +1548,10 @@ async function checkAdmin(){
 function showLogin(){
 
   loginScreen.style.display =
-  "flex";
+    "flex";
 
   dashboard.style.display =
-  "none";
+    "none";
 
 }
 
@@ -964,12 +1559,12 @@ function showLogin(){
 function showDashboard(){
 
   loginScreen.style.display =
-  "none";
+    "none";
 
   dashboard.style.display =
-  "block";
+    "block";
 
-  loadStands();
+  loadDashboard();
 
 }
 
@@ -987,41 +1582,37 @@ loginForm.addEventListener(
     clearMessage(loginMessage);
 
     loginButton.disabled =
-    true;
+      true;
 
     loginButton.textContent =
-    "Connexion...";
-
+      "Connexion...";
 
     const password =
-    document.getElementById(
-      "password"
-    ).value;
-
+      document.getElementById(
+        "password"
+      ).value;
 
     try{
 
       const response =
-      await fetch(
-        "/api/admin/login",
-        {
-          method:"POST",
-          credentials:"same-origin",
-          headers:{
-            "Content-Type":
-            "application/json"
-          },
-          body:
-          JSON.stringify({
-            password
-          })
-        }
-      );
-
+        await fetch(
+          "/api/admin/login",
+          {
+            method:"POST",
+            credentials:"same-origin",
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
+            body:
+              JSON.stringify({
+                password
+              })
+          }
+        );
 
       const result =
-      await response.json();
-
+        await response.json();
 
       if(
         !response.ok ||
@@ -1035,31 +1626,28 @@ loginForm.addEventListener(
 
       }
 
-
       document.getElementById(
         "password"
-      ).value =
-      "";
+      ).value = "";
 
       showDashboard();
-
 
     }catch(error){
 
       showMessage(
         loginMessage,
-        "❌ " + error.message,
+        "❌ " +
+        error.message,
         "error"
       );
 
     }
 
-
     loginButton.disabled =
-    false;
+      false;
 
     loginButton.textContent =
-    "Se connecter";
+      "Se connecter";
 
   }
 );
@@ -1094,101 +1682,113 @@ logoutButton.addEventListener(
 
 
 /* =====================================================
+   LOAD DASHBOARD
+===================================================== */
+
+async function loadDashboard(){
+
+  await Promise.all([
+    loadClients(),
+    loadStands(),
+    loadServices()
+  ]);
+
+  updateGlobalStats();
+
+}
+
+
+/* =====================================================
    LOAD CLIENTS
 ===================================================== */
 
 async function loadClients(){
 
-  const response =
-  await fetch(
-    "/api/clients",
-    {
-      method:"GET",
-      credentials:"same-origin"
+  try{
+
+    const response =
+      await fetch(
+        "/api/clients",
+        {
+          method:"GET",
+          credentials:"same-origin"
+        }
+      );
+
+    if(
+      response.status === 401
+    ){
+
+      showLogin();
+      return;
+
     }
-  );
 
-  if(!response.ok){
+    const result =
+      await response.json();
 
-    throw new Error(
-      "Impossible de charger les clients."
+    if(
+      !response.ok ||
+      !result.success
+    ){
+
+      throw new Error(
+        result.error ||
+        "Impossible de charger les clients."
+      );
+
+    }
+
+    clients =
+      result.clients || [];
+
+    populateClientSelect();
+
+  }catch(error){
+
+    clients = [];
+
+    console.error(
+      error
     );
 
   }
-
-  const result =
-  await response.json();
-
-  if(
-    !result.success
-  ){
-
-    throw new Error(
-      result.error ||
-      "Impossible de charger les clients."
-    );
-
-  }
-
-  return result.clients || [];
 
 }
 
 
 /* =====================================================
-   FORMAT DATE
+   CLIENT SELECT
 ===================================================== */
 
-function formatScanDate(value){
+function populateClientSelect(){
 
-  if(!value){
-    return "Aucun scan";
-  }
+  serviceClient.innerHTML =
+    `
+<option value="">
+-- Sélectionner un client --
+</option>
+`;
 
-  const normalized =
-    String(value).replace(
-      " ",
-      "T"
-    );
+  clients.forEach(
+    client => {
 
-  const date =
-    new Date(normalized);
+      const option =
+        document.createElement(
+          "option"
+        );
 
-  if(
-    Number.isNaN(
-      date.getTime()
-    )
-  ){
+      option.value =
+        client.id;
 
-    return String(value);
+      option.textContent =
+        client.name;
 
-  }
+      serviceClient.appendChild(
+        option
+      );
 
-  return date.toLocaleString(
-    "fr-FR",
-    {
-      day:"2-digit",
-      month:"2-digit",
-      year:"numeric",
-      hour:"2-digit",
-      minute:"2-digit"
     }
-  );
-
-}
-
-
-/* =====================================================
-   NUMBER FORMAT
-===================================================== */
-
-function formatNumber(value){
-
-  const number =
-    Number(value || 0);
-
-  return number.toLocaleString(
-    "fr-FR"
   );
 
 }
@@ -1201,65 +1801,1301 @@ function formatNumber(value){
 async function loadStands(){
 
   standsContainer.innerHTML =
-  `
-  <div class="empty">
-    Chargement...
-  </div>
-  `;
-
+    `
+<div class="empty">
+Chargement...
+</div>
+`;
 
   try{
 
-    const [
-      standsResult,
-      clients
-    ] =
-    await Promise.all([
-
-      fetch(
+    const response =
+      await fetch(
         "/api/stands",
         {
           method:"GET",
           credentials:"same-origin"
         }
-      ).then(
-        response =>
-        response.json()
-      ),
-
-      loadClients()
-
-    ]);
-
+      );
 
     if(
-      !standsResult.success
+      response.status === 401
+    ){
+
+      showLogin();
+      return;
+
+    }
+
+    const result =
+      await response.json();
+
+    if(
+      !response.ok ||
+      !result.success
     ){
 
       throw new Error(
-        standsResult.error ||
+        result.error ||
         "Impossible de charger les Stands."
       );
 
     }
 
+    stands =
+      result.stands || [];
 
     renderStands(
-      standsResult.stands || [],
-      clients
+      stands
+    );
+
+    populateStandSelect();
+
+  }catch(error){
+
+    standsContainer.innerHTML =
+      `
+<div class="message error">
+❌ ${escapeHtml(
+  error.message
+)}
+</div>
+`;
+
+  }
+
+}
+
+
+/* =====================================================
+   STAND SELECT
+===================================================== */
+
+function populateStandSelect(){
+
+  serviceStand.innerHTML =
+    `
+<option value="">
+Aucun Stand
+</option>
+`;
+
+  stands.forEach(
+    stand => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        stand.id;
+
+      option.textContent =
+        stand.stand_code +
+        " — " +
+        (
+          stand.status === "active"
+            ? "ACTIF"
+            : "DISPONIBLE"
+        );
+
+      serviceStand.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   LOAD SERVICES
+===================================================== */
+
+async function loadServices(){
+
+  servicesContainer.innerHTML =
+    `
+<div class="empty">
+Chargement des Services...
+</div>
+`;
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/services",
+        {
+          method:"GET",
+          credentials:"same-origin"
+        }
+      );
+
+    if(
+      response.status === 401
+    ){
+
+      showLogin();
+      return;
+
+    }
+
+    const result =
+      await response.json();
+
+    if(
+      !response.ok ||
+      !result.success
+    ){
+
+      throw new Error(
+        result.error ||
+        "Impossible de charger les Services."
+      );
+
+    }
+
+    services =
+      result.services || [];
+
+    renderServices(
+      services
+    );
+
+  }catch(error){
+
+    servicesContainer.innerHTML =
+      `
+<div class="message error">
+❌ ${escapeHtml(
+  error.message
+)}
+</div>
+`;
+
+  }
+
+}
+
+
+/* =====================================================
+   RENDER SERVICES
+===================================================== */
+
+function renderServices(
+  list
+){
+
+  if(!list.length){
+
+    servicesContainer.innerHTML =
+      `
+<div class="empty">
+Aucun Service créé pour le moment.
+<br><br>
+Cliquez sur
+<strong>+ Ajouter un service</strong>
+pour commencer.
+</div>
+`;
+
+    return;
+
+  }
+
+
+  const wrapper =
+    document.createElement(
+      "div"
+    );
+
+  wrapper.className =
+    "services-grid";
+
+
+  list.forEach(
+    service => {
+
+      const box =
+        document.createElement(
+          "div"
+        );
+
+      box.className =
+        "service";
+
+
+      const statusClass =
+        service.status === "active"
+          ? "badge-active"
+          : service.status ===
+            "inactive"
+            ? "badge-inactive"
+            : "badge-draft";
+
+
+      const statusLabel =
+        service.status === "active"
+          ? "ACTIF"
+          : service.status ===
+            "inactive"
+            ? "INACTIF"
+            : "BROUILLON";
+
+
+      const typeLabels = {
+
+        google_review:
+          "⭐ Google Review",
+
+        wifi:
+          "📶 Wi-Fi",
+
+        menu:
+          "🍽️ Menu",
+
+        digital_card:
+          "💳 Digital Business Card",
+
+        custom_link:
+          "🔗 Lien personnalisé"
+
+      };
+
+
+      const dynamicUrl =
+        window.location.origin +
+        "/s/" +
+        service.service_code;
+
+
+      box.innerHTML =
+        `
+
+<div class="service-top">
+
+<div>
+
+<div class="service-title">
+${escapeHtml(
+  service.service_name
+)}
+</div>
+
+<div class="service-client">
+👤 ${
+  escapeHtml(
+    service.client_name ||
+    "Client"
+  )
+}
+</div>
+
+<div class="service-type">
+${
+  typeLabels[
+    service.service_type
+  ] ||
+  escapeHtml(
+    service.service_type
+  )
+}
+</div>
+
+</div>
+
+<span class="badge ${statusClass}">
+${statusLabel}
+</span>
+
+</div>
+
+
+<div class="service-info">
+
+<div>
+🔢 Code :
+<strong>
+${escapeHtml(
+  service.service_code
+)}
+</strong>
+</div>
+
+<div>
+📊 Total scans :
+<strong>
+${Number(
+  service.scans_count || 0
+)}
+</strong>
+</div>
+
+<div>
+📅 Aujourd'hui :
+<strong>
+${Number(
+  service.scans_today || 0
+)}
+</strong>
+</div>
+
+<div>
+📆 7 jours :
+<strong>
+${Number(
+  service.scans_7_days || 0
+)}
+</strong>
+</div>
+
+<div>
+🗓️ 30 jours :
+<strong>
+${Number(
+  service.scans_30_days || 0
+)}
+</strong>
+</div>
+
+${
+  service.stand_code
+    ? `
+<div>
+🪧 Stand :
+<strong>
+${escapeHtml(
+  service.stand_code
+)}
+</strong>
+</div>
+`
+    : `
+<div>
+🪧 Support :
+<strong>
+QR / lien
+</strong>
+</div>
+`
+}
+
+
+<div class="dynamic-link">
+${escapeHtml(
+  dynamicUrl
+)}
+</div>
+
+</div>
+
+
+<div class="service-actions">
+
+<button
+class="small-btn copy"
+data-action="copy"
+data-url="${escapeHtml(
+  dynamicUrl
+)}"
+>
+🔗 Copier lien
+</button>
+
+
+<button
+class="small-btn edit"
+data-action="edit"
+data-id="${
+  service.id
+}"
+>
+✏️ Modifier
+</button>
+
+
+${
+  service.status === "active"
+
+    ? `
+
+<button
+class="small-btn disable"
+data-action="disable"
+data-id="${
+  service.id
+}"
+>
+⏸️ Désactiver
+</button>
+
+`
+
+    : `
+
+<button
+class="small-btn activate"
+data-action="activate"
+data-id="${
+  service.id
+}"
+>
+▶️ Activer
+</button>
+
+`
+}
+
+
+<button
+class="small-btn stats"
+data-action="stats"
+data-id="${
+  service.id
+}"
+>
+📊 Stats
+</button>
+
+
+<button
+class="small-btn danger"
+data-action="delete"
+data-id="${
+  service.id
+}"
+>
+🗑️ Supprimer
+</button>
+
+</div>
+
+`;
+
+      wrapper.appendChild(
+        box
+      );
+
+    }
+  );
+
+
+  servicesContainer.innerHTML =
+    "";
+
+  servicesContainer.appendChild(
+    wrapper
+  );
+
+
+  servicesContainer
+    .querySelectorAll(
+      "[data-action]"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          handleServiceAction
+        );
+
+      }
+    );
+
+}
+
+
+/* =====================================================
+   SERVICE ACTIONS
+===================================================== */
+
+async function handleServiceAction(
+  event
+){
+
+  const button =
+    event.currentTarget;
+
+  const action =
+    button.dataset.action;
+
+  const id =
+    Number(
+      button.dataset.id
+    );
+
+
+  if(action === "copy"){
+
+    try{
+
+      await navigator.clipboard
+        .writeText(
+          button.dataset.url
+        );
+
+      const oldText =
+        button.textContent;
+
+      button.textContent =
+        "Copié ✓";
+
+      setTimeout(
+        () => {
+          button.textContent =
+            oldText;
+        },
+        1500
+      );
+
+    }catch{
+
+      alert(
+        "Impossible de copier le lien."
+      );
+
+    }
+
+    return;
+
+  }
+
+
+  if(action === "edit"){
+
+    openEditService(
+      id
+    );
+
+    return;
+
+  }
+
+
+  if(action === "activate"){
+
+    await changeServiceStatus(
+      id,
+      "active"
+    );
+
+    return;
+
+  }
+
+
+  if(action === "disable"){
+
+    await changeServiceStatus(
+      id,
+      "inactive"
+    );
+
+    return;
+
+  }
+
+
+  if(action === "stats"){
+
+    await showServiceStats(
+      id
+    );
+
+    return;
+
+  }
+
+
+  if(action === "delete"){
+
+    await deleteService(
+      id
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   OPEN ADD SERVICE
+===================================================== */
+
+addServiceButton.addEventListener(
+  "click",
+  function(){
+
+    editingServiceId =
+      null;
+
+    serviceModalTitle.textContent =
+      "Ajouter un service";
+
+    saveServiceButton.textContent =
+      "Créer le service";
+
+    serviceForm.reset();
+
+    serviceStatus.value =
+      "draft";
+
+    serviceModal.classList.add(
+      "show"
+    );
+
+  }
+);
+
+
+/* =====================================================
+   CLOSE MODAL
+===================================================== */
+
+function closeModal(){
+
+  serviceModal.classList.remove(
+    "show"
+  );
+
+  editingServiceId =
+    null;
+
+}
+
+
+closeServiceModal.addEventListener(
+  "click",
+  closeModal
+);
+
+cancelServiceButton.addEventListener(
+  "click",
+  closeModal
+);
+
+
+serviceModal.addEventListener(
+  "click",
+  function(event){
+
+    if(
+      event.target ===
+      serviceModal
+    ){
+
+      closeModal();
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   CREATE / UPDATE SERVICE
+===================================================== */
+
+serviceForm.addEventListener(
+  "submit",
+  async function(event){
+
+    event.preventDefault();
+
+    const clientId =
+      Number(
+        serviceClient.value
+      );
+
+    const type =
+      serviceType.value;
+
+    if(!clientId){
+
+      alert(
+        "Sélectionnez un client."
+      );
+
+      return;
+
+    }
+
+    if(!type){
+
+      alert(
+        "Sélectionnez un type de service."
+      );
+
+      return;
+
+    }
+
+
+    let config = null;
+
+    const configText =
+      serviceConfig.value.trim();
+
+    if(configText){
+
+      try{
+
+        config =
+          JSON.parse(
+            configText
+          );
+
+      }catch{
+
+        alert(
+          "Configuration JSON invalide."
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    const data = {
+
+      client_id:
+        clientId,
+
+      service_type:
+        type,
+
+      service_name:
+        serviceName.value.trim(),
+
+      destination_url:
+        serviceDestination.value.trim(),
+
+      stand_id:
+        serviceStand.value
+          ? Number(
+              serviceStand.value
+            )
+          : null,
+
+      status:
+        serviceStatus.value,
+
+      config
+
+    };
+
+
+    saveServiceButton.disabled =
+      true;
+
+    saveServiceButton.textContent =
+      editingServiceId
+        ? "Modification..."
+        : "Création...";
+
+
+    try{
+
+      let response;
+
+
+      if(editingServiceId){
+
+        response =
+          await fetch(
+            "/api/services/" +
+            editingServiceId,
+            {
+              method:"PATCH",
+              credentials:"same-origin",
+              headers:{
+                "Content-Type":
+                  "application/json"
+              },
+              body:
+                JSON.stringify(
+                  data
+                )
+            }
+          );
+
+      }else{
+
+        response =
+          await fetch(
+            "/api/services",
+            {
+              method:"POST",
+              credentials:"same-origin",
+              headers:{
+                "Content-Type":
+                  "application/json"
+              },
+              body:
+                JSON.stringify(
+                  data
+                )
+            }
+          );
+
+      }
+
+
+      if(
+        response.status === 401
+      ){
+
+        showLogin();
+        return;
+
+      }
+
+
+      const result =
+        await response.json();
+
+
+      if(
+        !response.ok ||
+        !result.success
+      ){
+
+        throw new Error(
+          result.error ||
+          "Opération impossible."
+        );
+
+      }
+
+
+      showMessage(
+        globalMessage,
+        editingServiceId
+          ? "✅ Service modifié avec succès."
+          : "✅ Service créé avec succès.",
+        "success"
+      );
+
+
+      closeModal();
+
+      await loadServices();
+
+      updateGlobalStats();
+
+
+    }catch(error){
+
+      showMessage(
+        globalMessage,
+        "❌ " +
+        error.message,
+        "error"
+      );
+
+    }
+
+
+    saveServiceButton.disabled =
+      false;
+
+    saveServiceButton.textContent =
+      editingServiceId
+        ? "Enregistrer"
+        : "Créer le service";
+
+  }
+);
+
+
+/* =====================================================
+   EDIT SERVICE
+===================================================== */
+
+function openEditService(
+  id
+){
+
+  const service =
+    services.find(
+      item =>
+        Number(item.id) ===
+        Number(id)
+    );
+
+  if(!service){
+
+    return;
+
+  }
+
+
+  editingServiceId =
+    id;
+
+  serviceModalTitle.textContent =
+    "Modifier le service";
+
+  saveServiceButton.textContent =
+    "Enregistrer";
+
+
+  serviceClient.value =
+    service.client_id || "";
+
+  serviceType.value =
+    service.service_type || "";
+
+  serviceName.value =
+    service.service_name || "";
+
+  serviceDestination.value =
+    service.destination_url || "";
+
+  serviceStand.value =
+    service.stand_id || "";
+
+  serviceStatus.value =
+    service.status || "draft";
+
+
+  try{
+
+    if(service.config){
+
+      const parsed =
+        typeof service.config ===
+        "string"
+          ? JSON.parse(
+              service.config
+            )
+          : service.config;
+
+      serviceConfig.value =
+        JSON.stringify(
+          parsed,
+          null,
+          2
+        );
+
+    }else{
+
+      serviceConfig.value =
+        "";
+
+    }
+
+  }catch{
+
+    serviceConfig.value =
+      service.config || "";
+
+  }
+
+
+  serviceModal.classList.add(
+    "show"
+  );
+
+}
+
+
+/* =====================================================
+   CHANGE STATUS
+===================================================== */
+
+async function changeServiceStatus(
+  id,
+  status
+){
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/services/" +
+        id,
+        {
+          method:"PATCH",
+          credentials:"same-origin",
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+          body:
+            JSON.stringify({
+              status
+            })
+        }
+      );
+
+
+    if(
+      response.status === 401
+    ){
+
+      showLogin();
+      return;
+
+    }
+
+
+    const result =
+      await response.json();
+
+
+    if(
+      !response.ok ||
+      !result.success
+    ){
+
+      throw new Error(
+        result.error ||
+        "Impossible de modifier le statut."
+      );
+
+    }
+
+
+    showMessage(
+      globalMessage,
+      status === "active"
+        ? "✅ Service activé."
+        : "⏸️ Service désactivé.",
+      "success"
+    );
+
+
+    await loadServices();
+
+    updateGlobalStats();
+
+
+  }catch(error){
+
+    showMessage(
+      globalMessage,
+      "❌ " +
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   DELETE SERVICE
+===================================================== */
+
+async function deleteService(
+  id
+){
+
+  const service =
+    services.find(
+      item =>
+        Number(item.id) ===
+        Number(id)
+    );
+
+
+  const confirmed =
+    confirm(
+      "⚠️ Supprimer le service " +
+      (
+        service
+          ? service.service_name
+          : ""
+      ) +
+      " ?\n\n" +
+      "Les statistiques de scans de ce service seront également supprimées."
+    );
+
+
+  if(!confirmed){
+
+    return;
+
+  }
+
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/services/" +
+        id,
+        {
+          method:"DELETE",
+          credentials:"same-origin"
+        }
+      );
+
+
+    if(
+      response.status === 401
+    ){
+
+      showLogin();
+      return;
+
+    }
+
+
+    const result =
+      await response.json();
+
+
+    if(
+      !response.ok ||
+      !result.success
+    ){
+
+      throw new Error(
+        result.error ||
+        "Impossible de supprimer le service."
+      );
+
+    }
+
+
+    showMessage(
+      globalMessage,
+      "✅ Service supprimé.",
+      "success"
+    );
+
+
+    await loadServices();
+
+    updateGlobalStats();
+
+
+  }catch(error){
+
+    showMessage(
+      globalMessage,
+      "❌ " +
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   SERVICE STATS
+===================================================== */
+
+async function showServiceStats(
+  id
+){
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/services/" +
+        id +
+        "/stats",
+        {
+          method:"GET",
+          credentials:"same-origin"
+        }
+      );
+
+
+    if(
+      response.status === 401
+    ){
+
+      showLogin();
+      return;
+
+    }
+
+
+    const result =
+      await response.json();
+
+
+    if(
+      !response.ok ||
+      !result.success
+    ){
+
+      throw new Error(
+        result.error ||
+        "Impossible de charger les statistiques."
+      );
+
+    }
+
+
+    const stats =
+      result.statistics;
+
+
+    const service =
+      result.service;
+
+
+    alert(
+      "📊 STATISTIQUES\n\n" +
+
+      "Service : " +
+      service.service_name +
+      "\n" +
+
+      "Client : " +
+      (
+        service.client_name ||
+        "—"
+      ) +
+      "\n\n" +
+
+      "Total : " +
+      stats.total +
+      "\n" +
+
+      "Aujourd'hui : " +
+      stats.today +
+      "\n" +
+
+      "7 jours : " +
+      stats.seven_days +
+      "\n" +
+
+      "30 jours : " +
+      stats.thirty_days +
+      "\n\n" +
+
+      "Dernier scan : " +
+      (
+        stats.last_scan ||
+        "Aucun"
+      )
     );
 
 
   }catch(error){
 
-    standsContainer.innerHTML =
-    `
-    <div class="message error">
-      ❌ ${escapeHtml(
-        error.message
-      )}
-    </div>
-    `;
+    showMessage(
+      globalMessage,
+      "❌ " +
+      error.message,
+      "error"
+    );
 
   }
 
@@ -1271,18 +3107,17 @@ async function loadStands(){
 ===================================================== */
 
 function renderStands(
-  stands,
-  clients
+  list
 ){
 
-  if(!stands.length){
+  if(!list.length){
 
     standsContainer.innerHTML =
-    `
-    <div class="empty">
-      Aucun Stand trouvé dans la base de données.
-    </div>
-    `;
+      `
+<div class="empty">
+Aucun Stand trouvé.
+</div>
+`;
 
     return;
 
@@ -1290,329 +3125,234 @@ function renderStands(
 
 
   const wrapper =
-  document.createElement(
-    "div"
-  );
+    document.createElement(
+      "div"
+    );
 
   wrapper.className =
-  "stands-grid";
+    "stands-grid";
 
 
-  stands.forEach(
-    function(stand){
+  list.forEach(
+    stand => {
 
       const box =
-      document.createElement(
-        "div"
-      );
+        document.createElement(
+          "div"
+        );
 
       box.className =
-      "stand";
+        "stand";
 
 
       const isActive =
-      stand.status === "active";
-
-
-      let clientOptions =
-      `
-      <option value="">
-        -- Sélectionner un client --
-      </option>
-      `;
-
-
-      clients.forEach(
-        function(client){
-
-          clientOptions +=
-          `
-          <option value="${
-            client.id
-          }">
-            ${escapeHtml(
-              client.name
-            )}
-          </option>
-          `;
-
-        }
-      );
-
-
-      const totalScans =
-      Number(
-        stand.scans_count || 0
-      );
-
-      const todayScans =
-      Number(
-        stand.scans_today || 0
-      );
-
-      const sevenDayScans =
-      Number(
-        stand.scans_7_days || 0
-      );
+        stand.status ===
+        "active";
 
 
       box.innerHTML =
+        `
+
+<div class="stand-top">
+
+<div class="stand-code">
+${escapeHtml(
+  stand.stand_code
+)}
+</div>
+
+<span class="badge ${
+  isActive
+    ? "active-stand"
+    : "available"
+}">
+
+${
+  isActive
+    ? "ACTIF"
+    : "DISPONIBLE"
+}
+
+</span>
+
+</div>
+
+
+<div class="stand-info">
+
+${
+  isActive
+
+  ? `
+
+Client :
+<strong>
+${escapeHtml(
+  stand.client_name ||
+  "Client"
+)}
+</strong>
+
+<br>
+
+Destination :
+<span class="dynamic-link">
+${escapeHtml(
+  stand.destination_url ||
+  ""
+)}
+</span>
+
+<br>
+
+📊 Scans :
+<strong>
+${Number(
+  stand.scans_count || 0
+)}
+</strong>
+
+`
+
+  : `
+
+Ce Stand est disponible
+et prêt à être attribué.
+
+`
+
+}
+
+</div>
+
+
+<div class="stand-actions">
+
+${
+  isActive
+
+  ? `
+
+<button
+class="small-btn copy"
+data-stand-action="copy"
+data-url="${escapeHtml(
+  stand.destination_url ||
+  ""
+)}"
+>
+Copier le lien
+</button>
+
+<button
+class="small-btn danger"
+data-stand-action="reset"
+data-stand="${escapeHtml(
+  stand.stand_code
+)}"
+>
+🔄 Réinitialiser
+</button>
+
+`
+
+  : `
+
+<button
+class="small-btn primary"
+data-stand-action="activate-toggle"
+data-stand="${escapeHtml(
+  stand.stand_code
+)}"
+>
+Activer ce Stand
+</button>
+
+`
+
+}
+
+</div>
+
+
+${
+  !isActive
+
+  ? `
+
+<div
+class="activate-box"
+id="activate-${escapeHtml(
+  stand.stand_code
+)}"
+>
+
+<div class="field">
+
+<label>
+Client
+</label>
+
+<select class="stand-client-select">
+
+<option value="">
+-- Sélectionner un client --
+</option>
+
+${
+  clients.map(
+    client =>
       `
+<option value="${
+  client.id
+}">
+${escapeHtml(
+  client.name
+)}
+</option>
+`
+  ).join("")
+}
 
-      <div class="stand-top">
+</select>
 
-        <div class="stand-code">
-          ${escapeHtml(
-            stand.stand_code
-          )}
-        </div>
+</div>
 
-        <span class="badge ${
-          isActive
-          ? "active"
-          : "available"
-        }">
 
-          ${
-            isActive
-            ? "ACTIF"
-            : "DISPONIBLE"
-          }
+<div class="field">
 
-        </span>
+<label>
+Destination URL
+</label>
 
-      </div>
+<input
+type="url"
+class="stand-destination-url"
+placeholder="https://..."
+>
 
+</div>
 
-      <div class="stand-info">
 
-      ${
-        isActive
+<button
+class="primary"
+data-stand-action="activate-submit"
+data-stand="${escapeHtml(
+  stand.stand_code
+)}"
+>
+Activer maintenant
+</button>
 
-        ? `
+</div>
 
-          Client :
-          <strong>
-            ${escapeHtml(
-              stand.client_name ||
-              "Client"
-            )}
-          </strong>
+`
 
-          <br>
+  : ""
 
-          Destination :
+}
 
-          <span class="qr-link">
-            ${escapeHtml(
-              stand.destination_url ||
-              ""
-            )}
-          </span>
-
-
-          <!-- ==========================================
-               SCAN STATISTICS
-          =========================================== -->
-
-          <div class="scan-stats">
-
-            <div class="scan-stat">
-
-              <div class="scan-label">
-                📊 TOTAL
-              </div>
-
-              <div class="scan-value">
-                ${formatNumber(
-                  totalScans
-                )}
-              </div>
-
-            </div>
-
-
-            <div class="scan-stat">
-
-              <div class="scan-label">
-                📅 AUJOURD'HUI
-              </div>
-
-              <div class="scan-value">
-                ${formatNumber(
-                  todayScans
-                )}
-              </div>
-
-            </div>
-
-
-            <div class="scan-stat">
-
-              <div class="scan-label">
-                📈 7 JOURS
-              </div>
-
-              <div class="scan-value">
-                ${formatNumber(
-                  sevenDayScans
-                )}
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <div class="last-scan">
-
-            <div class="last-scan-label">
-              🕐 Dernier scan
-            </div>
-
-            <div class="last-scan-value">
-              ${escapeHtml(
-                formatScanDate(
-                  stand.last_scan
-                )
-              )}
-            </div>
-
-          </div>
-
-        `
-
-        : `
-
-          Ce Stand est disponible
-          et prêt à être attribué.
-
-        `
-
-      }
-
-      </div>
-
-
-      <div class="stand-actions">
-
-      ${
-        isActive
-
-        ? `
-
-          <button
-            class="copy-btn"
-            data-copy="${
-              escapeHtml(
-                stand.destination_url ||
-                ""
-              )
-            }"
-          >
-            Copier le lien
-          </button>
-
-          <button
-            class="danger reset-btn"
-            data-stand="${
-              escapeHtml(
-                stand.stand_code
-              )
-            }"
-          >
-            🔄 Réinitialiser
-          </button>
-
-        `
-
-        : `
-
-          <button
-            class="primary activate-toggle"
-            data-stand="${
-              escapeHtml(
-                stand.stand_code
-              )
-            }"
-          >
-            Activer ce Stand
-          </button>
-
-        `
-
-      }
-
-      </div>
-
-
-      ${
-        !isActive
-
-        ? `
-
-        <div
-          class="activate-box"
-          id="activate-${
-            escapeHtml(
-              stand.stand_code
-            )
-          }"
-        >
-
-          <div class="field">
-
-            <label>
-              Client
-            </label>
-
-            <select
-              class="client-select"
-            >
-
-              ${clientOptions}
-
-            </select>
-
-          </div>
-
-
-          <div class="field">
-
-            <label>
-              Destination URL
-            </label>
-
-            <input
-              type="url"
-              class="destination-url"
-              placeholder="https://..."
-            >
-
-          </div>
-
-
-          <button
-            class="primary activate-submit"
-            data-stand="${
-              escapeHtml(
-                stand.stand_code
-              )
-            }"
-          >
-            Activer maintenant
-          </button>
-
-        </div>
-
-        `
-
-        : ""
-
-      }
-
-      `;
-
+`;
 
       wrapper.appendChild(
         box
@@ -1623,395 +3363,378 @@ function renderStands(
 
 
   standsContainer.innerHTML =
-  "";
+    "";
 
   standsContainer.appendChild(
     wrapper
   );
 
 
-  /* ===================================================
-     TOGGLE ACTIVATION
-  =================================================== */
+  standsContainer
+    .querySelectorAll(
+      "[data-stand-action]"
+    )
+    .forEach(
+      button => {
 
-  document
-  .querySelectorAll(
-    ".activate-toggle"
-  )
-  .forEach(
-    function(button){
+        button.addEventListener(
+          "click",
+          handleStandAction
+        );
 
-      button.addEventListener(
-        "click",
-        function(){
+      }
+    );
 
-          const code =
-          button.dataset.stand;
+}
 
-          const box =
-          document.getElementById(
-            "activate-" +
-            code
-          );
 
-          box.classList.toggle(
-            "show"
-          );
+/* =====================================================
+   STAND ACTIONS
+===================================================== */
 
-        }
+async function handleStandAction(
+  event
+){
+
+  const button =
+    event.currentTarget;
+
+  const action =
+    button.dataset.standAction;
+
+
+  if(
+    action === "activate-toggle"
+  ){
+
+    const code =
+      button.dataset.stand;
+
+    const box =
+      document.getElementById(
+        "activate-" +
+        code
+      );
+
+    if(box){
+
+      box.classList.toggle(
+        "show"
       );
 
     }
-  );
+
+    return;
+
+  }
 
 
-  /* ===================================================
-     ACTIVATE STAND
-  =================================================== */
+  if(
+    action === "activate-submit"
+  ){
 
-  document
-  .querySelectorAll(
-    ".activate-submit"
-  )
-  .forEach(
-    function(button){
+    const code =
+      button.dataset.stand;
 
-      button.addEventListener(
-        "click",
-        async function(){
+    const parent =
+      button.closest(
+        ".activate-box"
+      );
 
-          const code =
-          button.dataset.stand;
+    const clientSelect =
+      parent.querySelector(
+        ".stand-client-select"
+      );
 
-          const parent =
-          button.closest(
-            ".activate-box"
-          );
+    const destinationInput =
+      parent.querySelector(
+        ".stand-destination-url"
+      );
 
+    const clientId =
+      clientSelect.value;
 
-          const clientSelect =
-          parent.querySelector(
-            ".client-select"
-          );
-
-          const destinationInput =
-          parent.querySelector(
-            ".destination-url"
-          );
+    const destinationUrl =
+      destinationInput.value.trim();
 
 
-          const clientId =
-          clientSelect.value;
+    if(!clientId){
 
-          const destinationUrl =
-          destinationInput.value.trim();
+      alert(
+        "Sélectionnez un client."
+      );
 
+      return;
 
-          if(!clientId){
-
-            alert(
-              "Sélectionnez un client."
-            );
-
-            return;
-
-          }
+    }
 
 
-          if(!destinationUrl){
+    if(!destinationUrl){
 
-            alert(
-              "Entrez la destination URL."
-            );
+      alert(
+        "Entrez la destination URL."
+      );
 
-            return;
+      return;
 
-          }
-
-
-          button.disabled =
-          true;
-
-          button.textContent =
-          "Activation...";
+    }
 
 
-          try{
+    button.disabled =
+      true;
 
-            const response =
-            await fetch(
-              "/api/stands/activate",
-              {
-                method:"POST",
-                credentials:"same-origin",
-                headers:{
-                  "Content-Type":
-                  "application/json"
-                },
-                body:
-                JSON.stringify({
+    button.textContent =
+      "Activation...";
 
-                  stand_code:
+
+    try{
+
+      const response =
+        await fetch(
+          "/api/stands/activate",
+          {
+            method:"POST",
+            credentials:"same-origin",
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
+            body:
+              JSON.stringify({
+
+                stand_code:
                   code,
 
-                  client_id:
-                  Number(clientId),
+                client_id:
+                  Number(
+                    clientId
+                  ),
 
-                  destination_url:
+                destination_url:
                   destinationUrl
 
-                })
-              }
-            );
-
-
-            if(
-              response.status === 401
-            ){
-
-              showLogin();
-
-              return;
-
-            }
-
-
-            const result =
-            await response.json();
-
-
-            if(
-              !response.ok ||
-              !result.success
-            ){
-
-              throw new Error(
-                result.error ||
-                "Activation impossible."
-              );
-
-            }
-
-
-            showMessage(
-              globalMessage,
-              "✅ " +
-              code +
-              " activé avec succès.",
-              "success"
-            );
-
-
-            await loadStands();
-
-
-          }catch(error){
-
-            showMessage(
-              globalMessage,
-              "❌ " +
-              error.message,
-              "error"
-            );
-
-          }finally{
-
-            button.disabled =
-            false;
-
-            button.textContent =
-            "Activer maintenant";
-
+              })
           }
+        );
 
-        }
+
+      if(
+        response.status === 401
+      ){
+
+        showLogin();
+        return;
+
+      }
+
+
+      const result =
+        await response.json();
+
+
+      if(
+        !response.ok ||
+        !result.success
+      ){
+
+        throw new Error(
+          result.error ||
+          "Activation impossible."
+        );
+
+      }
+
+
+      showMessage(
+        globalMessage,
+        "✅ " +
+        code +
+        " activé avec succès.",
+        "success"
       );
 
+
+      await loadStands();
+
+      updateGlobalStats();
+
+
+    }catch(error){
+
+      showMessage(
+        globalMessage,
+        "❌ " +
+        error.message,
+        "error"
+      );
+
+    }finally{
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "Activer maintenant";
+
     }
-  );
+
+    return;
+
+  }
 
 
-  /* ===================================================
-     RESET STAND
-  =================================================== */
+  if(
+    action === "copy"
+  ){
 
-  document
-  .querySelectorAll(
-    ".reset-btn"
-  )
-  .forEach(
-    function(button){
+    try{
 
-      button.addEventListener(
-        "click",
-        async function(){
+      await navigator.clipboard
+        .writeText(
+          button.dataset.url
+        );
 
-          const code =
-          button.dataset.stand;
+      const old =
+        button.textContent;
 
+      button.textContent =
+        "Copié ✓";
 
-          const confirmed =
-          confirm(
-            "⚠️ Réinitialiser le Stand " +
-            code +
-            " ?\n\n" +
-            "Le Stand redeviendra DISPONIBLE.\n" +
-            "Le client ne sera PAS supprimé."
-          );
-
-
-          if(!confirmed){
-
-            return;
-
-          }
-
-
-          button.disabled =
-          true;
-
+      setTimeout(
+        () => {
           button.textContent =
-          "Réinitialisation...";
+            old;
+        },
+        1500
+      );
+
+    }catch{
+
+      alert(
+        "Impossible de copier le lien."
+      );
+
+    }
+
+    return;
+
+  }
 
 
-          try{
+  if(
+    action === "reset"
+  ){
 
-            const response =
-            await fetch(
-              "/api/stands/reset",
-              {
-                method:"POST",
-                credentials:"same-origin",
-                headers:{
-                  "Content-Type":
-                  "application/json"
-                },
-                body:
-                JSON.stringify({
+    const code =
+      button.dataset.stand;
 
-                  stand_code:
+
+    const confirmed =
+      confirm(
+        "⚠️ Réinitialiser le Stand " +
+        code +
+        " ?\n\n" +
+        "Le Stand redeviendra DISPONIBLE.\n" +
+        "Le client ne sera PAS supprimé."
+      );
+
+
+    if(!confirmed){
+
+      return;
+
+    }
+
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "Réinitialisation...";
+
+
+    try{
+
+      const response =
+        await fetch(
+          "/api/stands/reset",
+          {
+            method:"POST",
+            credentials:"same-origin",
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
+            body:
+              JSON.stringify({
+                stand_code:
                   code
-
-                })
-              }
-            );
-
-
-            if(
-              response.status === 401
-            ){
-
-              showLogin();
-
-              return;
-
-            }
-
-
-            const result =
-            await response.json();
-
-
-            if(
-              !response.ok ||
-              !result.success
-            ){
-
-              throw new Error(
-                result.error ||
-                "Réinitialisation impossible."
-              );
-
-            }
-
-
-            showMessage(
-              globalMessage,
-              "✅ " +
-              code +
-              " réinitialisé avec succès.",
-              "success"
-            );
-
-
-            await loadStands();
-
-
-          }catch(error){
-
-            showMessage(
-              globalMessage,
-              "❌ " +
-              error.message,
-              "error"
-            );
-
-          }finally{
-
-            button.disabled =
-            false;
-
-            button.textContent =
-            "🔄 Réinitialiser";
-
+              })
           }
+        );
 
-        }
+
+      if(
+        response.status === 401
+      ){
+
+        showLogin();
+        return;
+
+      }
+
+
+      const result =
+        await response.json();
+
+
+      if(
+        !response.ok ||
+        !result.success
+      ){
+
+        throw new Error(
+          result.error ||
+          "Réinitialisation impossible."
+        );
+
+      }
+
+
+      showMessage(
+        globalMessage,
+        "✅ " +
+        code +
+        " réinitialisé.",
+        "success"
       );
 
-    }
-  );
+
+      await loadStands();
+
+      updateGlobalStats();
 
 
-  /* ===================================================
-     COPY LINK
-  =================================================== */
+    }catch(error){
 
-  document
-  .querySelectorAll(
-    ".copy-btn"
-  )
-  .forEach(
-    function(button){
-
-      button.addEventListener(
-        "click",
-        async function(){
-
-          const value =
-          button.dataset.copy;
-
-          try{
-
-            await navigator.clipboard
-            .writeText(value);
-
-            button.textContent =
-            "Copié ✓";
-
-            setTimeout(
-              function(){
-
-                button.textContent =
-                "Copier le lien";
-
-              },
-              1500
-            );
-
-          }catch{
-
-            alert(
-              "Impossible de copier le lien."
-            );
-
-          }
-
-        }
+      showMessage(
+        globalMessage,
+        "❌ " +
+        error.message,
+        "error"
       );
 
+    }finally{
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "🔄 Réinitialiser";
+
     }
-  );
+
+  }
 
 }
 
@@ -2026,13 +3749,11 @@ clientForm.addEventListener(
 
     event.preventDefault();
 
-
     clientButton.disabled =
-    true;
+      true;
 
     clientButton.textContent =
-    "Création...";
-
+      "Création...";
 
     clearMessage(
       globalMessage
@@ -2042,74 +3763,74 @@ clientForm.addEventListener(
     const data = {
 
       name:
-      clientForm.elements[
-        "name"
-      ].value.trim(),
+        clientForm.elements[
+          "name"
+        ].value.trim(),
 
       profession:
-      clientForm.elements[
-        "profession"
-      ].value.trim(),
+        clientForm.elements[
+          "profession"
+        ].value.trim(),
 
       bio:
-      clientForm.elements[
-        "bio"
-      ].value.trim(),
+        clientForm.elements[
+          "bio"
+        ].value.trim(),
 
       phone:
-      clientForm.elements[
-        "phone"
-      ].value.trim(),
+        clientForm.elements[
+          "phone"
+        ].value.trim(),
 
       whatsapp:
-      clientForm.elements[
-        "whatsapp"
-      ].value.trim(),
+        clientForm.elements[
+          "whatsapp"
+        ].value.trim(),
 
       email:
-      clientForm.elements[
-        "email"
-      ].value.trim(),
+        clientForm.elements[
+          "email"
+        ].value.trim(),
 
       instagram:
-      clientForm.elements[
-        "instagram"
-      ].value.trim(),
+        clientForm.elements[
+          "instagram"
+        ].value.trim(),
 
       facebook:
-      clientForm.elements[
-        "facebook"
-      ].value.trim(),
+        clientForm.elements[
+          "facebook"
+        ].value.trim(),
 
       tiktok:
-      clientForm.elements[
-        "tiktok"
-      ].value.trim(),
+        clientForm.elements[
+          "tiktok"
+        ].value.trim(),
 
       linkedin:
-      clientForm.elements[
-        "linkedin"
-      ].value.trim(),
+        clientForm.elements[
+          "linkedin"
+        ].value.trim(),
 
       address:
-      clientForm.elements[
-        "address"
-      ].value.trim(),
+        clientForm.elements[
+          "address"
+        ].value.trim(),
 
       maps:
-      clientForm.elements[
-        "maps"
-      ].value.trim(),
+        clientForm.elements[
+          "maps"
+        ].value.trim(),
 
       website:
-      clientForm.elements[
-        "website"
-      ].value.trim(),
+        clientForm.elements[
+          "website"
+        ].value.trim(),
 
       reviews:
-      clientForm.elements[
-        "reviews"
-      ].value.trim()
+        clientForm.elements[
+          "reviews"
+        ].value.trim()
 
     };
 
@@ -2117,23 +3838,35 @@ clientForm.addEventListener(
     try{
 
       const response =
-      await fetch(
-        "/api/clients",
-        {
-          method:"POST",
-          credentials:"same-origin",
-          headers:{
-            "Content-Type":
-            "application/json"
-          },
-          body:
-          JSON.stringify(data)
-        }
-      );
+        await fetch(
+          "/api/clients",
+          {
+            method:"POST",
+            credentials:"same-origin",
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
+            body:
+              JSON.stringify(
+                data
+              )
+          }
+        );
+
+
+      if(
+        response.status === 401
+      ){
+
+        showLogin();
+        return;
+
+      }
 
 
       const result =
-      await response.json();
+        await response.json();
 
 
       if(
@@ -2158,8 +3891,11 @@ clientForm.addEventListener(
 
       clientForm.reset();
 
+      await loadClients();
 
-      await loadStands();
+      await loadServices();
+
+      updateGlobalStats();
 
 
     }catch(error){
@@ -2175,20 +3911,50 @@ clientForm.addEventListener(
 
 
     clientButton.disabled =
-    false;
+      false;
 
     clientButton.textContent =
-    "Créer le profil";
+      "Créer le profil";
 
   }
 );
 
 
 /* =====================================================
+   GLOBAL STATS
+===================================================== */
+
+function updateGlobalStats(){
+
+  totalClients.textContent =
+    clients.length;
+
+
+  totalServices.textContent =
+    services.length;
+
+
+  activeServices.textContent =
+    services.filter(
+      service =>
+        service.status ===
+        "active"
+    ).length;
+
+
+  totalStands.textContent =
+    stands.length;
+
+}
+
+
+/* =====================================================
    ESCAPE HTML
 ===================================================== */
 
-function escapeHtml(value){
+function escapeHtml(
+  value
+){
 
   if(
     value === null ||
@@ -2196,6 +3962,7 @@ function escapeHtml(value){
   ){
 
     return "";
+
   }
 
   return String(value)
