@@ -39,6 +39,7 @@ export default {
         "===".slice((input.length + 3) % 4);
 
       const binary = atob(base64);
+
       const bytes = new Uint8Array(binary.length);
 
       for (let i = 0; i < binary.length; i++) {
@@ -60,26 +61,6 @@ export default {
       }
 
       return result === 0;
-    };
-
-    const getCookie = (request, name) => {
-      const cookieHeader = request.headers.get("Cookie");
-
-      if (!cookieHeader) {
-        return null;
-      }
-
-      const cookies = cookieHeader.split(";");
-
-      for (const cookie of cookies) {
-        const parts = cookie.trim().split("=");
-
-        if (parts[0] === name) {
-          return parts.slice(1).join("=");
-        }
-      }
-
-      return null;
     };
 
     // =====================================================
@@ -188,12 +169,32 @@ export default {
       }
     };
 
+    const getCookie = (request, name) => {
+      const cookieHeader =
+        request.headers.get("Cookie");
+
+      if (!cookieHeader) {
+        return null;
+      }
+
+      const cookies =
+        cookieHeader.split(";");
+
+      for (const cookie of cookies) {
+        const parts =
+          cookie.trim().split("=");
+
+        if (parts[0] === name) {
+          return parts.slice(1).join("=");
+        }
+      }
+
+      return null;
+    };
+
     const isAdmin = async () => {
       const token =
-        getCookie(
-          request,
-          "tapnivo_admin"
-        );
+        getCookie(request, "tapnivo_admin");
 
       return await verifyAdminToken(token);
     };
@@ -389,18 +390,9 @@ export default {
           data.name
             .toLowerCase()
             .normalize("NFD")
-            .replace(
-              /[\u0300-\u036f]/g,
-              ""
-            )
-            .replace(
-              /[^a-z0-9]+/g,
-              "-"
-            )
-            .replace(
-              /^-|-$/g,
-              ""
-            ) +
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") +
           "-" +
           Date.now();
 
@@ -510,7 +502,7 @@ export default {
                   SELECT MAX(ss.scanned_at)
                   FROM stand_scans ss
                   WHERE ss.stand_code = s.stand_code
-                ) AS last_scan_at
+                ) AS last_scan
 
               FROM stands s
 
@@ -524,75 +516,6 @@ export default {
         return json({
           success: true,
           stands: result.results
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-    // =====================================================
-    // GET SCANS FOR ONE STAND
-    // =====================================================
-
-    if (
-      url.pathname === "/api/stands/scans" &&
-      request.method === "GET"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-        const standCode =
-          String(
-            url.searchParams.get(
-              "stand_code"
-            ) || ""
-          ).trim();
-
-        if (!standCode) {
-          return json(
-            {
-              success: false,
-              error:
-                "stand_code est obligatoire."
-            },
-            400
-          );
-        }
-
-        const result =
-          await env.DB
-            .prepare(`
-              SELECT
-                id,
-                stand_code,
-                scanned_at
-              FROM stand_scans
-              WHERE stand_code = ?
-              ORDER BY id DESC
-            `)
-            .bind(standCode)
-            .all();
-
-        return json({
-          success: true,
-          stand_code: standCode,
-          scans: result.results,
-          scans_count: result.results.length
         });
 
       } catch (error) {
@@ -875,7 +798,7 @@ export default {
     }
 
     // =====================================================
-    // DYNAMIC QR / NFC
+    // DYNAMIC QR / NFC + SCAN TRACKING
     // =====================================================
 
     if (
@@ -889,9 +812,7 @@ export default {
       if (!standCode) {
         return new Response(
           "Stand introuvable",
-          {
-            status: 404
-          }
+          { status: 404 }
         );
       }
 
@@ -913,14 +834,12 @@ export default {
         if (!stand) {
           return new Response(
             "Stand introuvable",
-            {
-              status: 404
-            }
+            { status: 404 }
           );
         }
 
         // =================================================
-        // STAND NON ACTIVE
+        // STAND NON ACTIVÉ
         // =================================================
 
         if (
@@ -935,10 +854,8 @@ export default {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAPNIVO</title>
-
 <style>
 *{box-sizing:border-box}
-
 body{
   margin:0;
   min-height:100vh;
@@ -950,7 +867,6 @@ body{
   color:#111827;
   text-align:center;
 }
-
 .box{
   background:white;
   padding:35px 25px;
@@ -959,42 +875,24 @@ body{
   max-width:400px;
   margin:20px;
 }
-
 .logo{
   font-size:24px;
   font-weight:800;
   margin-bottom:20px;
 }
-
-.logo span{
-  color:#4f46e5;
-}
-
+.logo span{color:#4f46e5}
 p{
   color:#6b7280;
   line-height:1.6;
 }
 </style>
 </head>
-
 <body>
-
 <div class="box">
-
-<div class="logo">
-TAP<span>NIVO</span>
+<div class="logo">TAP<span>NIVO</span></div>
+<h2>Stand non activé</h2>
+<p>Ce QR code est prêt à être activé.</p>
 </div>
-
-<h2>
-Stand non activé
-</h2>
-
-<p>
-Ce QR code est prêt à être activé.
-</p>
-
-</div>
-
 </body>
 </html>
 `,
@@ -1015,13 +913,9 @@ Ce QR code est prêt à être activé.
         await env.DB
           .prepare(`
             INSERT INTO stand_scans (
-              stand_code,
-              scanned_at
+              stand_code
             )
-            VALUES (
-              ?,
-              CURRENT_TIMESTAMP
-            )
+            VALUES (?)
           `)
           .bind(standCode)
           .run();
@@ -1039,9 +933,7 @@ Ce QR code est prêt à être activé.
         return new Response(
           "Erreur serveur : " +
           error.message,
-          {
-            status: 500
-          }
+          { status: 500 }
         );
       }
     }
@@ -1061,9 +953,7 @@ Ce QR code est prêt à être activé.
       if (!slug) {
         return new Response(
           "Profil introuvable",
-          {
-            status: 404
-          }
+          { status: 404 }
         );
       }
 
@@ -1082,9 +972,7 @@ Ce QR code est prêt à être activé.
         if (!result) {
           return new Response(
             "Client introuvable",
-            {
-              status: 404
-            }
+            { status: 404 }
           );
         }
 
@@ -1103,188 +991,123 @@ Ce QR code est prêt à être activé.
 
         const html = `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>
 ${escapeHTML(result.name)} | TAPNIVO
 </title>
 
 <style>
-
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  background:
-    linear-gradient(
-      135deg,
-      #f5f7fb,
-      #eef2ff
-    );
-
+  font-family:Arial,Helvetica,sans-serif;
+  background:linear-gradient(135deg,#f5f7fb,#eef2ff);
   color:#111827;
 }
 
 .container{
   max-width:600px;
-
   margin:auto;
-
   padding:40px 20px;
 }
 
 .profile{
   background:white;
-
   border-radius:25px;
-
   padding:35px 25px;
-
   text-align:center;
-
-  box-shadow:
-    0 15px 40px
-    rgba(0,0,0,0.08);
+  box-shadow:0 15px 40px rgba(0,0,0,.08);
 }
 
 .logo{
   font-size:20px;
-
   font-weight:800;
-
   margin-bottom:30px;
 }
 
-.logo span{
-  color:#4f46e5;
-}
+.logo span{color:#4f46e5}
 
 .avatar{
   width:100px;
-
   height:100px;
-
   border-radius:50%;
-
-  margin:
-    auto auto 20px;
-
+  margin:auto auto 20px;
   background:#eef2ff;
-
   display:flex;
-
   align-items:center;
-
   justify-content:center;
-
   font-size:40px;
 }
 
 h1{
   margin:0;
-
   font-size:28px;
 }
 
 .profession{
   color:#4f46e5;
-
   font-weight:bold;
-
   margin-top:8px;
 }
 
 .bio{
   color:#6b7280;
-
   line-height:1.6;
-
   margin:20px 0;
 }
 
 .buttons{
   display:grid;
-
   gap:10px;
-
   margin-top:25px;
 }
 
 .button{
   display:block;
-
   padding:14px;
-
   border-radius:12px;
-
   text-decoration:none;
-
   font-weight:bold;
-
   background:#4f46e5;
-
   color:white;
 }
 
 .button.secondary{
   background:#f3f4f6;
-
   color:#374151;
 }
 
 .info{
   margin-top:25px;
-
   text-align:left;
 }
 
 .info div{
   padding:12px 0;
-
-  border-bottom:
-    1px solid #eee;
+  border-bottom:1px solid #eee;
 }
 
 .label{
   font-size:12px;
-
   color:#9ca3af;
 }
 
 .value{
   margin-top:4px;
-
   font-weight:600;
 }
 
 .footer{
   margin-top:25px;
-
   color:#9ca3af;
-
   font-size:12px;
 }
-
 </style>
-
 </head>
 
 <body>
@@ -1331,8 +1154,8 @@ ${
   result.phone
     ? `
 <a
-  class="button"
-  href="tel:${escapeHTML(result.phone)}"
+class="button"
+href="tel:${escapeHTML(result.phone)}"
 >
 📞 Appeler
 </a>
@@ -1344,14 +1167,11 @@ ${
   result.whatsapp
     ? `
 <a
-  class="button"
-  href="https://wa.me/${escapeHTML(
-    result.whatsapp.replace(
-      /[^0-9]/g,
-      ""
-    )
-  )}"
-  target="_blank"
+class="button"
+href="https://wa.me/${escapeHTML(
+  result.whatsapp.replace(/[^0-9]/g, "")
+)}"
+target="_blank"
 >
 💬 WhatsApp
 </a>
@@ -1363,53 +1183,11 @@ ${
   result.instagram
     ? `
 <a
-  class="button secondary"
-  href="${escapeHTML(result.instagram)}"
-  target="_blank"
+class="button secondary"
+href="${escapeHTML(result.instagram)}"
+target="_blank"
 >
 Instagram
-</a>
-`
-    : ""
-}
-
-${
-  result.facebook
-    ? `
-<a
-  class="button secondary"
-  href="${escapeHTML(result.facebook)}"
-  target="_blank"
->
-Facebook
-</a>
-`
-    : ""
-}
-
-${
-  result.tiktok
-    ? `
-<a
-  class="button secondary"
-  href="${escapeHTML(result.tiktok)}"
-  target="_blank"
->
-TikTok
-</a>
-`
-    : ""
-}
-
-${
-  result.linkedin
-    ? `
-<a
-  class="button secondary"
-  href="${escapeHTML(result.linkedin)}"
-  target="_blank"
->
-LinkedIn
 </a>
 `
     : ""
@@ -1419,39 +1197,11 @@ ${
   result.maps
     ? `
 <a
-  class="button secondary"
-  href="${escapeHTML(result.maps)}"
-  target="_blank"
+class="button secondary"
+href="${escapeHTML(result.maps)}"
+target="_blank"
 >
 📍 Google Maps
-</a>
-`
-    : ""
-}
-
-${
-  result.website
-    ? `
-<a
-  class="button secondary"
-  href="${escapeHTML(result.website)}"
-  target="_blank"
->
-🌐 Site web
-</a>
-`
-    : ""
-}
-
-${
-  result.reviews
-    ? `
-<a
-  class="button secondary"
-  href="${escapeHTML(result.reviews)}"
-  target="_blank"
->
-⭐ Google Reviews
 </a>
 `
     : ""
@@ -1465,15 +1215,10 @@ ${
   result.email
     ? `
 <div>
-
-<div class="label">
-Email
-</div>
-
+<div class="label">Email</div>
 <div class="value">
 ${escapeHTML(result.email)}
 </div>
-
 </div>
 `
     : ""
@@ -1483,15 +1228,10 @@ ${
   result.address
     ? `
 <div>
-
-<div class="label">
-Adresse
-</div>
-
+<div class="label">Adresse</div>
 <div class="value">
 ${escapeHTML(result.address)}
 </div>
-
 </div>
 `
     : ""
@@ -1504,11 +1244,9 @@ Profil digital créé avec TAPNIVO
 </div>
 
 </div>
-
 </div>
 
 </body>
-
 </html>
 `;
 
@@ -1526,9 +1264,7 @@ Profil digital créé avec TAPNIVO
         return new Response(
           "Erreur serveur : " +
           error.message,
-          {
-            status: 500
-          }
+          { status: 500 }
         );
       }
     }
