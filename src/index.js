@@ -16,6 +16,17 @@ export default {
       });
     };
 
+    const escapeHTML = (value) => {
+      if (value === null || value === undefined) return "";
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+
     const base64url = (input) => {
       let binary = "";
 
@@ -39,7 +50,6 @@ export default {
         "===".slice((input.length + 3) % 4);
 
       const binary = atob(base64);
-
       const bytes = new Uint8Array(binary.length);
 
       for (let i = 0; i < binary.length; i++) {
@@ -50,9 +60,7 @@ export default {
     };
 
     const timingSafeEqual = (a, b) => {
-      if (a.length !== b.length) {
-        return false;
-      }
+      if (a.length !== b.length) return false;
 
       let result = 0;
 
@@ -63,31 +71,8 @@ export default {
       return result === 0;
     };
 
-    const escapeHTML = (value) => {
-      if (value === null || value === undefined) {
-        return "";
-      }
-
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    };
-
-    const generateServiceCode = () => {
-      return (
-        "SVC-" +
-        crypto.randomUUID()
-          .replace(/-/g, "")
-          .slice(0, 12)
-          .toUpperCase()
-      );
-    };
-
     // =====================================================
-    // ADMIN SESSION
+    // ADMIN AUTH
     // =====================================================
 
     const createAdminToken = async () => {
@@ -136,8 +121,7 @@ export default {
       }
 
       try {
-        const timestampBytes =
-          fromBase64url(parts[0]);
+        const timestampBytes = fromBase64url(parts[0]);
 
         const timestamp =
           new TextDecoder().decode(timestampBytes);
@@ -148,10 +132,7 @@ export default {
           return false;
         }
 
-        if (
-          Date.now() - time >
-          8 * 60 * 60 * 1000
-        ) {
+        if (Date.now() - time > 8 * 60 * 60 * 1000) {
           return false;
         }
 
@@ -161,26 +142,24 @@ export default {
 
         const encoder = new TextEncoder();
 
-        const key =
-          await crypto.subtle.importKey(
-            "raw",
-            encoder.encode(env.ADMIN_KEY),
-            {
-              name: "HMAC",
-              hash: "SHA-256"
-            },
-            false,
-            ["sign"]
-          );
+        const key = await crypto.subtle.importKey(
+          "raw",
+          encoder.encode(env.ADMIN_KEY),
+          {
+            name: "HMAC",
+            hash: "SHA-256"
+          },
+          false,
+          ["sign"]
+        );
 
-        const expected =
-          new Uint8Array(
-            await crypto.subtle.sign(
-              "HMAC",
-              key,
-              encoder.encode(timestamp)
-            )
-          );
+        const expected = new Uint8Array(
+          await crypto.subtle.sign(
+            "HMAC",
+            key,
+            encoder.encode(timestamp)
+          )
+        );
 
         const received =
           fromBase64url(parts[1]);
@@ -199,9 +178,7 @@ export default {
       const cookieHeader =
         request.headers.get("Cookie");
 
-      if (!cookieHeader) {
-        return null;
-      }
+      if (!cookieHeader) return null;
 
       const cookies =
         cookieHeader.split(";");
@@ -220,10 +197,7 @@ export default {
 
     const isAdmin = async () => {
       const token =
-        getCookie(
-          request,
-          "tapnivo_admin"
-        );
+        getCookie(request, "tapnivo_admin");
 
       return await verifyAdminToken(token);
     };
@@ -237,8 +211,7 @@ export default {
       request.method === "POST"
     ) {
       try {
-        const data =
-          await request.json();
+        const data = await request.json();
 
         const password =
           String(data.password || "");
@@ -247,8 +220,7 @@ export default {
           return json(
             {
               success: false,
-              error:
-                "ADMIN_KEY non configurée."
+              error: "ADMIN_KEY non configurée."
             },
             500
           );
@@ -261,8 +233,7 @@ export default {
           return json(
             {
               success: false,
-              error:
-                "Mot de passe incorrect."
+              error: "Mot de passe incorrect."
             },
             401
           );
@@ -337,7 +308,8 @@ export default {
     // =====================================================
 
     if (
-      url.pathname === "/api/test-db"
+      url.pathname === "/api/test-db" &&
+      request.method === "GET"
     ) {
       try {
         const result =
@@ -365,7 +337,7 @@ export default {
     }
 
     // =====================================================
-    // GET ALL CLIENTS
+    // CLIENTS - GET ALL
     // =====================================================
 
     if (
@@ -397,24 +369,24 @@ export default {
     }
 
     // =====================================================
-    // CREATE CLIENT
+    // CLIENT - CREATE
     // =====================================================
 
     if (
       url.pathname === "/api/clients" &&
       request.method === "POST"
     ) {
-      try {
-        if (!(await isAdmin())) {
-          return json(
-            {
-              success: false,
-              error: "Non autorisé."
-            },
-            401
-          );
-        }
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
 
+      try {
         const data =
           await request.json();
 
@@ -505,1197 +477,7 @@ export default {
     }
 
     // =====================================================
-    // =====================================================
-    // SERVICES SYSTEM
-    // =====================================================
-    // =====================================================
-
-
-    // =====================================================
-    // GET ALL SERVICES
-    // =====================================================
-
-    if (
-      url.pathname === "/api/services" &&
-      request.method === "GET"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-        const result =
-          await env.DB
-            .prepare(`
-              SELECT
-                s.id,
-                s.client_id,
-                s.service_type,
-                s.service_name,
-                s.status,
-                s.service_code,
-                s.destination_url,
-                s.stand_id,
-                s.config,
-                s.created_at,
-                s.activated_at,
-                s.updated_at,
-
-                c.name AS client_name,
-
-                st.stand_code,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE ss.service_id = s.id
-                ) AS scans_count,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE
-                    ss.service_id = s.id
-                    AND date(ss.scanned_at)
-                      = date('now')
-                ) AS scans_today,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE
-                    ss.service_id = s.id
-                    AND ss.scanned_at >= datetime(
-                      'now',
-                      '-7 days'
-                    )
-                ) AS scans_7_days,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE
-                    ss.service_id = s.id
-                    AND ss.scanned_at >= datetime(
-                      'now',
-                      '-30 days'
-                    )
-                ) AS scans_30_days,
-
-                (
-                  SELECT MAX(ss.scanned_at)
-                  FROM service_scans ss
-                  WHERE ss.service_id = s.id
-                ) AS last_scan
-
-              FROM services s
-
-              LEFT JOIN clients c
-                ON s.client_id = c.id
-
-              LEFT JOIN stands st
-                ON s.stand_id = st.id
-
-              ORDER BY s.id DESC
-            `)
-            .all();
-
-        return json({
-          success: true,
-          services: result.results
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // GET SERVICES FOR ONE CLIENT
-    // =====================================================
-
-    if (
-      url.pathname.match(
-        /^\/api\/clients\/\d+\/services$/
-      ) &&
-      request.method === "GET"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-        const clientId =
-          Number(
-            url.pathname
-              .split("/")[3]
-          );
-
-        const client =
-          await env.DB
-            .prepare(`
-              SELECT id, name
-              FROM clients
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(clientId)
-            .first();
-
-        if (!client) {
-          return json(
-            {
-              success: false,
-              error:
-                "Client introuvable."
-            },
-            404
-          );
-        }
-
-        const result =
-          await env.DB
-            .prepare(`
-              SELECT
-                s.*,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE ss.service_id = s.id
-                ) AS scans_count,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE
-                    ss.service_id = s.id
-                    AND date(ss.scanned_at)
-                      = date('now')
-                ) AS scans_today,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE
-                    ss.service_id = s.id
-                    AND ss.scanned_at >= datetime(
-                      'now',
-                      '-7 days'
-                    )
-                ) AS scans_7_days,
-
-                (
-                  SELECT COUNT(*)
-                  FROM service_scans ss
-                  WHERE
-                    ss.service_id = s.id
-                    AND ss.scanned_at >= datetime(
-                      'now',
-                      '-30 days'
-                    )
-                ) AS scans_30_days,
-
-                (
-                  SELECT MAX(ss.scanned_at)
-                  FROM service_scans ss
-                  WHERE ss.service_id = s.id
-                ) AS last_scan
-
-              FROM services s
-
-              WHERE s.client_id = ?
-
-              ORDER BY s.id DESC
-            `)
-            .bind(clientId)
-            .all();
-
-        return json({
-          success: true,
-          client,
-          services: result.results
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // CREATE SERVICE
-    // =====================================================
-
-    if (
-      url.pathname === "/api/services" &&
-      request.method === "POST"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-        const data =
-          await request.json();
-
-        const clientId =
-          Number(data.client_id);
-
-        if (
-          !clientId ||
-          !Number.isInteger(clientId)
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "client_id est obligatoire."
-            },
-            400
-          );
-        }
-
-        const client =
-          await env.DB
-            .prepare(`
-              SELECT id, name
-              FROM clients
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(clientId)
-            .first();
-
-        if (!client) {
-          return json(
-            {
-              success: false,
-              error:
-                "Client introuvable."
-            },
-            404
-          );
-        }
-
-        const allowedTypes = [
-          "google_review",
-          "wifi",
-          "menu",
-          "digital_card",
-          "custom_link"
-        ];
-
-        const serviceType =
-          String(
-            data.service_type || ""
-          ).trim();
-
-        if (
-          !allowedTypes.includes(
-            serviceType
-          )
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "Type de service invalide.",
-              allowed_types:
-                allowedTypes
-            },
-            400
-          );
-        }
-
-        const defaultNames = {
-          google_review:
-            "Google Review",
-          wifi:
-            "Wi-Fi",
-          menu:
-            "Menu",
-          digital_card:
-            "Digital Business Card",
-          custom_link:
-            "Lien personnalisé"
-        };
-
-        const serviceName =
-          String(
-            data.service_name ||
-            defaultNames[serviceType]
-          ).trim();
-
-        let destinationUrl =
-          data.destination_url
-            ? String(
-                data.destination_url
-              ).trim()
-            : null;
-
-        if (destinationUrl) {
-          try {
-            const parsed =
-              new URL(destinationUrl);
-
-            if (
-              parsed.protocol !==
-                "https:" &&
-              parsed.protocol !==
-                "http:"
-            ) {
-              return json(
-                {
-                  success: false,
-                  error:
-                    "URL HTTP/HTTPS uniquement."
-                },
-                400
-              );
-            }
-
-          } catch {
-            return json(
-              {
-                success: false,
-                error:
-                  "URL invalide."
-              },
-              400
-            );
-          }
-        }
-
-        let standId = null;
-
-        if (
-          data.stand_id !== null &&
-          data.stand_id !== undefined &&
-          data.stand_id !== ""
-        ) {
-          standId =
-            Number(data.stand_id);
-
-          if (
-            !Number.isInteger(
-              standId
-            )
-          ) {
-            return json(
-              {
-                success: false,
-                error:
-                  "stand_id invalide."
-              },
-              400
-            );
-          }
-
-          const stand =
-            await env.DB
-              .prepare(`
-                SELECT id, stand_code
-                FROM stands
-                WHERE id = ?
-                LIMIT 1
-              `)
-              .bind(standId)
-              .first();
-
-          if (!stand) {
-            return json(
-              {
-                success: false,
-                error:
-                  "Stand introuvable."
-              },
-              404
-            );
-          }
-        }
-
-        let config = null;
-
-        if (
-          data.config !== undefined &&
-          data.config !== null
-        ) {
-          if (
-            typeof data.config ===
-            "string"
-          ) {
-            try {
-              JSON.parse(
-                data.config
-              );
-
-              config =
-                data.config;
-
-            } catch {
-              return json(
-                {
-                  success: false,
-                  error:
-                    "config JSON invalide."
-                },
-                400
-              );
-            }
-
-          } else {
-            config =
-              JSON.stringify(
-                data.config
-              );
-          }
-        }
-
-        const serviceCode =
-          generateServiceCode();
-
-        const status =
-          data.status === "active"
-            ? "active"
-            : "draft";
-
-        const activatedAt =
-          status === "active"
-            ? "CURRENT_TIMESTAMP"
-            : null;
-
-        if (
-          status === "active" &&
-          !destinationUrl
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "Une destination URL est obligatoire pour activer le service."
-            },
-            400
-          );
-        }
-
-        if (status === "active") {
-
-          await env.DB
-            .prepare(`
-              INSERT INTO services (
-                client_id,
-                service_type,
-                service_name,
-                status,
-                service_code,
-                destination_url,
-                stand_id,
-                config,
-                activated_at,
-                updated_at
-              )
-              VALUES (
-                ?, ?, ?, ?, ?,
-                ?, ?, ?,
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
-              )
-            `)
-            .bind(
-              clientId,
-              serviceType,
-              serviceName,
-              status,
-              serviceCode,
-              destinationUrl,
-              standId,
-              config
-            )
-            .run();
-
-        } else {
-
-          await env.DB
-            .prepare(`
-              INSERT INTO services (
-                client_id,
-                service_type,
-                service_name,
-                status,
-                service_code,
-                destination_url,
-                stand_id,
-                config,
-                updated_at
-              )
-              VALUES (
-                ?, ?, ?, ?, ?,
-                ?, ?, ?, CURRENT_TIMESTAMP
-              )
-            `)
-            .bind(
-              clientId,
-              serviceType,
-              serviceName,
-              status,
-              serviceCode,
-              destinationUrl,
-              standId,
-              config
-            )
-            .run();
-
-        }
-
-        const created =
-          await env.DB
-            .prepare(`
-              SELECT *
-              FROM services
-              WHERE service_code = ?
-              LIMIT 1
-            `)
-            .bind(serviceCode)
-            .first();
-
-        return json({
-          success: true,
-          message:
-            "Service créé avec succès.",
-          service: created,
-          dynamic_url:
-            `${url.origin}/s/${serviceCode}`
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // UPDATE SERVICE
-    // =====================================================
-
-    if (
-      url.pathname.match(
-        /^\/api\/services\/\d+$/
-      ) &&
-      request.method === "PATCH"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-        const serviceId =
-          Number(
-            url.pathname
-              .split("/")[3]
-          );
-
-        const existing =
-          await env.DB
-            .prepare(`
-              SELECT *
-              FROM services
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(serviceId)
-            .first();
-
-        if (!existing) {
-          return json(
-            {
-              success: false,
-              error:
-                "Service introuvable."
-            },
-            404
-          );
-        }
-
-        const data =
-          await request.json();
-
-        const serviceName =
-          data.service_name !==
-          undefined
-            ? String(
-                data.service_name
-              ).trim()
-            : existing.service_name;
-
-        const serviceType =
-          data.service_type !==
-          undefined
-            ? String(
-                data.service_type
-              ).trim()
-            : existing.service_type;
-
-        const allowedTypes = [
-          "google_review",
-          "wifi",
-          "menu",
-          "digital_card",
-          "custom_link"
-        ];
-
-        if (
-          !allowedTypes.includes(
-            serviceType
-          )
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "Type de service invalide."
-            },
-            400
-          );
-        }
-
-        let destinationUrl =
-          data.destination_url !==
-          undefined
-            ? (
-                data.destination_url
-                  ? String(
-                      data.destination_url
-                    ).trim()
-                  : null
-              )
-            : existing.destination_url;
-
-        if (destinationUrl) {
-          try {
-            const parsed =
-              new URL(destinationUrl);
-
-            if (
-              parsed.protocol !==
-                "https:" &&
-              parsed.protocol !==
-                "http:"
-            ) {
-              return json(
-                {
-                  success: false,
-                  error:
-                    "URL HTTP/HTTPS uniquement."
-                },
-                400
-              );
-            }
-
-          } catch {
-            return json(
-              {
-                success: false,
-                error:
-                  "URL invalide."
-              },
-              400
-            );
-          }
-        }
-
-        const status =
-          data.status !== undefined
-            ? String(data.status)
-            : existing.status;
-
-        if (
-          ![
-            "draft",
-            "active",
-            "inactive"
-          ].includes(status)
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "Status invalide."
-            },
-            400
-          );
-        }
-
-        if (
-          status === "active" &&
-          !destinationUrl
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "Une destination URL est obligatoire pour activer le service."
-            },
-            400
-          );
-        }
-
-        let standId =
-          existing.stand_id;
-
-        if (
-          data.stand_id !==
-          undefined
-        ) {
-          if (
-            data.stand_id === null ||
-            data.stand_id === ""
-          ) {
-            standId = null;
-
-          } else {
-            standId =
-              Number(data.stand_id);
-
-            if (
-              !Number.isInteger(
-                standId
-              )
-            ) {
-              return json(
-                {
-                  success: false,
-                  error:
-                    "stand_id invalide."
-                },
-                400
-              );
-            }
-
-            const stand =
-              await env.DB
-                .prepare(`
-                  SELECT id
-                  FROM stands
-                  WHERE id = ?
-                  LIMIT 1
-                `)
-                .bind(standId)
-                .first();
-
-            if (!stand) {
-              return json(
-                {
-                  success: false,
-                  error:
-                    "Stand introuvable."
-                },
-                404
-              );
-            }
-          }
-        }
-
-        let config =
-          existing.config;
-
-        if (
-          data.config !==
-          undefined
-        ) {
-          if (
-            data.config === null ||
-            data.config === ""
-          ) {
-            config = null;
-
-          } else if (
-            typeof data.config ===
-            "string"
-          ) {
-            try {
-              JSON.parse(
-                data.config
-              );
-
-              config =
-                data.config;
-
-            } catch {
-              return json(
-                {
-                  success: false,
-                  error:
-                    "config JSON invalide."
-                },
-                400
-              );
-            }
-
-          } else {
-            config =
-              JSON.stringify(
-                data.config
-              );
-          }
-        }
-
-        let activatedAt =
-          existing.activated_at;
-
-        if (
-          status === "active" &&
-          existing.status !==
-            "active"
-        ) {
-          activatedAt =
-            new Date()
-              .toISOString()
-              .replace("T", " ")
-              .replace("Z", "");
-        }
-
-        if (status !== "active") {
-          activatedAt =
-            existing.activated_at;
-        }
-
-        await env.DB
-          .prepare(`
-            UPDATE services
-            SET
-              service_type = ?,
-              service_name = ?,
-              status = ?,
-              destination_url = ?,
-              stand_id = ?,
-              config = ?,
-              activated_at = ?,
-              updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-          `)
-          .bind(
-            serviceType,
-            serviceName,
-            status,
-            destinationUrl,
-            standId,
-            config,
-            activatedAt,
-            serviceId
-          )
-          .run();
-
-        const updated =
-          await env.DB
-            .prepare(`
-              SELECT *
-              FROM services
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(serviceId)
-            .first();
-
-        return json({
-          success: true,
-          message:
-            "Service modifié avec succès.",
-          service: updated,
-          dynamic_url:
-            `${url.origin}/s/${updated.service_code}`
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // DELETE SERVICE
-    // =====================================================
-
-    if (
-      url.pathname.match(
-        /^\/api\/services\/\d+$/
-      ) &&
-      request.method === "DELETE"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-        const serviceId =
-          Number(
-            url.pathname
-              .split("/")[3]
-          );
-
-        const existing =
-          await env.DB
-            .prepare(`
-              SELECT id, service_name
-              FROM services
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(serviceId)
-            .first();
-
-        if (!existing) {
-          return json(
-            {
-              success: false,
-              error:
-                "Service introuvable."
-            },
-            404
-          );
-        }
-
-        await env.DB
-          .prepare(`
-            DELETE FROM services
-            WHERE id = ?
-          `)
-          .bind(serviceId)
-          .run();
-
-        return json({
-          success: true,
-          message:
-            "Service supprimé avec succès."
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // SERVICE STATISTICS
-    // =====================================================
-
-    if (
-      url.pathname.match(
-        /^\/api\/services\/\d+\/stats$/
-      ) &&
-      request.method === "GET"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-        const serviceId =
-          Number(
-            url.pathname
-              .split("/")[3]
-          );
-
-        const service =
-          await env.DB
-            .prepare(`
-              SELECT
-                s.*,
-                c.name AS client_name
-              FROM services s
-              LEFT JOIN clients c
-                ON s.client_id = c.id
-              WHERE s.id = ?
-              LIMIT 1
-            `)
-            .bind(serviceId)
-            .first();
-
-        if (!service) {
-          return json(
-            {
-              success: false,
-              error:
-                "Service introuvable."
-            },
-            404
-          );
-        }
-
-        const total =
-          await env.DB
-            .prepare(`
-              SELECT COUNT(*) AS count
-              FROM service_scans
-              WHERE service_id = ?
-            `)
-            .bind(serviceId)
-            .first();
-
-        const today =
-          await env.DB
-            .prepare(`
-              SELECT COUNT(*) AS count
-              FROM service_scans
-              WHERE
-                service_id = ?
-                AND date(scanned_at)
-                  = date('now')
-            `)
-            .bind(serviceId)
-            .first();
-
-        const sevenDays =
-          await env.DB
-            .prepare(`
-              SELECT COUNT(*) AS count
-              FROM service_scans
-              WHERE
-                service_id = ?
-                AND scanned_at >= datetime(
-                  'now',
-                  '-7 days'
-                )
-            `)
-            .bind(serviceId)
-            .first();
-
-        const thirtyDays =
-          await env.DB
-            .prepare(`
-              SELECT COUNT(*) AS count
-              FROM service_scans
-              WHERE
-                service_id = ?
-                AND scanned_at >= datetime(
-                  'now',
-                  '-30 days'
-                )
-            `)
-            .bind(serviceId)
-            .first();
-
-        const lastScan =
-          await env.DB
-            .prepare(`
-              SELECT scanned_at
-              FROM service_scans
-              WHERE service_id = ?
-              ORDER BY id DESC
-              LIMIT 1
-            `)
-            .bind(serviceId)
-            .first();
-
-        return json({
-          success: true,
-          service,
-          statistics: {
-            total:
-              Number(total?.count || 0),
-
-            today:
-              Number(today?.count || 0),
-
-            seven_days:
-              Number(
-                sevenDays?.count || 0
-              ),
-
-            thirty_days:
-              Number(
-                thirtyDays?.count || 0
-              ),
-
-            last_scan:
-              lastScan?.scanned_at ||
-              null
-          }
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-
-    // =====================================================
-    // =====================================================
-    // EXISTING STANDS + SCAN STATISTICS
-    // =====================================================
+    // STANDS - GET ALL
     // =====================================================
 
     if (
@@ -1729,38 +511,13 @@ export default {
                 (
                   SELECT COUNT(*)
                   FROM stand_scans ss
-                  WHERE ss.stand_code =
-                    s.stand_code
+                  WHERE ss.stand_code = s.stand_code
                 ) AS scans_count,
-
-                (
-                  SELECT COUNT(*)
-                  FROM stand_scans ss
-                  WHERE
-                    ss.stand_code =
-                      s.stand_code
-                    AND date(ss.scanned_at)
-                      = date('now')
-                ) AS scans_today,
-
-                (
-                  SELECT COUNT(*)
-                  FROM stand_scans ss
-                  WHERE
-                    ss.stand_code =
-                      s.stand_code
-                    AND ss.scanned_at >=
-                      datetime(
-                        'now',
-                        '-7 days'
-                      )
-                ) AS scans_7_days,
 
                 (
                   SELECT MAX(ss.scanned_at)
                   FROM stand_scans ss
-                  WHERE ss.stand_code =
-                    s.stand_code
+                  WHERE ss.stand_code = s.stand_code
                 ) AS last_scan
 
               FROM stands s
@@ -1788,14 +545,12 @@ export default {
       }
     }
 
-
     // =====================================================
     // ACTIVATE STAND
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/stands/activate" &&
+      url.pathname === "/api/stands/activate" &&
       request.method === "POST"
     ) {
       if (!(await isAdmin())) {
@@ -1865,10 +620,8 @@ export default {
         }
 
         if (
-          parsedUrl.protocol !==
-            "https:" &&
-          parsedUrl.protocol !==
-            "http:"
+          parsedUrl.protocol !== "https:" &&
+          parsedUrl.protocol !== "http:"
         ) {
           return json(
             {
@@ -1895,17 +648,13 @@ export default {
           return json(
             {
               success: false,
-              error:
-                "Stand introuvable."
+              error: "Stand introuvable."
             },
             404
           );
         }
 
-        if (
-          stand.status ===
-          "active"
-        ) {
+        if (stand.status === "active") {
           return json(
             {
               success: false,
@@ -1932,8 +681,7 @@ export default {
             return json(
               {
                 success: false,
-                error:
-                  "Client introuvable."
+                error: "Client introuvable."
               },
               404
             );
@@ -1947,8 +695,7 @@ export default {
               client_id = ?,
               destination_url = ?,
               status = 'active',
-              activated_at =
-                CURRENT_TIMESTAMP
+              activated_at = CURRENT_TIMESTAMP
             WHERE stand_code = ?
           `)
           .bind(
@@ -1962,8 +709,7 @@ export default {
           success: true,
           message:
             "Stand activé avec succès.",
-          stand_code:
-            standCode
+          stand_code: standCode
         });
 
       } catch (error) {
@@ -1977,14 +723,12 @@ export default {
       }
     }
 
-
     // =====================================================
     // RESET STAND
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/stands/reset" &&
+      url.pathname === "/api/stands/reset" &&
       request.method === "POST"
     ) {
       if (!(await isAdmin())) {
@@ -2032,8 +776,7 @@ export default {
           return json(
             {
               success: false,
-              error:
-                "Stand introuvable."
+              error: "Stand introuvable."
             },
             404
           );
@@ -2056,8 +799,7 @@ export default {
           success: true,
           message:
             "Stand réinitialisé avec succès.",
-          stand_code:
-            standCode
+          stand_code: standCode
         });
 
       } catch (error) {
@@ -2071,11 +813,1384 @@ export default {
       }
     }
 
+    // =====================================================
+    // =====================================================
+    // SERVICES SYSTEM
+    // =====================================================
+    // =====================================================
+
+    // -----------------------------------------------------
+    // GET ALL SERVICES
+    // -----------------------------------------------------
+
+    if (
+      url.pathname === "/api/services" &&
+      request.method === "GET"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+                s.id,
+                s.client_id,
+                s.service_type,
+                s.service_name,
+                s.status,
+                s.service_code,
+                s.destination_url,
+                s.stand_id,
+                s.config,
+                s.created_at,
+                s.activated_at,
+                s.updated_at,
+
+                c.name AS client_name,
+                st.stand_code,
+
+                (
+                  SELECT COUNT(*)
+                  FROM service_scans ss
+                  WHERE ss.service_id = s.id
+                ) AS scans_count,
+
+                (
+                  SELECT COUNT(*)
+                  FROM service_scans ss
+                  WHERE ss.service_id = s.id
+                  AND date(ss.scanned_at) = date('now')
+                ) AS scans_today,
+
+                (
+                  SELECT COUNT(*)
+                  FROM service_scans ss
+                  WHERE ss.service_id = s.id
+                  AND ss.scanned_at >= datetime('now', '-7 days')
+                ) AS scans_7_days,
+
+                (
+                  SELECT MAX(ss.scanned_at)
+                  FROM service_scans ss
+                  WHERE ss.service_id = s.id
+                ) AS last_scan
+
+              FROM services s
+
+              LEFT JOIN clients c
+                ON s.client_id = c.id
+
+              LEFT JOIN stands st
+                ON s.stand_id = st.id
+
+              ORDER BY s.id DESC
+            `)
+            .all();
+
+        return json({
+          success: true,
+          services: result.results
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // -----------------------------------------------------
+    // GET ONE SERVICE
+    // -----------------------------------------------------
+
+    if (
+      url.pathname.startsWith("/api/services/") &&
+      request.method === "GET"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      const id =
+        Number(
+          url.pathname.split("/").pop()
+        );
+
+      if (!Number.isInteger(id)) {
+        return json(
+          {
+            success: false,
+            error: "ID invalide."
+          },
+          400
+        );
+      }
+
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT
+                s.*,
+                c.name AS client_name,
+                st.stand_code
+              FROM services s
+              LEFT JOIN clients c
+                ON s.client_id = c.id
+              LEFT JOIN stands st
+                ON s.stand_id = st.id
+              WHERE s.id = ?
+              LIMIT 1
+            `)
+            .bind(id)
+            .first();
+
+        if (!service) {
+          return json(
+            {
+              success: false,
+              error: "Service introuvable."
+            },
+            404
+          );
+        }
+
+        return json({
+          success: true,
+          service
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // -----------------------------------------------------
+    // CREATE SERVICE
+    // -----------------------------------------------------
+
+    if (
+      url.pathname === "/api/services" &&
+      request.method === "POST"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
+        const data =
+          await request.json();
+
+        const clientId =
+          Number(data.client_id);
+
+        const serviceType =
+          String(
+            data.service_type || ""
+          ).trim();
+
+        const serviceName =
+          String(
+            data.service_name || ""
+          ).trim();
+
+        let serviceCode =
+          String(
+            data.service_code || ""
+          ).trim();
+
+        const destinationUrl =
+          String(
+            data.destination_url || ""
+          ).trim();
+
+        const status =
+          String(
+            data.status || "draft"
+          ).trim();
+
+        const standId =
+          data.stand_id
+            ? Number(data.stand_id)
+            : null;
+
+        const config =
+          data.config !== undefined
+            ? (
+                typeof data.config === "string"
+                  ? data.config
+                  : JSON.stringify(data.config)
+              )
+            : null;
+
+        if (!Number.isInteger(clientId)) {
+          return json(
+            {
+              success: false,
+              error: "client_id est obligatoire."
+            },
+            400
+          );
+        }
+
+        if (!serviceType) {
+          return json(
+            {
+              success: false,
+              error:
+                "service_type est obligatoire."
+            },
+            400
+          );
+        }
+
+        if (!serviceName) {
+          return json(
+            {
+              success: false,
+              error:
+                "service_name est obligatoire."
+            },
+            400
+          );
+        }
+
+        // -------------------------------------------------
+        // VERIFY CLIENT
+        // -------------------------------------------------
+
+        const client =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM clients
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(clientId)
+            .first();
+
+        if (!client) {
+          return json(
+            {
+              success: false,
+              error: "Client introuvable."
+            },
+            404
+          );
+        }
+
+        // -------------------------------------------------
+        // VERIFY STAND
+        // -------------------------------------------------
+
+        if (standId !== null) {
+          const stand =
+            await env.DB
+              .prepare(`
+                SELECT id, stand_code
+                FROM stands
+                WHERE id = ?
+                LIMIT 1
+              `)
+              .bind(standId)
+              .first();
+
+          if (!stand) {
+            return json(
+              {
+                success: false,
+                error: "Stand introuvable."
+              },
+              404
+            );
+          }
+        }
+
+        // -------------------------------------------------
+        // GENERATE SERVICE CODE
+        // -------------------------------------------------
+
+        if (!serviceCode) {
+          serviceCode =
+            serviceType
+              .toUpperCase()
+              .replace(/[^A-Z0-9]/g, "")
+              .slice(0, 5) +
+            "-" +
+            Date.now().toString(36).toUpperCase();
+        }
+
+        serviceCode =
+          serviceCode
+            .toUpperCase()
+            .replace(/[^A-Z0-9_-]/g, "");
+
+        if (!serviceCode) {
+          return json(
+            {
+              success: false,
+              error: "service_code invalide."
+            },
+            400
+          );
+        }
+
+        // -------------------------------------------------
+        // VERIFY UNIQUE CODE
+        // -------------------------------------------------
+
+        const existing =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM services
+              WHERE service_code = ?
+              LIMIT 1
+            `)
+            .bind(serviceCode)
+            .first();
+
+        if (existing) {
+          return json(
+            {
+              success: false,
+              error:
+                "Ce service_code existe déjà."
+            },
+            409
+          );
+        }
+
+        // -------------------------------------------------
+        // VALIDATE DESTINATION
+        // -------------------------------------------------
+
+        if (destinationUrl) {
+          try {
+            const parsed =
+              new URL(destinationUrl);
+
+            if (
+              parsed.protocol !== "http:" &&
+              parsed.protocol !== "https:"
+            ) {
+              return json(
+                {
+                  success: false,
+                  error:
+                    "URL HTTP/HTTPS uniquement."
+                },
+                400
+              );
+            }
+
+          } catch {
+            return json(
+              {
+                success: false,
+                error: "URL invalide."
+              },
+              400
+            );
+          }
+        }
+
+        // -------------------------------------------------
+        // INSERT
+        // -------------------------------------------------
+
+        const finalStatus =
+          ["draft", "active", "inactive"].includes(status)
+            ? status
+            : "draft";
+
+        await env.DB
+          .prepare(`
+            INSERT INTO services (
+              client_id,
+              service_type,
+              service_name,
+              status,
+              service_code,
+              destination_url,
+              stand_id,
+              config,
+              activated_at,
+              updated_at
+            )
+            VALUES (
+              ?, ?, ?, ?, ?,
+              ?, ?, ?,
+              CASE
+                WHEN ? = 'active'
+                THEN CURRENT_TIMESTAMP
+                ELSE NULL
+              END,
+              CURRENT_TIMESTAMP
+            )
+          `)
+          .bind(
+            clientId,
+            serviceType,
+            serviceName,
+            finalStatus,
+            serviceCode,
+            destinationUrl || null,
+            standId,
+            config,
+            finalStatus
+          )
+          .run();
+
+        return json({
+          success: true,
+          message:
+            "Service créé avec succès.",
+          service_code: serviceCode,
+          dynamic_url:
+            `${url.origin}/s/${serviceCode}`
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // -----------------------------------------------------
+    // UPDATE SERVICE
+    // -----------------------------------------------------
+
+    if (
+      url.pathname.startsWith("/api/services/") &&
+      request.method === "PUT"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      const id =
+        Number(
+          url.pathname.split("/").pop()
+        );
+
+      if (!Number.isInteger(id)) {
+        return json(
+          {
+            success: false,
+            error: "ID invalide."
+          },
+          400
+        );
+      }
+
+      try {
+        const data =
+          await request.json();
+
+        const current =
+          await env.DB
+            .prepare(`
+              SELECT *
+              FROM services
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(id)
+            .first();
+
+        if (!current) {
+          return json(
+            {
+              success: false,
+              error: "Service introuvable."
+            },
+            404
+          );
+        }
+
+        const clientId =
+          data.client_id !== undefined
+            ? Number(data.client_id)
+            : current.client_id;
+
+        const serviceType =
+          data.service_type !== undefined
+            ? String(data.service_type).trim()
+            : current.service_type;
+
+        const serviceName =
+          data.service_name !== undefined
+            ? String(data.service_name).trim()
+            : current.service_name;
+
+        const destinationUrl =
+          data.destination_url !== undefined
+            ? String(data.destination_url).trim()
+            : (current.destination_url || "");
+
+        const standId =
+          data.stand_id !== undefined
+            ? (
+                data.stand_id === null ||
+                data.stand_id === ""
+                  ? null
+                  : Number(data.stand_id)
+              )
+            : current.stand_id;
+
+        const status =
+          data.status !== undefined
+            ? String(data.status).trim()
+            : current.status;
+
+        const config =
+          data.config !== undefined
+            ? (
+                typeof data.config === "string"
+                  ? data.config
+                  : JSON.stringify(data.config)
+              )
+            : current.config;
+
+        if (!Number.isInteger(clientId)) {
+          return json(
+            {
+              success: false,
+              error: "client_id invalide."
+            },
+            400
+          );
+        }
+
+        if (!serviceName) {
+          return json(
+            {
+              success: false,
+              error:
+                "service_name est obligatoire."
+            },
+            400
+          );
+        }
+
+        // VERIFY CLIENT
+
+        const client =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM clients
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(clientId)
+            .first();
+
+        if (!client) {
+          return json(
+            {
+              success: false,
+              error: "Client introuvable."
+            },
+            404
+          );
+        }
+
+        // VERIFY STAND
+
+        if (standId !== null) {
+          const stand =
+            await env.DB
+              .prepare(`
+                SELECT id
+                FROM stands
+                WHERE id = ?
+                LIMIT 1
+              `)
+              .bind(standId)
+              .first();
+
+          if (!stand) {
+            return json(
+              {
+                success: false,
+                error: "Stand introuvable."
+              },
+              404
+            );
+          }
+        }
+
+        // VALIDATE URL
+
+        if (destinationUrl) {
+          try {
+            const parsed =
+              new URL(destinationUrl);
+
+            if (
+              parsed.protocol !== "http:" &&
+              parsed.protocol !== "https:"
+            ) {
+              return json(
+                {
+                  success: false,
+                  error:
+                    "URL HTTP/HTTPS uniquement."
+                },
+                400
+              );
+            }
+
+          } catch {
+            return json(
+              {
+                success: false,
+                error: "URL invalide."
+              },
+              400
+            );
+          }
+        }
+
+        const finalStatus =
+          ["draft", "active", "inactive"].includes(status)
+            ? status
+            : current.status;
+
+        await env.DB
+          .prepare(`
+            UPDATE services
+            SET
+              client_id = ?,
+              service_type = ?,
+              service_name = ?,
+              status = ?,
+              destination_url = ?,
+              stand_id = ?,
+              config = ?,
+              activated_at =
+                CASE
+                  WHEN ? = 'active'
+                    AND activated_at IS NULL
+                  THEN CURRENT_TIMESTAMP
+                  WHEN ? != 'active'
+                  THEN NULL
+                  ELSE activated_at
+                END,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `)
+          .bind(
+            clientId,
+            serviceType,
+            serviceName,
+            finalStatus,
+            destinationUrl || null,
+            standId,
+            config,
+            finalStatus,
+            finalStatus,
+            id
+          )
+          .run();
+
+        return json({
+          success: true,
+          message:
+            "Service modifié avec succès."
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // -----------------------------------------------------
+    // SERVICE STATS
+    // -----------------------------------------------------
+
+    if (
+      url.pathname.match(/^\/api\/services\/\d+\/stats$/) &&
+      request.method === "GET"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      const parts =
+        url.pathname.split("/");
+
+      const id =
+        Number(parts[3]);
+
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT
+                id,
+                service_name,
+                service_code,
+                status
+              FROM services
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(id)
+            .first();
+
+        if (!service) {
+          return json(
+            {
+              success: false,
+              error: "Service introuvable."
+            },
+            404
+          );
+        }
+
+        const total =
+          await env.DB
+            .prepare(`
+              SELECT COUNT(*) AS total
+              FROM service_scans
+              WHERE service_id = ?
+            `)
+            .bind(id)
+            .first();
+
+        const today =
+          await env.DB
+            .prepare(`
+              SELECT COUNT(*) AS total
+              FROM service_scans
+              WHERE service_id = ?
+              AND date(scanned_at) = date('now')
+            `)
+            .bind(id)
+            .first();
+
+        const sevenDays =
+          await env.DB
+            .prepare(`
+              SELECT COUNT(*) AS total
+              FROM service_scans
+              WHERE service_id = ?
+              AND scanned_at >= datetime('now', '-7 days')
+            `)
+            .bind(id)
+            .first();
+
+        const lastScan =
+          await env.DB
+            .prepare(`
+              SELECT MAX(scanned_at) AS last_scan
+              FROM service_scans
+              WHERE service_id = ?
+            `)
+            .bind(id)
+            .first();
+
+        return json({
+          success: true,
+          service,
+          stats: {
+            total: Number(total?.total || 0),
+            today: Number(today?.total || 0),
+            seven_days: Number(sevenDays?.total || 0),
+            last_scan: lastScan?.last_scan || null
+          }
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // -----------------------------------------------------
+    // ACTIVATE / DEACTIVATE SERVICE
+    // -----------------------------------------------------
+
+    if (
+      url.pathname.match(/^\/api\/services\/\d+\/status$/) &&
+      request.method === "POST"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      const parts =
+        url.pathname.split("/");
+
+      const id =
+        Number(parts[3]);
+
+      try {
+        const data =
+          await request.json();
+
+        const newStatus =
+          String(
+            data.status || ""
+          ).trim();
+
+        if (
+          !["active", "inactive", "draft"].includes(
+            newStatus
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Status invalide."
+            },
+            400
+          );
+        }
+
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM services
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(id)
+            .first();
+
+        if (!service) {
+          return json(
+            {
+              success: false,
+              error: "Service introuvable."
+            },
+            404
+          );
+        }
+
+        await env.DB
+          .prepare(`
+            UPDATE services
+            SET
+              status = ?,
+              activated_at =
+                CASE
+                  WHEN ? = 'active'
+                  THEN CURRENT_TIMESTAMP
+                  ELSE NULL
+                END,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `)
+          .bind(
+            newStatus,
+            newStatus,
+            id
+          )
+          .run();
+
+        return json({
+          success: true,
+          message:
+            "Status du service mis à jour.",
+          status: newStatus
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // -----------------------------------------------------
+    // DELETE SERVICE
+    // -----------------------------------------------------
+
+    if (
+      url.pathname.startsWith("/api/services/") &&
+      request.method === "DELETE"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      const id =
+        Number(
+          url.pathname.split("/").pop()
+        );
+
+      if (!Number.isInteger(id)) {
+        return json(
+          {
+            success: false,
+            error: "ID invalide."
+          },
+          400
+        );
+      }
+
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM services
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(id)
+            .first();
+
+        if (!service) {
+          return json(
+            {
+              success: false,
+              error: "Service introuvable."
+            },
+            404
+          );
+        }
+
+        await env.DB
+          .prepare(`
+            DELETE FROM services
+            WHERE id = ?
+          `)
+          .bind(id)
+          .run();
+
+        return json({
+          success: true,
+          message:
+            "Service supprimé avec succès."
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
 
     // =====================================================
+    // DYNAMIC SERVICE QR
     // =====================================================
-    // EXISTING DYNAMIC STAND QR / NFC
+
+    if (
+      url.pathname.startsWith("/s/")
+    ) {
+      const serviceCode =
+        url.pathname
+          .replace("/s/", "")
+          .replace(/\/$/, "")
+          .trim()
+          .toUpperCase();
+
+      if (!serviceCode) {
+        return new Response(
+          "Service introuvable",
+          { status: 404 }
+        );
+      }
+
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT
+                id,
+                service_code,
+                service_name,
+                service_type,
+                status,
+                destination_url,
+                config
+              FROM services
+              WHERE service_code = ?
+              LIMIT 1
+            `)
+            .bind(serviceCode)
+            .first();
+
+        if (!service) {
+          return new Response(
+            "Service introuvable",
+            { status: 404 }
+          );
+        }
+
+        // -------------------------------------------------
+        // INACTIVE SERVICE
+        // -------------------------------------------------
+
+        if (
+          service.status !== "active"
+        ) {
+          return new Response(
+`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>TAPNIVO</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:#f5f7fb;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+.box{
+  max-width:420px;
+  width:100%;
+  background:white;
+  border-radius:22px;
+  padding:35px 25px;
+  text-align:center;
+  box-shadow:0 15px 40px rgba(0,0,0,.08);
+}
+
+.logo{
+  font-size:25px;
+  font-weight:800;
+  margin-bottom:25px;
+}
+
+.logo span{
+  color:#4f46e5;
+}
+
+h2{
+  margin-bottom:10px;
+}
+
+p{
+  color:#6b7280;
+  line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+
+<h2>
+Service indisponible
+</h2>
+
+<p>
+Ce service n'est pas actuellement disponible.
+</p>
+
+</div>
+
+</body>
+</html>
+`,
+            {
+              status: 200,
+              headers: {
+                "Content-Type":
+                  "text/html; charset=UTF-8"
+              }
+            }
+          );
+        }
+
+        // -------------------------------------------------
+        // RECORD SERVICE SCAN
+        // -------------------------------------------------
+
+        await env.DB
+          .prepare(`
+            INSERT INTO service_scans (
+              service_id
+            )
+            VALUES (?)
+          `)
+          .bind(service.id)
+          .run();
+
+        // -------------------------------------------------
+        // DESTINATION
+        // -------------------------------------------------
+
+        if (service.destination_url) {
+          return Response.redirect(
+            service.destination_url,
+            302
+          );
+        }
+
+        // -------------------------------------------------
+        // FALLBACK SERVICE PAGE
+        // -------------------------------------------------
+
+        let parsedConfig = {};
+
+        try {
+          parsedConfig =
+            service.config
+              ? JSON.parse(service.config)
+              : {};
+        } catch {
+          parsedConfig = {};
+        }
+
+        const serviceTitle =
+          escapeHTML(
+            service.service_name
+          );
+
+        const serviceDescription =
+          escapeHTML(
+            parsedConfig.description ||
+            "Service TAPNIVO"
+          );
+
+        return new Response(
+`
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0"
+>
+
+<title>
+${serviceTitle} | TAPNIVO
+</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+
+  font-family:
+  Arial,
+  Helvetica,
+  sans-serif;
+
+  background:
+  linear-gradient(
+    135deg,
+    #f5f7fb,
+    #eef2ff
+  );
+
+  color:#111827;
+}
+
+.box{
+  width:100%;
+  max-width:500px;
+
+  background:white;
+
+  border-radius:25px;
+
+  padding:35px 25px;
+
+  text-align:center;
+
+  box-shadow:
+  0 15px 40px
+  rgba(0,0,0,.08);
+}
+
+.logo{
+  font-size:21px;
+  font-weight:800;
+  margin-bottom:30px;
+}
+
+.logo span{
+  color:#4f46e5;
+}
+
+.icon{
+  font-size:55px;
+  margin-bottom:15px;
+}
+
+h1{
+  font-size:28px;
+  margin:0 0 15px;
+}
+
+p{
+  color:#6b7280;
+  line-height:1.7;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+
+<div class="icon">
+✨
+</div>
+
+<h1>
+${serviceTitle}
+</h1>
+
+<p>
+${serviceDescription}
+</p>
+
+</div>
+
+</body>
+
+</html>
+`,
+          {
+            status: 200,
+            headers: {
+              "Content-Type":
+                "text/html; charset=UTF-8"
+            }
+          }
+        );
+
+      } catch (error) {
+        return new Response(
+          "Erreur serveur : " +
+          error.message,
+          { status: 500 }
+        );
+      }
+    }
+
     // =====================================================
+    // OLD DYNAMIC STANDS
     // =====================================================
 
     if (
@@ -2116,21 +2231,32 @@ export default {
         }
 
         if (
-          stand.status !==
-            "active" ||
+          stand.status !== "active" ||
           !stand.destination_url
         ) {
           return new Response(
-            `
+`
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,initial-scale=1.0">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0"
+>
+
 <title>TAPNIVO</title>
+
 <style>
-*{box-sizing:border-box}
+
+*{
+box-sizing:border-box;
+}
+
 body{
 margin:0;
 min-height:100vh;
@@ -2142,6 +2268,7 @@ background:#f5f7fb;
 color:#111827;
 text-align:center;
 }
+
 .box{
 background:white;
 padding:35px 25px;
@@ -2150,34 +2277,51 @@ box-shadow:0 15px 40px rgba(0,0,0,.08);
 max-width:400px;
 margin:20px;
 }
+
 .logo{
 font-size:24px;
 font-weight:800;
 margin-bottom:20px;
 }
-.logo span{color:#4f46e5}
+
+.logo span{
+color:#4f46e5;
+}
+
 p{
 color:#6b7280;
 line-height:1.6;
 }
+
 </style>
+
 </head>
+
 <body>
+
 <div class="box">
+
 <div class="logo">
 TAP<span>NIVO</span>
 </div>
-<h2>Stand non activé</h2>
+
+<h2>
+Stand non activé
+</h2>
+
 <p>
 Ce QR code est prêt à être activé.
 </p>
+
 </div>
+
 </body>
+
 </html>
 `,
             {
-              status: 200,
-              headers: {
+              status:200,
+              headers:{
                 "Content-Type":
                   "text/html; charset=UTF-8"
               }
@@ -2204,257 +2348,32 @@ Ce QR code est prêt à être activé.
         return new Response(
           "Erreur serveur : " +
           error.message,
-          { status: 500 }
+          { status:500 }
         );
       }
     }
 
-
-    // =====================================================
-    // =====================================================
-    // DYNAMIC SERVICE QR
-    // =====================================================
-    // =====================================================
-
-    if (
-      url.pathname.startsWith("/s/")
-    ) {
-      const serviceCode =
-        url.pathname
-          .replace("/s/", "")
-          .replace(/\/$/, "");
-
-      if (!serviceCode) {
-        return new Response(
-          "Service introuvable",
-          { status: 404 }
-        );
-      }
-
-      try {
-        const service =
-          await env.DB
-            .prepare(`
-              SELECT
-                s.*,
-                c.name AS client_name
-              FROM services s
-              LEFT JOIN clients c
-                ON s.client_id = c.id
-              WHERE s.service_code = ?
-              LIMIT 1
-            `)
-            .bind(serviceCode)
-            .first();
-
-        if (!service) {
-          return new Response(
-            "Service introuvable",
-            { status: 404 }
-          );
-        }
-
-        if (
-          service.status !==
-            "active"
-        ) {
-          return new Response(
-            `
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0">
-<title>TAPNIVO</title>
-
-<style>
-*{box-sizing:border-box}
-
-body{
-margin:0;
-min-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-font-family:Arial,Helvetica,sans-serif;
-background:#f5f7fb;
-color:#111827;
-text-align:center;
-}
-
-.box{
-background:white;
-padding:35px 25px;
-border-radius:20px;
-box-shadow:0 15px 40px rgba(0,0,0,.08);
-max-width:420px;
-margin:20px;
-}
-
-.logo{
-font-size:24px;
-font-weight:800;
-margin-bottom:20px;
-}
-
-.logo span{
-color:#4f46e5;
-}
-
-p{
-color:#6b7280;
-line-height:1.6;
-}
-</style>
-
-</head>
-
-<body>
-
-<div class="box">
-
-<div class="logo">
-TAP<span>NIVO</span>
-</div>
-
-<h2>
-Service non disponible
-</h2>
-
-<p>
-Ce service n'est pas encore activé.
-</p>
-
-</div>
-
-</body>
-</html>
-`,
-            {
-              status: 200,
-              headers: {
-                "Content-Type":
-                  "text/html; charset=UTF-8"
-              }
-            }
-          );
-        }
-
-        // =================================================
-        // ENREGISTRER LE SCAN
-        // =================================================
-
-        await env.DB
-          .prepare(`
-            INSERT INTO service_scans (
-              service_id
-            )
-            VALUES (?)
-          `)
-          .bind(service.id)
-          .run();
-
-        // =================================================
-        // DESTINATION
-        // =================================================
-
-        if (
-          service.destination_url
-        ) {
-          return Response.redirect(
-            service.destination_url,
-            302
-          );
-        }
-
-        return new Response(
-          `
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0">
-<title>
-${escapeHTML(
-  service.service_name
-)}
-</title>
-</head>
-
-<body>
-
-<div style="
-font-family:Arial;
-text-align:center;
-padding:50px 20px;
-">
-
-<h2>
-${escapeHTML(
-  service.service_name
-)}
-</h2>
-
-<p>
-Ce service est actif mais
-n'a pas encore de destination.
-</p>
-
-</div>
-
-</body>
-</html>
-`,
-          {
-            status: 200,
-            headers: {
-              "Content-Type":
-                "text/html; charset=UTF-8"
-            }
-          }
-        );
-
-      } catch (error) {
-        return new Response(
-          "Erreur serveur : " +
-          error.message,
-          { status: 500 }
-        );
-      }
-    }
-
-
-    // =====================================================
     // =====================================================
     // CLIENT PROFILE
     // =====================================================
-    // =====================================================
 
     if (
-      url.pathname.startsWith(
-        "/client/"
-      )
+      url.pathname.startsWith("/client/")
     ) {
       const slug =
         url.pathname
-          .replace(
-            "/client/",
-            ""
-          )
+          .replace("/client/", "")
           .replace(/\/$/, "");
 
       if (!slug) {
         return new Response(
           "Profil introuvable",
-          { status: 404 }
+          { status:404 }
         );
       }
 
       try {
+
         const result =
           await env.DB
             .prepare(`
@@ -2469,32 +2388,33 @@ n'a pas encore de destination.
         if (!result) {
           return new Response(
             "Client introuvable",
-            { status: 404 }
+            { status:404 }
           );
         }
 
         const html = `
 <!DOCTYPE html>
+
 <html lang="fr">
 
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0">
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0"
+>
 
 <title>
-${escapeHTML(
-  result.name
-)} | TAPNIVO
+${escapeHTML(result.name)}
+| TAPNIVO
 </title>
 
 <style>
 
 *{
-box-sizing:border-box
+box-sizing:border-box;
 }
 
 body{
@@ -2630,102 +2550,86 @@ TAP<span>NIVO</span>
 </div>
 
 <h1>
-${escapeHTML(
-  result.name
-)}
+${escapeHTML(result.name)}
 </h1>
 
 ${
-  result.profession
-    ? `
+result.profession
+? `
 <div class="profession">
-${escapeHTML(
-  result.profession
-)}
+${escapeHTML(result.profession)}
 </div>
 `
-    : ""
+: ""
 }
 
 ${
-  result.bio
-    ? `
+result.bio
+? `
 <div class="bio">
-${escapeHTML(
-  result.bio
-)}
+${escapeHTML(result.bio)}
 </div>
 `
-    : ""
+: ""
 }
 
 <div class="buttons">
 
 ${
-  result.phone
-    ? `
+result.phone
+? `
 <a
 class="button"
-href="tel:${escapeHTML(
-  result.phone
-)}"
+href="tel:${escapeHTML(result.phone)}"
 >
 📞 Appeler
 </a>
 `
-    : ""
+: ""
 }
 
 ${
-  result.whatsapp
-    ? `
+result.whatsapp
+? `
 <a
 class="button"
 href="https://wa.me/${escapeHTML(
-  result.whatsapp
-    .replace(
-      /[^0-9]/g,
-      ""
-    )
+result.whatsapp.replace(/[^0-9]/g,"")
 )}"
 target="_blank"
 >
 💬 WhatsApp
 </a>
 `
-    : ""
+: ""
 }
 
 ${
-  result.instagram
-    ? `
+result.instagram
+? `
 <a
 class="button secondary"
-href="${escapeHTML(
-  result.instagram
-)}"
+href="${escapeHTML(result.instagram)}"
 target="_blank"
 >
 Instagram
 </a>
 `
-    : ""
+: ""
 }
 
 ${
-  result.maps
-    ? `
+result.maps
+? `
 <a
 class="button secondary"
-href="${escapeHTML(
-  result.maps
-)}"
+href="${escapeHTML(result.maps)}"
 target="_blank"
 >
 📍 Google Maps
 </a>
 `
-    : ""
+: ""
 }
 
 </div>
@@ -2733,42 +2637,35 @@ target="_blank"
 <div class="info">
 
 ${
-  result.email
-    ? `
+result.email
+? `
 <div>
 <div class="label">
 Email
 </div>
 
 <div class="value">
-${escapeHTML(
-  result.email
-)}
+${escapeHTML(result.email)}
 </div>
-
 </div>
 `
-    : ""
+: ""
 }
 
 ${
-  result.address
-    ? `
+result.address
+? `
 <div>
-
 <div class="label">
 Adresse
 </div>
 
 <div class="value">
-${escapeHTML(
-  result.address
-)}
+${escapeHTML(result.address)}
 </div>
-
 </div>
 `
-    : ""
+: ""
 }
 
 </div>
@@ -2789,7 +2686,7 @@ Profil digital créé avec TAPNIVO
         return new Response(
           html,
           {
-            headers: {
+            headers:{
               "Content-Type":
                 "text/html; charset=UTF-8"
             }
@@ -2797,14 +2694,15 @@ Profil digital créé avec TAPNIVO
         );
 
       } catch (error) {
+
         return new Response(
           "Erreur serveur : " +
           error.message,
-          { status: 500 }
+          {status:500}
         );
+
       }
     }
-
 
     // =====================================================
     // STATIC FILES
