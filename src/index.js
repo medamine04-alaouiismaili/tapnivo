@@ -16,8 +16,19 @@ export default {
       });
     };
 
+    const html = (content, status = 200) => {
+      return new Response(content, {
+        status,
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      });
+    };
+
     const escapeHTML = (value) => {
-      if (value === null || value === undefined) return "";
+      if (value === null || value === undefined) {
+        return "";
+      }
 
       return String(value)
         .replace(/&/g, "&amp;")
@@ -60,7 +71,9 @@ export default {
     };
 
     const timingSafeEqual = (a, b) => {
-      if (a.length !== b.length) return false;
+      if (a.length !== b.length) {
+        return false;
+      }
 
       let result = 0;
 
@@ -69,6 +82,26 @@ export default {
       }
 
       return result === 0;
+    };
+
+    const getCookie = (request, name) => {
+      const cookieHeader = request.headers.get("Cookie");
+
+      if (!cookieHeader) {
+        return null;
+      }
+
+      const cookies = cookieHeader.split(";");
+
+      for (const cookie of cookies) {
+        const parts = cookie.trim().split("=");
+
+        if (parts[0] === name) {
+          return parts.slice(1).join("=");
+        }
+      }
+
+      return null;
     };
 
     // =====================================================
@@ -121,7 +154,8 @@ export default {
       }
 
       try {
-        const timestampBytes = fromBase64url(parts[0]);
+        const timestampBytes =
+          fromBase64url(parts[0]);
 
         const timestamp =
           new TextDecoder().decode(timestampBytes);
@@ -132,11 +166,13 @@ export default {
           return false;
         }
 
-        if (Date.now() - time > 8 * 60 * 60 * 1000) {
+        const now = Date.now();
+
+        if (now - time > 8 * 60 * 60 * 1000) {
           return false;
         }
 
-        if (time > Date.now() + 60000) {
+        if (time > now + 60000) {
           return false;
         }
 
@@ -153,13 +189,14 @@ export default {
           ["sign"]
         );
 
-        const expected = new Uint8Array(
-          await crypto.subtle.sign(
-            "HMAC",
-            key,
-            encoder.encode(timestamp)
-          )
-        );
+        const expected =
+          new Uint8Array(
+            await crypto.subtle.sign(
+              "HMAC",
+              key,
+              encoder.encode(timestamp)
+            )
+          );
 
         const received =
           fromBase64url(parts[1]);
@@ -172,27 +209,6 @@ export default {
       } catch {
         return false;
       }
-    };
-
-    const getCookie = (request, name) => {
-      const cookieHeader =
-        request.headers.get("Cookie");
-
-      if (!cookieHeader) return null;
-
-      const cookies =
-        cookieHeader.split(";");
-
-      for (const cookie of cookies) {
-        const parts =
-          cookie.trim().split("=");
-
-        if (parts[0] === name) {
-          return parts.slice(1).join("=");
-        }
-      }
-
-      return null;
     };
 
     const isAdmin = async () => {
@@ -307,10 +323,7 @@ export default {
     // TEST DATABASE
     // =====================================================
 
-    if (
-      url.pathname === "/api/test-db" &&
-      request.method === "GET"
-    ) {
+    if (url.pathname === "/api/test-db") {
       try {
         const result =
           await env.DB
@@ -337,7 +350,7 @@ export default {
     }
 
     // =====================================================
-    // CLIENTS - GET ALL
+    // CLIENTS
     // =====================================================
 
     if (
@@ -368,24 +381,10 @@ export default {
       }
     }
 
-    // =====================================================
-    // CLIENT - CREATE
-    // =====================================================
-
     if (
       url.pathname === "/api/clients" &&
       request.method === "POST"
     ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
       try {
         const data =
           await request.json();
@@ -401,14 +400,21 @@ export default {
           );
         }
 
-        const slug =
-          data.slug ||
-          data.name
+        let baseSlug =
+          String(data.name)
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
             .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "") +
+            .replace(/^-|-$/g, "");
+
+        if (!baseSlug) {
+          baseSlug = "client";
+        }
+
+        const slug =
+          data.slug ||
+          baseSlug +
           "-" +
           Date.now();
 
@@ -477,7 +483,7 @@ export default {
     }
 
     // =====================================================
-    // STANDS - GET ALL
+    // STANDS
     // =====================================================
 
     if (
@@ -604,30 +610,29 @@ export default {
           );
         }
 
-        let parsedUrl;
-
         try {
-          parsedUrl =
+          const parsedUrl =
             new URL(destinationUrl);
+
+          if (
+            parsedUrl.protocol !== "https:" &&
+            parsedUrl.protocol !== "http:"
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "URL HTTP/HTTPS uniquement."
+              },
+              400
+            );
+          }
+
         } catch {
           return json(
             {
               success: false,
               error: "URL invalide."
-            },
-            400
-          );
-        }
-
-        if (
-          parsedUrl.protocol !== "https:" &&
-          parsedUrl.protocol !== "http:"
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "URL HTTP/HTTPS uniquement."
             },
             400
           );
@@ -814,14 +819,47 @@ export default {
     }
 
     // =====================================================
-    // =====================================================
-    // SERVICES SYSTEM
-    // =====================================================
+    // SERVICES - HELPERS
     // =====================================================
 
-    // -----------------------------------------------------
+    const generateServiceCode = () => {
+      const chars =
+        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+      let code = "";
+
+      for (let i = 0; i < 8; i++) {
+        code +=
+          chars[
+            Math.floor(
+              Math.random() *
+              chars.length
+            )
+          ];
+      }
+
+      return code;
+    };
+
+    const parseConfig = (value) => {
+      if (!value) {
+        return null;
+      }
+
+      if (typeof value === "object") {
+        return value;
+      }
+
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    };
+
+    // =====================================================
     // GET ALL SERVICES
-    // -----------------------------------------------------
+    // =====================================================
 
     if (
       url.pathname === "/api/services" &&
@@ -846,17 +884,18 @@ export default {
                 s.client_id,
                 s.service_type,
                 s.service_name,
-                s.status,
                 s.service_code,
                 s.destination_url,
                 s.stand_id,
+                s.status,
                 s.config,
                 s.created_at,
                 s.activated_at,
                 s.updated_at,
 
                 c.name AS client_name,
-                st.stand_code,
+
+                st.stand_code AS stand_code,
 
                 (
                   SELECT COUNT(*)
@@ -875,8 +914,15 @@ export default {
                   SELECT COUNT(*)
                   FROM service_scans ss
                   WHERE ss.service_id = s.id
-                  AND ss.scanned_at >= datetime('now', '-7 days')
+                  AND ss.scanned_at >= datetime('now','-7 days')
                 ) AS scans_7_days,
+
+                (
+                  SELECT COUNT(*)
+                  FROM service_scans ss
+                  WHERE ss.service_id = s.id
+                  AND ss.scanned_at >= datetime('now','-30 days')
+                ) AS scans_30_days,
 
                 (
                   SELECT MAX(ss.scanned_at)
@@ -896,9 +942,16 @@ export default {
             `)
             .all();
 
+        const services =
+          result.results.map(service => ({
+            ...service,
+            config:
+              parseConfig(service.config)
+          }));
+
         return json({
           success: true,
-          services: result.results
+          services
         });
 
       } catch (error) {
@@ -912,87 +965,9 @@ export default {
       }
     }
 
-    // -----------------------------------------------------
-    // GET ONE SERVICE
-    // -----------------------------------------------------
-
-    if (
-      url.pathname.startsWith("/api/services/") &&
-      request.method === "GET"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      const id =
-        Number(
-          url.pathname.split("/").pop()
-        );
-
-      if (!Number.isInteger(id)) {
-        return json(
-          {
-            success: false,
-            error: "ID invalide."
-          },
-          400
-        );
-      }
-
-      try {
-        const service =
-          await env.DB
-            .prepare(`
-              SELECT
-                s.*,
-                c.name AS client_name,
-                st.stand_code
-              FROM services s
-              LEFT JOIN clients c
-                ON s.client_id = c.id
-              LEFT JOIN stands st
-                ON s.stand_id = st.id
-              WHERE s.id = ?
-              LIMIT 1
-            `)
-            .bind(id)
-            .first();
-
-        if (!service) {
-          return json(
-            {
-              success: false,
-              error: "Service introuvable."
-            },
-            404
-          );
-        }
-
-        return json({
-          success: true,
-          service
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-    // -----------------------------------------------------
+    // =====================================================
     // CREATE SERVICE
-    // -----------------------------------------------------
+    // =====================================================
 
     if (
       url.pathname === "/api/services" &&
@@ -1025,11 +1000,6 @@ export default {
             data.service_name || ""
           ).trim();
 
-        let serviceCode =
-          String(
-            data.service_code || ""
-          ).trim();
-
         const destinationUrl =
           String(
             data.destination_url || ""
@@ -1045,20 +1015,12 @@ export default {
             ? Number(data.stand_id)
             : null;
 
-        const config =
-          data.config !== undefined
-            ? (
-                typeof data.config === "string"
-                  ? data.config
-                  : JSON.stringify(data.config)
-              )
-            : null;
-
-        if (!Number.isInteger(clientId)) {
+        if (!clientId) {
           return json(
             {
               success: false,
-              error: "client_id est obligatoire."
+              error:
+                "client_id est obligatoire."
             },
             400
           );
@@ -1075,6 +1037,29 @@ export default {
           );
         }
 
+        const allowedTypes = [
+          "google_review",
+          "wifi",
+          "menu",
+          "digital_card",
+          "custom_link"
+        ];
+
+        if (
+          !allowedTypes.includes(
+            serviceType
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Type de service invalide."
+            },
+            400
+          );
+        }
+
         if (!serviceName) {
           return json(
             {
@@ -1086,14 +1071,10 @@ export default {
           );
         }
 
-        // -------------------------------------------------
-        // VERIFY CLIENT
-        // -------------------------------------------------
-
         const client =
           await env.DB
             .prepare(`
-              SELECT id
+              SELECT id, name
               FROM clients
               WHERE id = ?
               LIMIT 1
@@ -1110,10 +1091,6 @@ export default {
             404
           );
         }
-
-        // -------------------------------------------------
-        // VERIFY STAND
-        // -------------------------------------------------
 
         if (standId !== null) {
           const stand =
@@ -1138,65 +1115,6 @@ export default {
           }
         }
 
-        // -------------------------------------------------
-        // GENERATE SERVICE CODE
-        // -------------------------------------------------
-
-        if (!serviceCode) {
-          serviceCode =
-            serviceType
-              .toUpperCase()
-              .replace(/[^A-Z0-9]/g, "")
-              .slice(0, 5) +
-            "-" +
-            Date.now().toString(36).toUpperCase();
-        }
-
-        serviceCode =
-          serviceCode
-            .toUpperCase()
-            .replace(/[^A-Z0-9_-]/g, "");
-
-        if (!serviceCode) {
-          return json(
-            {
-              success: false,
-              error: "service_code invalide."
-            },
-            400
-          );
-        }
-
-        // -------------------------------------------------
-        // VERIFY UNIQUE CODE
-        // -------------------------------------------------
-
-        const existing =
-          await env.DB
-            .prepare(`
-              SELECT id
-              FROM services
-              WHERE service_code = ?
-              LIMIT 1
-            `)
-            .bind(serviceCode)
-            .first();
-
-        if (existing) {
-          return json(
-            {
-              success: false,
-              error:
-                "Ce service_code existe déjà."
-            },
-            409
-          );
-        }
-
-        // -------------------------------------------------
-        // VALIDATE DESTINATION
-        // -------------------------------------------------
-
         if (destinationUrl) {
           try {
             const parsed =
@@ -1210,7 +1128,7 @@ export default {
                 {
                   success: false,
                   error:
-                    "URL HTTP/HTTPS uniquement."
+                    "Destination URL invalide."
                 },
                 400
               );
@@ -1220,21 +1138,61 @@ export default {
             return json(
               {
                 success: false,
-                error: "URL invalide."
+                error:
+                  "Destination URL invalide."
               },
               400
             );
           }
         }
 
-        // -------------------------------------------------
-        // INSERT
-        // -------------------------------------------------
+        const config =
+          data.config !== undefined &&
+          data.config !== null
+            ? typeof data.config === "string"
+              ? data.config
+              : JSON.stringify(data.config)
+            : null;
 
-        const finalStatus =
-          ["draft", "active", "inactive"].includes(status)
-            ? status
-            : "draft";
+        let serviceCode = "";
+
+        for (let i = 0; i < 10; i++) {
+          const candidate =
+            generateServiceCode();
+
+          const exists =
+            await env.DB
+              .prepare(`
+                SELECT id
+                FROM services
+                WHERE service_code = ?
+                LIMIT 1
+              `)
+              .bind(candidate)
+              .first();
+
+          if (!exists) {
+            serviceCode =
+              candidate;
+            break;
+          }
+        }
+
+        if (!serviceCode) {
+          return json(
+            {
+              success: false,
+              error:
+                "Impossible de générer un code unique."
+            },
+            500
+          );
+        }
+
+        const activatedAt =
+          status === "active"
+            ? "CURRENT_TIMESTAMP"
+            : "NULL";
 
         await env.DB
           .prepare(`
@@ -1253,11 +1211,7 @@ export default {
             VALUES (
               ?, ?, ?, ?, ?,
               ?, ?, ?,
-              CASE
-                WHEN ? = 'active'
-                THEN CURRENT_TIMESTAMP
-                ELSE NULL
-              END,
+              ${activatedAt},
               CURRENT_TIMESTAMP
             )
           `)
@@ -1265,12 +1219,11 @@ export default {
             clientId,
             serviceType,
             serviceName,
-            finalStatus,
+            status,
             serviceCode,
             destinationUrl || null,
             standId,
-            config,
-            finalStatus
+            config
           )
           .run();
 
@@ -1278,9 +1231,8 @@ export default {
           success: true,
           message:
             "Service créé avec succès.",
-          service_code: serviceCode,
-          dynamic_url:
-            `${url.origin}/s/${serviceCode}`
+          service_code:
+            serviceCode
         });
 
       } catch (error) {
@@ -1294,13 +1246,29 @@ export default {
       }
     }
 
-    // -----------------------------------------------------
-    // UPDATE SERVICE
-    // -----------------------------------------------------
+    // =====================================================
+    // SERVICE ID PARSE
+    // =====================================================
+
+    const serviceIdMatch =
+      url.pathname.match(
+        /^\/api\/services\/(\d+)(?:\/stats)?$/
+      );
+
+    const serviceId =
+      serviceIdMatch
+        ? Number(serviceIdMatch[1])
+        : null;
+
+    // =====================================================
+    // SERVICE STATS
+    // =====================================================
 
     if (
-      url.pathname.startsWith("/api/services/") &&
-      request.method === "PUT"
+      serviceId !== null &&
+      url.pathname ===
+        `/api/services/${serviceId}/stats` &&
+      request.method === "GET"
     ) {
       if (!(await isAdmin())) {
         return json(
@@ -1312,26 +1280,135 @@ export default {
         );
       }
 
-      const id =
-        Number(
-          url.pathname.split("/").pop()
-        );
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT
+                s.id,
+                s.service_name,
+                s.service_type,
+                s.service_code,
+                c.name AS client_name
+              FROM services s
+              LEFT JOIN clients c
+                ON s.client_id = c.id
+              WHERE s.id = ?
+              LIMIT 1
+            `)
+            .bind(serviceId)
+            .first();
 
-      if (!Number.isInteger(id)) {
+        if (!service) {
+          return json(
+            {
+              success: false,
+              error:
+                "Service introuvable."
+            },
+            404
+          );
+        }
+
+        const statistics =
+          await env.DB
+            .prepare(`
+              SELECT
+
+                COUNT(*) AS total,
+
+                SUM(
+                  CASE
+                    WHEN date(scanned_at) = date('now')
+                    THEN 1
+                    ELSE 0
+                  END
+                ) AS today,
+
+                SUM(
+                  CASE
+                    WHEN scanned_at >= datetime('now','-7 days')
+                    THEN 1
+                    ELSE 0
+                  END
+                ) AS seven_days,
+
+                SUM(
+                  CASE
+                    WHEN scanned_at >= datetime('now','-30 days')
+                    THEN 1
+                    ELSE 0
+                  END
+                ) AS thirty_days,
+
+                MAX(scanned_at) AS last_scan
+
+              FROM service_scans
+
+              WHERE service_id = ?
+            `)
+            .bind(serviceId)
+            .first();
+
+        return json({
+          success: true,
+          service,
+          statistics: {
+            total:
+              Number(
+                statistics?.total || 0
+              ),
+            today:
+              Number(
+                statistics?.today || 0
+              ),
+            seven_days:
+              Number(
+                statistics?.seven_days || 0
+              ),
+            thirty_days:
+              Number(
+                statistics?.thirty_days || 0
+              ),
+            last_scan:
+              statistics?.last_scan ||
+              null
+          }
+        });
+
+      } catch (error) {
         return json(
           {
             success: false,
-            error: "ID invalide."
+            error: error.message
           },
-          400
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // UPDATE SERVICE
+    // =====================================================
+
+    if (
+      serviceId !== null &&
+      url.pathname ===
+        `/api/services/${serviceId}` &&
+      request.method === "PATCH"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
         );
       }
 
       try {
-        const data =
-          await request.json();
-
-        const current =
+        const existing =
           await env.DB
             .prepare(`
               SELECT *
@@ -1339,204 +1416,332 @@ export default {
               WHERE id = ?
               LIMIT 1
             `)
-            .bind(id)
+            .bind(serviceId)
             .first();
 
-        if (!current) {
-          return json(
-            {
-              success: false,
-              error: "Service introuvable."
-            },
-            404
-          );
-        }
-
-        const clientId =
-          data.client_id !== undefined
-            ? Number(data.client_id)
-            : current.client_id;
-
-        const serviceType =
-          data.service_type !== undefined
-            ? String(data.service_type).trim()
-            : current.service_type;
-
-        const serviceName =
-          data.service_name !== undefined
-            ? String(data.service_name).trim()
-            : current.service_name;
-
-        const destinationUrl =
-          data.destination_url !== undefined
-            ? String(data.destination_url).trim()
-            : (current.destination_url || "");
-
-        const standId =
-          data.stand_id !== undefined
-            ? (
-                data.stand_id === null ||
-                data.stand_id === ""
-                  ? null
-                  : Number(data.stand_id)
-              )
-            : current.stand_id;
-
-        const status =
-          data.status !== undefined
-            ? String(data.status).trim()
-            : current.status;
-
-        const config =
-          data.config !== undefined
-            ? (
-                typeof data.config === "string"
-                  ? data.config
-                  : JSON.stringify(data.config)
-              )
-            : current.config;
-
-        if (!Number.isInteger(clientId)) {
-          return json(
-            {
-              success: false,
-              error: "client_id invalide."
-            },
-            400
-          );
-        }
-
-        if (!serviceName) {
+        if (!existing) {
           return json(
             {
               success: false,
               error:
-                "service_name est obligatoire."
-            },
-            400
-          );
-        }
-
-        // VERIFY CLIENT
-
-        const client =
-          await env.DB
-            .prepare(`
-              SELECT id
-              FROM clients
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(clientId)
-            .first();
-
-        if (!client) {
-          return json(
-            {
-              success: false,
-              error: "Client introuvable."
+                "Service introuvable."
             },
             404
           );
         }
 
-        // VERIFY STAND
+        const data =
+          await request.json();
 
-        if (standId !== null) {
-          const stand =
-            await env.DB
-              .prepare(`
-                SELECT id
-                FROM stands
-                WHERE id = ?
-                LIMIT 1
-              `)
-              .bind(standId)
-              .first();
+        const updates = [];
+        const values = [];
 
-          if (!stand) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "client_id"
+          )
+        ) {
+          const clientId =
+            Number(data.client_id);
+
+          if (!clientId) {
             return json(
               {
                 success: false,
-                error: "Stand introuvable."
-              },
-              404
-            );
-          }
-        }
-
-        // VALIDATE URL
-
-        if (destinationUrl) {
-          try {
-            const parsed =
-              new URL(destinationUrl);
-
-            if (
-              parsed.protocol !== "http:" &&
-              parsed.protocol !== "https:"
-            ) {
-              return json(
-                {
-                  success: false,
-                  error:
-                    "URL HTTP/HTTPS uniquement."
-                },
-                400
-              );
-            }
-
-          } catch {
-            return json(
-              {
-                success: false,
-                error: "URL invalide."
+                error:
+                  "client_id invalide."
               },
               400
             );
           }
+
+          const client =
+            await env.DB
+              .prepare(`
+                SELECT id
+                FROM clients
+                WHERE id = ?
+                LIMIT 1
+              `)
+              .bind(clientId)
+              .first();
+
+          if (!client) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Client introuvable."
+              },
+              404
+            );
+          }
+
+          updates.push(
+            "client_id = ?"
+          );
+
+          values.push(clientId);
         }
 
-        const finalStatus =
-          ["draft", "active", "inactive"].includes(status)
-            ? status
-            : current.status;
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "service_type"
+          )
+        ) {
+          const type =
+            String(
+              data.service_type || ""
+            ).trim();
+
+          const allowedTypes = [
+            "google_review",
+            "wifi",
+            "menu",
+            "digital_card",
+            "custom_link"
+          ];
+
+          if (
+            !allowedTypes.includes(type)
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Type de service invalide."
+              },
+              400
+            );
+          }
+
+          updates.push(
+            "service_type = ?"
+          );
+
+          values.push(type);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "service_name"
+          )
+        ) {
+          const name =
+            String(
+              data.service_name || ""
+            ).trim();
+
+          if (!name) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Nom du service obligatoire."
+              },
+              400
+            );
+          }
+
+          updates.push(
+            "service_name = ?"
+          );
+
+          values.push(name);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "destination_url"
+          )
+        ) {
+          const destination =
+            String(
+              data.destination_url || ""
+            ).trim();
+
+          if (destination) {
+            try {
+              const parsed =
+                new URL(destination);
+
+              if (
+                parsed.protocol !== "http:" &&
+                parsed.protocol !== "https:"
+              ) {
+                return json(
+                  {
+                    success: false,
+                    error:
+                      "URL invalide."
+                  },
+                  400
+                );
+              }
+
+            } catch {
+              return json(
+                {
+                  success: false,
+                  error:
+                    "URL invalide."
+                },
+                400
+              );
+            }
+          }
+
+          updates.push(
+            "destination_url = ?"
+          );
+
+          values.push(
+            destination || null
+          );
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "stand_id"
+          )
+        ) {
+          const standId =
+            data.stand_id
+              ? Number(data.stand_id)
+              : null;
+
+          if (standId !== null) {
+            const stand =
+              await env.DB
+                .prepare(`
+                  SELECT id
+                  FROM stands
+                  WHERE id = ?
+                  LIMIT 1
+                `)
+                .bind(standId)
+                .first();
+
+            if (!stand) {
+              return json(
+                {
+                  success: false,
+                  error:
+                    "Stand introuvable."
+                },
+                404
+              );
+            }
+          }
+
+          updates.push(
+            "stand_id = ?"
+          );
+
+          values.push(
+            standId
+          );
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "config"
+          )
+        ) {
+          const config =
+            data.config === null
+              ? null
+              : typeof data.config ===
+                "string"
+                ? data.config
+                : JSON.stringify(
+                    data.config
+                  );
+
+          updates.push(
+            "config = ?"
+          );
+
+          values.push(config);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "status"
+          )
+        ) {
+          const status =
+            String(
+              data.status || ""
+            ).trim();
+
+          if (
+            ![
+              "draft",
+              "active",
+              "inactive"
+            ].includes(status)
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Statut invalide."
+              },
+              400
+            );
+          }
+
+          updates.push(
+            "status = ?"
+          );
+
+          values.push(status);
+
+          if (status === "active") {
+            updates.push(
+              "activated_at = COALESCE(activated_at, CURRENT_TIMESTAMP)"
+            );
+          }
+
+          if (
+            status === "draft" ||
+            status === "inactive"
+          ) {
+            updates.push(
+              "activated_at = NULL"
+            );
+          }
+        }
+
+        if (!updates.length) {
+          return json({
+            success: true,
+            message:
+              "Aucune modification."
+          });
+        }
+
+        updates.push(
+          "updated_at = CURRENT_TIMESTAMP"
+        );
+
+        values.push(serviceId);
 
         await env.DB
           .prepare(`
             UPDATE services
-            SET
-              client_id = ?,
-              service_type = ?,
-              service_name = ?,
-              status = ?,
-              destination_url = ?,
-              stand_id = ?,
-              config = ?,
-              activated_at =
-                CASE
-                  WHEN ? = 'active'
-                    AND activated_at IS NULL
-                  THEN CURRENT_TIMESTAMP
-                  WHEN ? != 'active'
-                  THEN NULL
-                  ELSE activated_at
-                END,
-              updated_at = CURRENT_TIMESTAMP
+            SET ${updates.join(", ")}
             WHERE id = ?
           `)
-          .bind(
-            clientId,
-            serviceType,
-            serviceName,
-            finalStatus,
-            destinationUrl || null,
-            standId,
-            config,
-            finalStatus,
-            finalStatus,
-            id
-          )
+          .bind(...values)
           .run();
 
         return json({
@@ -1556,234 +1761,14 @@ export default {
       }
     }
 
-    // -----------------------------------------------------
-    // SERVICE STATS
-    // -----------------------------------------------------
-
-    if (
-      url.pathname.match(/^\/api\/services\/\d+\/stats$/) &&
-      request.method === "GET"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      const parts =
-        url.pathname.split("/");
-
-      const id =
-        Number(parts[3]);
-
-      try {
-        const service =
-          await env.DB
-            .prepare(`
-              SELECT
-                id,
-                service_name,
-                service_code,
-                status
-              FROM services
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(id)
-            .first();
-
-        if (!service) {
-          return json(
-            {
-              success: false,
-              error: "Service introuvable."
-            },
-            404
-          );
-        }
-
-        const total =
-          await env.DB
-            .prepare(`
-              SELECT COUNT(*) AS total
-              FROM service_scans
-              WHERE service_id = ?
-            `)
-            .bind(id)
-            .first();
-
-        const today =
-          await env.DB
-            .prepare(`
-              SELECT COUNT(*) AS total
-              FROM service_scans
-              WHERE service_id = ?
-              AND date(scanned_at) = date('now')
-            `)
-            .bind(id)
-            .first();
-
-        const sevenDays =
-          await env.DB
-            .prepare(`
-              SELECT COUNT(*) AS total
-              FROM service_scans
-              WHERE service_id = ?
-              AND scanned_at >= datetime('now', '-7 days')
-            `)
-            .bind(id)
-            .first();
-
-        const lastScan =
-          await env.DB
-            .prepare(`
-              SELECT MAX(scanned_at) AS last_scan
-              FROM service_scans
-              WHERE service_id = ?
-            `)
-            .bind(id)
-            .first();
-
-        return json({
-          success: true,
-          service,
-          stats: {
-            total: Number(total?.total || 0),
-            today: Number(today?.total || 0),
-            seven_days: Number(sevenDays?.total || 0),
-            last_scan: lastScan?.last_scan || null
-          }
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-    // -----------------------------------------------------
-    // ACTIVATE / DEACTIVATE SERVICE
-    // -----------------------------------------------------
-
-    if (
-      url.pathname.match(/^\/api\/services\/\d+\/status$/) &&
-      request.method === "POST"
-    ) {
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      const parts =
-        url.pathname.split("/");
-
-      const id =
-        Number(parts[3]);
-
-      try {
-        const data =
-          await request.json();
-
-        const newStatus =
-          String(
-            data.status || ""
-          ).trim();
-
-        if (
-          !["active", "inactive", "draft"].includes(
-            newStatus
-          )
-        ) {
-          return json(
-            {
-              success: false,
-              error:
-                "Status invalide."
-            },
-            400
-          );
-        }
-
-        const service =
-          await env.DB
-            .prepare(`
-              SELECT id
-              FROM services
-              WHERE id = ?
-              LIMIT 1
-            `)
-            .bind(id)
-            .first();
-
-        if (!service) {
-          return json(
-            {
-              success: false,
-              error: "Service introuvable."
-            },
-            404
-          );
-        }
-
-        await env.DB
-          .prepare(`
-            UPDATE services
-            SET
-              status = ?,
-              activated_at =
-                CASE
-                  WHEN ? = 'active'
-                  THEN CURRENT_TIMESTAMP
-                  ELSE NULL
-                END,
-              updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-          `)
-          .bind(
-            newStatus,
-            newStatus,
-            id
-          )
-          .run();
-
-        return json({
-          success: true,
-          message:
-            "Status du service mis à jour.",
-          status: newStatus
-        });
-
-      } catch (error) {
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-    // -----------------------------------------------------
+    // =====================================================
     // DELETE SERVICE
-    // -----------------------------------------------------
+    // =====================================================
 
     if (
-      url.pathname.startsWith("/api/services/") &&
+      serviceId !== null &&
+      url.pathname ===
+        `/api/services/${serviceId}` &&
       request.method === "DELETE"
     ) {
       if (!(await isAdmin())) {
@@ -1796,21 +1781,6 @@ export default {
         );
       }
 
-      const id =
-        Number(
-          url.pathname.split("/").pop()
-        );
-
-      if (!Number.isInteger(id)) {
-        return json(
-          {
-            success: false,
-            error: "ID invalide."
-          },
-          400
-        );
-      }
-
       try {
         const service =
           await env.DB
@@ -1820,14 +1790,15 @@ export default {
               WHERE id = ?
               LIMIT 1
             `)
-            .bind(id)
+            .bind(serviceId)
             .first();
 
         if (!service) {
           return json(
             {
               success: false,
-              error: "Service introuvable."
+              error:
+                "Service introuvable."
             },
             404
           );
@@ -1838,7 +1809,7 @@ export default {
             DELETE FROM services
             WHERE id = ?
           `)
-          .bind(id)
+          .bind(serviceId)
           .run();
 
         return json({
@@ -1860,6 +1831,7 @@ export default {
 
     // =====================================================
     // DYNAMIC SERVICE QR
+    // /s/SERVICECODE
     // =====================================================
 
     if (
@@ -1869,13 +1841,12 @@ export default {
         url.pathname
           .replace("/s/", "")
           .replace(/\/$/, "")
-          .trim()
-          .toUpperCase();
+          .trim();
 
       if (!serviceCode) {
-        return new Response(
-          "Service introuvable",
-          { status: 404 }
+        return html(
+          "<h1>Service introuvable</h1>",
+          404
         );
       }
 
@@ -1884,126 +1855,129 @@ export default {
           await env.DB
             .prepare(`
               SELECT
-                id,
-                service_code,
-                service_name,
-                service_type,
-                status,
-                destination_url,
-                config
-              FROM services
-              WHERE service_code = ?
+                s.*,
+                c.name AS client_name
+              FROM services s
+              LEFT JOIN clients c
+                ON s.client_id = c.id
+              WHERE s.service_code = ?
               LIMIT 1
             `)
             .bind(serviceCode)
             .first();
 
         if (!service) {
-          return new Response(
-            "Service introuvable",
-            { status: 404 }
-          );
-        }
-
-        // -------------------------------------------------
-        // INACTIVE SERVICE
-        // -------------------------------------------------
-
-        if (
-          service.status !== "active"
-        ) {
-          return new Response(
-`
+          return html(
+            `
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 <style>
-*{
-  box-sizing:border-box;
-}
-
 body{
   margin:0;
   min-height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:20px;
+  font-family:Arial,sans-serif;
   background:#f5f7fb;
-  font-family:Arial,Helvetica,sans-serif;
 }
-
 .box{
-  max-width:420px;
-  width:100%;
   background:white;
-  border-radius:22px;
-  padding:35px 25px;
+  padding:35px;
+  border-radius:20px;
   text-align:center;
   box-shadow:0 15px 40px rgba(0,0,0,.08);
 }
-
 .logo{
   font-size:25px;
   font-weight:800;
-  margin-bottom:25px;
 }
-
 .logo span{
   color:#4f46e5;
 }
+</style>
+</head>
+<body>
+<div class="box">
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+<h2>Service introuvable</h2>
+<p>Ce QR code n'existe pas.</p>
+</div>
+</body>
+</html>
+`,
+            404
+          );
+        }
 
-h2{
-  margin-bottom:10px;
+        if (
+          service.status !== "active"
+        ) {
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:Arial,sans-serif;
+  background:#f5f7fb;
 }
-
+.box{
+  background:white;
+  padding:35px;
+  border-radius:20px;
+  text-align:center;
+  max-width:400px;
+  box-shadow:0 15px 40px rgba(0,0,0,.08);
+}
+.logo{
+  font-size:25px;
+  font-weight:800;
+}
+.logo span{
+  color:#4f46e5;
+}
 p{
   color:#6b7280;
   line-height:1.6;
 }
 </style>
 </head>
-
 <body>
-
 <div class="box">
-
 <div class="logo">
 TAP<span>NIVO</span>
 </div>
-
-<h2>
-Service indisponible
-</h2>
-
+<h2>Service indisponible</h2>
 <p>
 Ce service n'est pas actuellement disponible.
 </p>
-
 </div>
-
 </body>
 </html>
 `,
-            {
-              status: 200,
-              headers: {
-                "Content-Type":
-                  "text/html; charset=UTF-8"
-              }
-            }
+            200
           );
         }
 
-        // -------------------------------------------------
-        // RECORD SERVICE SCAN
-        // -------------------------------------------------
+        // =================================================
+        // SCAN
+        // =================================================
 
         await env.DB
           .prepare(`
@@ -2015,134 +1989,155 @@ Ce service n'est pas actuellement disponible.
           .bind(service.id)
           .run();
 
-        // -------------------------------------------------
-        // DESTINATION
-        // -------------------------------------------------
+        // =================================================
+        // CONFIG
+        // =================================================
 
-        if (service.destination_url) {
-          return Response.redirect(
-            service.destination_url,
-            302
-          );
-        }
-
-        // -------------------------------------------------
-        // FALLBACK SERVICE PAGE
-        // -------------------------------------------------
-
-        let parsedConfig = {};
-
-        try {
-          parsedConfig =
+        const config =
+          parseConfig(
             service.config
-              ? JSON.parse(service.config)
-              : {};
-        } catch {
-          parsedConfig = {};
-        }
-
-        const serviceTitle =
-          escapeHTML(
-            service.service_name
           );
 
-        const serviceDescription =
-          escapeHTML(
-            parsedConfig.description ||
-            "Service TAPNIVO"
-          );
+        // =================================================
+        // WIFI
+        // =================================================
 
-        return new Response(
-`
+        if (
+          service.service_type ===
+          "wifi"
+        ) {
+          const ssid =
+            config &&
+            typeof config === "object"
+              ? config.wifi_name ||
+                config.ssid ||
+                ""
+              : "";
+
+          const password =
+            config &&
+            typeof config === "object"
+              ? config.password ||
+                ""
+              : "";
+
+          const security =
+            config &&
+            typeof config === "object"
+              ? config.security ||
+                "WPA"
+              : "WPA";
+
+          const htmlWifi = `
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0"
->
-
-<title>
-${serviceTitle} | TAPNIVO
-</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHTML(
+            service.service_name
+          )}</title>
 
 <style>
-
 *{
-  box-sizing:border-box;
+box-sizing:border-box;
 }
 
 body{
-  margin:0;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-
-  font-family:
-  Arial,
-  Helvetica,
-  sans-serif;
-
-  background:
-  linear-gradient(
-    135deg,
-    #f5f7fb,
-    #eef2ff
-  );
-
-  color:#111827;
+margin:0;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(
+135deg,
+#f5f7fb,
+#eef2ff
+);
+color:#111827;
+padding:20px;
 }
 
 .box{
-  width:100%;
-  max-width:500px;
-
-  background:white;
-
-  border-radius:25px;
-
-  padding:35px 25px;
-
-  text-align:center;
-
-  box-shadow:
-  0 15px 40px
-  rgba(0,0,0,.08);
+width:100%;
+max-width:430px;
+background:white;
+border-radius:25px;
+padding:30px;
+text-align:center;
+box-shadow:0 15px 45px rgba(0,0,0,.09);
 }
 
 .logo{
-  font-size:21px;
-  font-weight:800;
-  margin-bottom:30px;
+font-size:21px;
+font-weight:800;
+margin-bottom:25px;
 }
 
 .logo span{
-  color:#4f46e5;
+color:#4f46e5;
 }
 
 .icon{
-  font-size:55px;
-  margin-bottom:15px;
+font-size:50px;
+margin-bottom:10px;
 }
 
 h1{
-  font-size:28px;
-  margin:0 0 15px;
+font-size:25px;
+margin:0;
 }
 
-p{
-  color:#6b7280;
-  line-height:1.7;
+.client{
+color:#6b7280;
+margin-top:8px;
 }
 
+.wifi{
+margin-top:25px;
+background:#f9fafb;
+border-radius:15px;
+padding:20px;
+text-align:left;
+}
+
+.row{
+padding:12px 0;
+border-bottom:1px solid #e5e7eb;
+}
+
+.row:last-child{
+border-bottom:0;
+}
+
+.label{
+font-size:11px;
+color:#9ca3af;
+}
+
+.value{
+font-weight:800;
+margin-top:5px;
+word-break:break-word;
+}
+
+.password{
+background:#eef2ff;
+color:#3730a3;
+padding:12px;
+border-radius:10px;
+margin-top:7px;
+font-size:18px;
+letter-spacing:1px;
+}
+
+.footer{
+margin-top:25px;
+font-size:11px;
+color:#9ca3af;
+}
 </style>
-
 </head>
 
 <body>
@@ -2154,43 +2149,432 @@ TAP<span>NIVO</span>
 </div>
 
 <div class="icon">
-✨
+📶
 </div>
 
 <h1>
-${serviceTitle}
+${escapeHTML(
+  service.service_name
+)}
 </h1>
 
-<p>
-${serviceDescription}
-</p>
+<div class="client">
+${escapeHTML(
+  service.client_name || ""
+)}
+</div>
+
+<div class="wifi">
+
+<div class="row">
+<div class="label">
+NOM DU WI-FI
+</div>
+<div class="value">
+${escapeHTML(
+  ssid || "—"
+)}
+</div>
+</div>
+
+<div class="row">
+<div class="label">
+MOT DE PASSE
+</div>
+<div class="password">
+${escapeHTML(
+  password || "—"
+)}
+</div>
+</div>
+
+<div class="row">
+<div class="label">
+SÉCURITÉ
+</div>
+<div class="value">
+${escapeHTML(
+  security
+)}
+</div>
+</div>
+
+</div>
+
+<div class="footer">
+Service Wi-Fi créé avec TAPNIVO
+</div>
 
 </div>
 
 </body>
-
 </html>
-`,
-          {
-            status: 200,
-            headers: {
-              "Content-Type":
-                "text/html; charset=UTF-8"
-            }
+`;
+
+          return html(
+            htmlWifi
+          );
+        }
+
+        // =================================================
+        // MENU
+        // =================================================
+
+        if (
+          service.service_type ===
+          "menu"
+        ) {
+          if (
+            service.destination_url
+          ) {
+            return Response.redirect(
+              service.destination_url,
+              302
+            );
           }
+
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Menu</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>🍽️ Menu</h2>
+<p>
+Le menu sera disponible prochainement.
+</p>
+</body>
+</html>
+`
+          );
+        }
+
+        // =================================================
+        // GOOGLE REVIEW
+        // =================================================
+
+        if (
+          service.service_type ===
+          "google_review"
+        ) {
+          if (
+            service.destination_url
+          ) {
+            return Response.redirect(
+              service.destination_url,
+              302
+            );
+          }
+
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avis Google</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>⭐ Google Reviews</h2>
+<p>
+Lien Google Reviews non configuré.
+</p>
+</body>
+</html>
+`
+          );
+        }
+
+        // =================================================
+        // DIGITAL CARD
+        // =================================================
+
+        if (
+          service.service_type ===
+          "digital_card"
+        ) {
+          const client =
+            await env.DB
+              .prepare(`
+                SELECT *
+                FROM clients
+                WHERE id = ?
+                LIMIT 1
+              `)
+              .bind(service.client_id)
+              .first();
+
+          if (!client) {
+            return html(
+              "<h1>Client introuvable</h1>",
+              404
+            );
+          }
+
+          const buttons = [];
+
+          if (client.phone) {
+            buttons.push(`
+<a href="tel:${escapeHTML(
+              client.phone
+            )}">
+📞 Appeler
+</a>
+`);
+          }
+
+          if (client.whatsapp) {
+            buttons.push(`
+<a href="https://wa.me/${escapeHTML(
+              client.whatsapp.replace(
+                /[^0-9]/g,
+                ""
+              )
+            )}" target="_blank">
+💬 WhatsApp
+</a>
+`);
+          }
+
+          if (client.instagram) {
+            buttons.push(`
+<a href="${escapeHTML(
+              client.instagram
+            )}" target="_blank">
+Instagram
+</a>
+`);
+          }
+
+          if (client.maps) {
+            buttons.push(`
+<a href="${escapeHTML(
+              client.maps
+            )}" target="_blank">
+📍 Google Maps
+</a>
+`);
+          }
+
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHTML(
+              client.name
+            )}</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#f5f7fb;
+padding:30px 20px;
+}
+
+.card{
+max-width:500px;
+margin:auto;
+background:white;
+padding:30px;
+border-radius:25px;
+text-align:center;
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+}
+
+.logo{
+font-weight:800;
+font-size:20px;
+margin-bottom:25px;
+}
+
+.logo span{
+color:#4f46e5;
+}
+
+h1{
+margin-bottom:5px;
+}
+
+.profession{
+color:#4f46e5;
+font-weight:bold;
+}
+
+.bio{
+color:#6b7280;
+line-height:1.6;
+margin:20px 0;
+}
+
+a{
+display:block;
+background:#4f46e5;
+color:white;
+text-decoration:none;
+padding:14px;
+border-radius:12px;
+margin-top:10px;
+font-weight:bold;
+}
+
+.footer{
+margin-top:25px;
+color:#9ca3af;
+font-size:11px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+
+<h1>
+${escapeHTML(
+  client.name
+)}
+</h1>
+
+<div class="profession">
+${escapeHTML(
+  client.profession || ""
+)}
+</div>
+
+<div class="bio">
+${escapeHTML(
+  client.bio || ""
+)}
+</div>
+
+${buttons.join("")}
+
+<div class="footer">
+Profil digital créé avec TAPNIVO
+</div>
+
+</div>
+
+</body>
+</html>
+`
+          );
+        }
+
+        // =================================================
+        // CUSTOM LINK
+        // =================================================
+
+        if (
+          service.service_type ===
+          "custom_link"
+        ) {
+          if (
+            service.destination_url
+          ) {
+            return Response.redirect(
+              service.destination_url,
+              302
+            );
+          }
+
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>🔗 Lien</h2>
+<p>
+Aucune destination configurée.
+</p>
+</body>
+</html>
+`
+          );
+        }
+
+        return html(
+          `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>Service TAPNIVO</h2>
+<p>
+Service configuré mais aucune action disponible.
+</p>
+</body>
+</html>
+`
         );
 
       } catch (error) {
-        return new Response(
-          "Erreur serveur : " +
-          error.message,
-          { status: 500 }
+        return html(
+          `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>TAPNIVO</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>Erreur serveur</h2>
+<p>${escapeHTML(
+            error.message
+          )}</p>
+</body>
+</html>
+`,
+          500
         );
       }
     }
 
     // =====================================================
-    // OLD DYNAMIC STANDS
+    // EXISTING STAND DYNAMIC QR
+    // /r/STANDCODE
     // =====================================================
 
     if (
@@ -2199,12 +2583,13 @@ ${serviceDescription}
       const standCode =
         url.pathname
           .replace("/r/", "")
-          .replace(/\/$/, "");
+          .replace(/\/$/, "")
+          .trim();
 
       if (!standCode) {
-        return new Response(
+        return html(
           "Stand introuvable",
-          { status: 404 }
+          404
         );
       }
 
@@ -2224,9 +2609,9 @@ ${serviceDescription}
             .first();
 
         if (!stand) {
-          return new Response(
+          return html(
             "Stand introuvable",
-            { status: 404 }
+            404
           );
         }
 
@@ -2234,98 +2619,56 @@ ${serviceDescription}
           stand.status !== "active" ||
           !stand.destination_url
         ) {
-          return new Response(
-`
+          return html(
+            `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 <style>
-
-*{
-box-sizing:border-box;
-}
-
 body{
 margin:0;
 min-height:100vh;
 display:flex;
 align-items:center;
 justify-content:center;
-font-family:Arial,Helvetica,sans-serif;
+font-family:Arial;
 background:#f5f7fb;
-color:#111827;
 text-align:center;
 }
-
 .box{
 background:white;
-padding:35px 25px;
+padding:35px;
 border-radius:20px;
 box-shadow:0 15px 40px rgba(0,0,0,.08);
-max-width:400px;
-margin:20px;
 }
-
 .logo{
 font-size:24px;
 font-weight:800;
-margin-bottom:20px;
 }
-
 .logo span{
 color:#4f46e5;
 }
-
 p{
 color:#6b7280;
-line-height:1.6;
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
 <div class="logo">
 TAP<span>NIVO</span>
 </div>
-
-<h2>
-Stand non activé
-</h2>
-
+<h2>Stand non activé</h2>
 <p>
 Ce QR code est prêt à être activé.
 </p>
-
 </div>
-
 </body>
-
 </html>
-`,
-            {
-              status:200,
-              headers:{
-                "Content-Type":
-                  "text/html; charset=UTF-8"
-              }
-            }
+`
           );
         }
 
@@ -2345,10 +2688,10 @@ Ce QR code est prêt à être activé.
         );
 
       } catch (error) {
-        return new Response(
+        return html(
           "Erreur serveur : " +
-          error.message,
-          { status:500 }
+          escapeHTML(error.message),
+          500
         );
       }
     }
@@ -2363,17 +2706,17 @@ Ce QR code est prêt à être activé.
       const slug =
         url.pathname
           .replace("/client/", "")
-          .replace(/\/$/, "");
+          .replace(/\/$/, "")
+          .trim();
 
       if (!slug) {
-        return new Response(
+        return html(
           "Profil introuvable",
-          { status:404 }
+          404
         );
       }
 
       try {
-
         const result =
           await env.DB
             .prepare(`
@@ -2386,29 +2729,24 @@ Ce QR code est prêt à être activé.
             .first();
 
         if (!result) {
-          return new Response(
+          return html(
             "Client introuvable",
-            { status:404 }
+            404
           );
         }
 
-        const html = `
+        return html(
+          `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>
-${escapeHTML(result.name)}
-| TAPNIVO
+${escapeHTML(
+            result.name
+          )} | TAPNIVO
 </title>
 
 <style>
@@ -2420,8 +2758,7 @@ box-sizing:border-box;
 body{
 margin:0;
 font-family:Arial,Helvetica,sans-serif;
-background:
-linear-gradient(
+background:linear-gradient(
 135deg,
 #f5f7fb,
 #eef2ff
@@ -2440,9 +2777,7 @@ background:white;
 border-radius:25px;
 padding:35px 25px;
 text-align:center;
-box-shadow:
-0 15px 40px
-rgba(0,0,0,.08);
+box-shadow:0 15px 40px rgba(0,0,0,.08);
 }
 
 .logo{
@@ -2532,7 +2867,6 @@ font-size:12px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -2550,86 +2884,101 @@ TAP<span>NIVO</span>
 </div>
 
 <h1>
-${escapeHTML(result.name)}
+${escapeHTML(
+            result.name
+          )}
 </h1>
 
 ${
-result.profession
-? `
+  result.profession
+    ? `
 <div class="profession">
-${escapeHTML(result.profession)}
+${escapeHTML(
+      result.profession
+    )}
 </div>
 `
-: ""
+    : ""
 }
 
 ${
-result.bio
-? `
+  result.bio
+    ? `
 <div class="bio">
-${escapeHTML(result.bio)}
+${escapeHTML(
+      result.bio
+    )}
 </div>
 `
-: ""
+    : ""
 }
 
 <div class="buttons">
 
 ${
-result.phone
-? `
+  result.phone
+    ? `
 <a
 class="button"
-href="tel:${escapeHTML(result.phone)}"
+href="tel:${escapeHTML(
+      result.phone
+    )}"
 >
 📞 Appeler
 </a>
 `
-: ""
+    : ""
 }
 
 ${
-result.whatsapp
-? `
+  result.whatsapp
+    ? `
 <a
 class="button"
 href="https://wa.me/${escapeHTML(
-result.whatsapp.replace(/[^0-9]/g,"")
-)}"
+      result.whatsapp.replace(
+        /[^0-9]/g,
+        ""
+      )
+    )}"
 target="_blank"
 >
 💬 WhatsApp
 </a>
 `
-: ""
+    : ""
 }
 
 ${
-result.instagram
-? `
+  result.instagram
+    ? `
 <a
 class="button secondary"
-href="${escapeHTML(result.instagram)}"
+href="${escapeHTML(
+      result.instagram
+    )}"
 target="_blank"
 >
 Instagram
 </a>
 `
-: ""
+    : ""
 }
 
 ${
-result.maps
-? `
+  result.maps
+    ? `
 <a
 class="button secondary"
-href="${escapeHTML(result.maps)}"
+href="${escapeHTML(
+      result.maps
+    )}"
 target="_blank"
 >
 📍 Google Maps
 </a>
 `
-: ""
+    : ""
 }
 
 </div>
@@ -2637,35 +2986,37 @@ target="_blank"
 <div class="info">
 
 ${
-result.email
-? `
+  result.email
+    ? `
 <div>
 <div class="label">
 Email
 </div>
-
 <div class="value">
-${escapeHTML(result.email)}
+${escapeHTML(
+      result.email
+    )}
 </div>
 </div>
 `
-: ""
+    : ""
 }
 
 ${
-result.address
-? `
+  result.address
+    ? `
 <div>
 <div class="label">
 Adresse
 </div>
-
 <div class="value">
-${escapeHTML(result.address)}
+${escapeHTML(
+      result.address
+    )}
 </div>
 </div>
 `
-: ""
+    : ""
 }
 
 </div>
@@ -2679,28 +3030,16 @@ Profil digital créé avec TAPNIVO
 </div>
 
 </body>
-
 </html>
-`;
-
-        return new Response(
-          html,
-          {
-            headers:{
-              "Content-Type":
-                "text/html; charset=UTF-8"
-            }
-          }
+`
         );
 
       } catch (error) {
-
-        return new Response(
+        return html(
           "Erreur serveur : " +
-          error.message,
-          {status:500}
+          escapeHTML(error.message),
+          500
         );
-
       }
     }
 
