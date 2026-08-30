@@ -1123,43 +1123,7 @@ export default {
       };
 
 
-    // =====================================================
-    // SERVICE HELPERS
-    // =====================================================
-
-    const generateServiceCode =
-      () => {
-
-        const chars =
-          "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-        const bytes =
-          new Uint8Array(8);
-
-        crypto.getRandomValues(
-          bytes
-        );
-
-        let code = "";
-
-        for (
-          let i = 0;
-          i < 8;
-          i++
-        ) {
-
-          code +=
-            chars[
-              bytes[i] %
-              chars.length
-            ];
-
-        }
-
-        return code;
-
-      };
-
+      
 
     // =====================================================
     // END OF 1A
