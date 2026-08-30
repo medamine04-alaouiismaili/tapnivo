@@ -39,7 +39,6 @@ export default {
         "===".slice((input.length + 3) % 4);
 
       const binary = atob(base64);
-
       const bytes = new Uint8Array(binary.length);
 
       for (let i = 0; i < binary.length; i++) {
@@ -113,7 +112,8 @@ export default {
       }
 
       try {
-        const timestampBytes = fromBase64url(parts[0]);
+        const timestampBytes =
+          fromBase64url(parts[0]);
 
         const timestamp =
           new TextDecoder().decode(timestampBytes);
@@ -308,9 +308,12 @@ export default {
       try {
         const result =
           await env.DB
-            .prepare(
-              "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
-            )
+            .prepare(`
+              SELECT name
+              FROM sqlite_master
+              WHERE type='table'
+              ORDER BY name
+            `)
             .all();
 
         return json({
@@ -461,7 +464,7 @@ export default {
     }
 
     // =====================================================
-    // GET ALL STANDS + SCAN STATISTICS
+    // GET ALL STANDS + COMPLETE SCAN STATISTICS
     // =====================================================
 
     if (
@@ -490,14 +493,36 @@ export default {
                 s.status,
                 s.created_at,
                 s.activated_at,
+
                 c.name AS client_name,
 
+                /* TOTAL SCANS */
                 (
                   SELECT COUNT(*)
                   FROM stand_scans ss
                   WHERE ss.stand_code = s.stand_code
                 ) AS scans_count,
 
+                /* SCANS AUJOURD'HUI */
+                (
+                  SELECT COUNT(*)
+                  FROM stand_scans ss
+                  WHERE
+                    ss.stand_code = s.stand_code
+                    AND date(ss.scanned_at) = date('now')
+                ) AS scans_today,
+
+                /* SCANS 7 DERNIERS JOURS */
+                (
+                  SELECT COUNT(*)
+                  FROM stand_scans ss
+                  WHERE
+                    ss.stand_code = s.stand_code
+                    AND datetime(ss.scanned_at)
+                      >= datetime('now', '-7 days')
+                ) AS scans_7_days,
+
+                /* DERNIER SCAN */
                 (
                   SELECT MAX(ss.scanned_at)
                   FROM stand_scans ss
@@ -853,9 +878,12 @@ export default {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>TAPNIVO</title>
+
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   min-height:100vh;
@@ -867,6 +895,7 @@ body{
   color:#111827;
   text-align:center;
 }
+
 .box{
   background:white;
   padding:35px 25px;
@@ -875,24 +904,42 @@ body{
   max-width:400px;
   margin:20px;
 }
+
 .logo{
   font-size:24px;
   font-weight:800;
   margin-bottom:20px;
 }
-.logo span{color:#4f46e5}
+
+.logo span{
+  color:#4f46e5;
+}
+
 p{
   color:#6b7280;
   line-height:1.6;
 }
 </style>
 </head>
+
 <body>
+
 <div class="box">
-<div class="logo">TAP<span>NIVO</span></div>
-<h2>Stand non activé</h2>
-<p>Ce QR code est prêt à être activé.</p>
+
+<div class="logo">
+TAP<span>NIVO</span>
 </div>
+
+<h2>
+Stand non activé
+</h2>
+
+<p>
+Ce QR code est prêt à être activé.
+</p>
+
+</div>
+
 </body>
 </html>
 `,
@@ -992,21 +1039,34 @@ p{
         const html = `
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>
 ${escapeHTML(result.name)} | TAPNIVO
 </title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:linear-gradient(135deg,#f5f7fb,#eef2ff);
+  background:linear-gradient(
+    135deg,
+    #f5f7fb,
+    #eef2ff
+  );
   color:#111827;
 }
 
@@ -1021,7 +1081,9 @@ body{
   border-radius:25px;
   padding:35px 25px;
   text-align:center;
-  box-shadow:0 15px 40px rgba(0,0,0,.08);
+  box-shadow:
+    0 15px 40px
+    rgba(0,0,0,.08);
 }
 
 .logo{
@@ -1030,7 +1092,9 @@ body{
   margin-bottom:30px;
 }
 
-.logo span{color:#4f46e5}
+.logo span{
+  color:#4f46e5;
+}
 
 .avatar{
   width:100px;
@@ -1107,7 +1171,9 @@ h1{
   color:#9ca3af;
   font-size:12px;
 }
+
 </style>
+
 </head>
 
 <body>
@@ -1154,8 +1220,8 @@ ${
   result.phone
     ? `
 <a
-class="button"
-href="tel:${escapeHTML(result.phone)}"
+  class="button"
+  href="tel:${escapeHTML(result.phone)}"
 >
 📞 Appeler
 </a>
@@ -1167,11 +1233,14 @@ ${
   result.whatsapp
     ? `
 <a
-class="button"
-href="https://wa.me/${escapeHTML(
-  result.whatsapp.replace(/[^0-9]/g, "")
-)}"
-target="_blank"
+  class="button"
+  href="https://wa.me/${escapeHTML(
+    result.whatsapp.replace(
+      /[^0-9]/g,
+      ""
+    )
+  )}"
+  target="_blank"
 >
 💬 WhatsApp
 </a>
@@ -1183,9 +1252,11 @@ ${
   result.instagram
     ? `
 <a
-class="button secondary"
-href="${escapeHTML(result.instagram)}"
-target="_blank"
+  class="button secondary"
+  href="${escapeHTML(
+    result.instagram
+  )}"
+  target="_blank"
 >
 Instagram
 </a>
@@ -1197,9 +1268,11 @@ ${
   result.maps
     ? `
 <a
-class="button secondary"
-href="${escapeHTML(result.maps)}"
-target="_blank"
+  class="button secondary"
+  href="${escapeHTML(
+    result.maps
+  )}"
+  target="_blank"
 >
 📍 Google Maps
 </a>
@@ -1215,10 +1288,17 @@ ${
   result.email
     ? `
 <div>
-<div class="label">Email</div>
-<div class="value">
-${escapeHTML(result.email)}
+
+<div class="label">
+Email
 </div>
+
+<div class="value">
+${escapeHTML(
+  result.email
+)}
+</div>
+
 </div>
 `
     : ""
@@ -1228,10 +1308,17 @@ ${
   result.address
     ? `
 <div>
-<div class="label">Adresse</div>
-<div class="value">
-${escapeHTML(result.address)}
+
+<div class="label">
+Adresse
 </div>
+
+<div class="value">
+${escapeHTML(
+  result.address
+)}
+</div>
+
 </div>
 `
     : ""
@@ -1244,16 +1331,18 @@ Profil digital créé avec TAPNIVO
 </div>
 
 </div>
+
 </div>
 
 </body>
+
 </html>
 `;
 
         return new Response(
           html,
           {
-            headers: {
+            headers:{
               "Content-Type":
                 "text/html; charset=UTF-8"
             }
@@ -1264,7 +1353,7 @@ Profil digital créé avec TAPNIVO
         return new Response(
           "Erreur serveur : " +
           error.message,
-          { status: 500 }
+          { status:500 }
         );
       }
     }
