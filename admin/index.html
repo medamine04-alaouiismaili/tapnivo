@@ -60,14 +60,18 @@ body{
   padding:35px 20px;
 }
 
-.header{margin-bottom:25px}
+.header{
+  margin-bottom:25px;
+}
 
 .header h1{
   font-size:30px;
   margin-bottom:7px;
 }
 
-.header p{color:#6b7280}
+.header p{
+  color:#6b7280;
+}
 
 .card{
   background:white;
@@ -100,7 +104,9 @@ body{
   gap:7px;
 }
 
-.full{grid-column:1/-1}
+.full{
+  grid-column:1/-1;
+}
 
 label{
   font-size:13px;
@@ -108,7 +114,9 @@ label{
   color:#374151;
 }
 
-input,textarea,select{
+input,
+textarea,
+select{
   width:100%;
   padding:13px;
   border:1px solid #d1d5db;
@@ -179,7 +187,9 @@ button:disabled{
   color:#991b1b;
 }
 
-/* LOGIN */
+/* =====================================================
+   LOGIN
+===================================================== */
 
 #loginScreen{
   min-height:100vh;
@@ -206,7 +216,9 @@ button:disabled{
   margin-bottom:10px;
 }
 
-.login-logo span{color:#4f46e5}
+.login-logo span{
+  color:#4f46e5;
+}
 
 .login-card h1{
   text-align:center;
@@ -230,7 +242,9 @@ button:disabled{
   margin-top:5px;
 }
 
-/* STANDS */
+/* =====================================================
+   STANDS
+===================================================== */
 
 .stands-grid{
   display:grid;
@@ -282,11 +296,13 @@ button:disabled{
   line-height:1.6;
 }
 
-/* SCAN STATS */
+/* =====================================================
+   SCAN STATISTICS
+===================================================== */
 
 .scan-stats{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(3,1fr);
   gap:10px;
   margin-top:14px;
 }
@@ -294,20 +310,39 @@ button:disabled{
 .scan-stat{
   background:white;
   border:1px solid #e5e7eb;
-  border-radius:10px;
-  padding:11px;
+  border-radius:12px;
+  padding:12px;
 }
 
 .scan-label{
   font-size:11px;
   color:#9ca3af;
-  margin-bottom:4px;
+  margin-bottom:6px;
 }
 
 .scan-value{
-  font-size:15px;
+  font-size:18px;
   font-weight:800;
   color:#111827;
+}
+
+.last-scan{
+  margin-top:10px;
+  padding:11px;
+  background:#eef2ff;
+  border-radius:10px;
+}
+
+.last-scan-label{
+  font-size:11px;
+  color:#6b7280;
+  margin-bottom:4px;
+}
+
+.last-scan-value{
+  font-size:13px;
+  font-weight:bold;
+  color:#3730a3;
 }
 
 .qr-link{
@@ -341,7 +376,6 @@ button:disabled{
 }
 
 .copy-btn{
-  margin-top:0;
   background:#eef2ff;
   color:#3730a3;
 }
@@ -369,6 +403,10 @@ footer{
 #dashboard{
   display:none;
 }
+
+/* =====================================================
+   MOBILE
+===================================================== */
 
 @media(max-width:700px){
 
@@ -405,7 +443,7 @@ footer{
   }
 
   .scan-stats{
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:1fr;
   }
 }
 </style>
@@ -425,13 +463,18 @@ footer{
       TAP<span>NIVO</span>
     </div>
 
-    <h1>Administration</h1>
+    <h1>
+      Administration
+    </h1>
 
     <p class="login-description">
       Connectez-vous à votre espace administrateur.
     </p>
 
-    <div id="loginMessage" class="message"></div>
+    <div
+      id="loginMessage"
+      class="message"
+    ></div>
 
     <form id="loginForm">
 
@@ -511,7 +554,10 @@ footer{
 </div>
 
 
-<div id="globalMessage" class="message"></div>
+<div
+  id="globalMessage"
+  class="message"
+></div>
 
 
 <!-- =====================================================
@@ -525,7 +571,7 @@ footer{
   </h2>
 
   <p class="description">
-    Activez, gérez et réinitialisez vos Stands NFC / QR.
+    Activez, gérez et consultez les statistiques de vos Stands NFC / QR.
   </p>
 
   <div id="standsContainer">
@@ -1096,15 +1142,17 @@ async function loadClients(){
 function formatScanDate(value){
 
   if(!value){
-
     return "Aucun scan";
-
   }
 
+  const normalized =
+    String(value).replace(
+      " ",
+      "T"
+    );
+
   const date =
-  new Date(
-    String(value).replace(" ","T")
-  );
+    new Date(normalized);
 
   if(
     Number.isNaN(
@@ -1112,7 +1160,7 @@ function formatScanDate(value){
     )
   ){
 
-    return value;
+    return String(value);
 
   }
 
@@ -1125,6 +1173,22 @@ function formatScanDate(value){
       hour:"2-digit",
       minute:"2-digit"
     }
+  );
+
+}
+
+
+/* =====================================================
+   NUMBER FORMAT
+===================================================== */
+
+function formatNumber(value){
+
+  const number =
+    Number(value || 0);
+
+  return number.toLocaleString(
+    "fr-FR"
   );
 
 }
@@ -1276,9 +1340,19 @@ function renderStands(
       );
 
 
-      const scansCount =
+      const totalScans =
       Number(
         stand.scans_count || 0
+      );
+
+      const todayScans =
+      Number(
+        stand.scans_today || 0
+      );
+
+      const sevenDayScans =
+      Number(
+        stand.scans_7_days || 0
       );
 
 
@@ -1337,18 +1411,22 @@ function renderStands(
           </span>
 
 
-          <!-- SCAN STATISTICS -->
+          <!-- ==========================================
+               SCAN STATISTICS
+          =========================================== -->
 
           <div class="scan-stats">
 
             <div class="scan-stat">
 
               <div class="scan-label">
-                📊 Nombre de scans
+                📊 TOTAL
               </div>
 
               <div class="scan-value">
-                ${scansCount}
+                ${formatNumber(
+                  totalScans
+                )}
               </div>
 
             </div>
@@ -1357,17 +1435,47 @@ function renderStands(
             <div class="scan-stat">
 
               <div class="scan-label">
-                🕐 Dernier scan
+                📅 AUJOURD'HUI
               </div>
 
               <div class="scan-value">
-                ${escapeHtml(
-                  formatScanDate(
-                    stand.last_scan
-                  )
+                ${formatNumber(
+                  todayScans
                 )}
               </div>
 
+            </div>
+
+
+            <div class="scan-stat">
+
+              <div class="scan-label">
+                📈 7 JOURS
+              </div>
+
+              <div class="scan-value">
+                ${formatNumber(
+                  sevenDayScans
+                )}
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="last-scan">
+
+            <div class="last-scan-label">
+              🕐 Dernier scan
+            </div>
+
+            <div class="last-scan-value">
+              ${escapeHtml(
+                formatScanDate(
+                  stand.last_scan
+                )
+              )}
             </div>
 
           </div>
@@ -2088,7 +2196,6 @@ function escapeHtml(value){
   ){
 
     return "";
-
   }
 
   return String(value)
