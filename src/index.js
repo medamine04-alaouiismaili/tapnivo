@@ -1829,5 +1829,1754 @@ export default {
           const candidate =
             generateServiceCode();
 
-          const exists =
-           
+                    const exists =
+            await env.DB
+              .prepare(`
+                SELECT id
+                FROM services
+                WHERE service_code = ?
+                LIMIT 1
+              `)
+              .bind(candidate)
+              .first();
+
+          if (!exists) {
+            serviceCode = candidate;
+            break;
+          }
+        }
+
+        if (!serviceCode) {
+          return json(
+            {
+              success: false,
+              error:
+                "Impossible de générer un code service unique."
+            },
+            500
+          );
+        }
+
+        const activatedAt =
+          status === "active"
+            ? "CURRENT_TIMESTAMP"
+            : "NULL";
+
+        await env.DB
+          .prepare(`
+            INSERT INTO services (
+              client_id,
+              service_type,
+              service_name,
+              status,
+              service_code,
+              destination_url,
+              stand_id,
+              config,
+              activated_at,
+              updated_at
+            )
+            VALUES (
+              ?, ?, ?, ?, ?,
+              ?, ?, ?,
+              ${activatedAt},
+              CURRENT_TIMESTAMP
+            )
+          `)
+          .bind(
+            clientId,
+            serviceType,
+            serviceName,
+            status,
+            serviceCode,
+            destinationUrl || null,
+            standId,
+            config
+          )
+          .run();
+
+        return json({
+          success: true,
+          message:
+            "Service créé avec succès.",
+          service_code:
+            serviceCode,
+          qr_url:
+            `${url.origin}/s/${encodeURIComponent(
+              serviceCode
+            )}`
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // SERVICE ID
+    // =====================================================
+
+    const serviceIdMatch =
+      url.pathname.match(
+        /^\/api\/services\/(\d+)(?:\/stats)?$/
+      );
+
+    const serviceId =
+      serviceIdMatch
+        ? Number(serviceIdMatch[1])
+        : null;
+
+    // =====================================================
+    // SERVICE STATS
+    // =====================================================
+
+    if (
+      serviceId !== null &&
+      url.pathname ===
+        `/api/services/${serviceId}/stats` &&
+      request.method === "GET"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT
+                s.id,
+                s.service_name,
+                s.service_type,
+                s.service_code,
+                s.status,
+                c.name AS client_name
+              FROM services s
+              LEFT JOIN clients c
+                ON s.client_id = c.id
+              WHERE s.id = ?
+              LIMIT 1
+            `)
+            .bind(serviceId)
+            .first();
+
+        if (!service) {
+          return json(
+            {
+              success: false,
+              error:
+                "Service introuvable."
+            },
+            404
+          );
+        }
+
+        const statistics =
+          await env.DB
+            .prepare(`
+              SELECT
+                COUNT(*) AS total,
+
+                SUM(
+                  CASE
+                    WHEN date(scanned_at) =
+                      date('now')
+                    THEN 1
+                    ELSE 0
+                  END
+                ) AS today,
+
+                SUM(
+                  CASE
+                    WHEN scanned_at >=
+                      datetime('now','-7 days')
+                    THEN 1
+                    ELSE 0
+                  END
+                ) AS seven_days,
+
+                SUM(
+                  CASE
+                    WHEN scanned_at >=
+                      datetime('now','-30 days')
+                    THEN 1
+                    ELSE 0
+                  END
+                ) AS thirty_days,
+
+                MAX(scanned_at) AS last_scan
+
+              FROM service_scans
+              WHERE service_id = ?
+            `)
+            .bind(serviceId)
+            .first();
+
+        return json({
+          success: true,
+          service,
+          statistics: {
+            total:
+              Number(
+                statistics?.total || 0
+              ),
+            today:
+              Number(
+                statistics?.today || 0
+              ),
+            seven_days:
+              Number(
+                statistics?.seven_days || 0
+              ),
+            thirty_days:
+              Number(
+                statistics?.thirty_days || 0
+              ),
+            last_scan:
+              statistics?.last_scan || null
+          }
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // UPDATE SERVICE
+    // =====================================================
+
+    if (
+      serviceId !== null &&
+      url.pathname ===
+        `/api/services/${serviceId}` &&
+      request.method === "PATCH"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
+        const existing =
+          await env.DB
+            .prepare(`
+              SELECT *
+              FROM services
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(serviceId)
+            .first();
+
+        if (!existing) {
+          return json(
+            {
+              success: false,
+              error:
+                "Service introuvable."
+            },
+            404
+          );
+        }
+
+        const data =
+          await request.json();
+
+        const updates = [];
+        const values = [];
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "client_id"
+          )
+        ) {
+          const value =
+            Number(data.client_id);
+
+          if (!value) {
+            return json(
+              {
+                success: false,
+                error:
+                  "client_id invalide."
+              },
+              400
+            );
+          }
+
+          const client =
+            await env.DB
+              .prepare(`
+                SELECT id
+                FROM clients
+                WHERE id = ?
+                LIMIT 1
+              `)
+              .bind(value)
+              .first();
+
+          if (!client) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Client introuvable."
+              },
+              404
+            );
+          }
+
+          updates.push(
+            "client_id = ?"
+          );
+          values.push(value);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "service_type"
+          )
+        ) {
+          const value =
+            String(
+              data.service_type || ""
+            ).trim();
+
+          const allowedTypes = [
+            "google_review",
+            "wifi",
+            "menu",
+            "digital_card",
+            "custom_link"
+          ];
+
+          if (
+            !allowedTypes.includes(value)
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Type de service invalide."
+              },
+              400
+            );
+          }
+
+          updates.push(
+            "service_type = ?"
+          );
+          values.push(value);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "service_name"
+          )
+        ) {
+          const value =
+            String(
+              data.service_name || ""
+            ).trim();
+
+          if (!value) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Nom du service obligatoire."
+              },
+              400
+            );
+          }
+
+          updates.push(
+            "service_name = ?"
+          );
+          values.push(value);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "destination_url"
+          )
+        ) {
+          const value =
+            String(
+              data.destination_url || ""
+            ).trim();
+
+          if (
+            value &&
+            !isValidHttpUrl(value)
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "URL invalide."
+              },
+              400
+            );
+          }
+
+          updates.push(
+            "destination_url = ?"
+          );
+
+          values.push(
+            value || null
+          );
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "stand_id"
+          )
+        ) {
+          const value =
+            data.stand_id
+              ? Number(data.stand_id)
+              : null;
+
+          if (value !== null) {
+            const stand =
+              await env.DB
+                .prepare(`
+                  SELECT id
+                  FROM stands
+                  WHERE id = ?
+                  LIMIT 1
+                `)
+                .bind(value)
+                .first();
+
+            if (!stand) {
+              return json(
+                {
+                  success: false,
+                  error:
+                    "Stand introuvable."
+                },
+                404
+              );
+            }
+          }
+
+          updates.push(
+            "stand_id = ?"
+          );
+
+          values.push(value);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "config"
+          )
+        ) {
+          const value =
+            data.config === null
+              ? null
+              : typeof data.config ===
+                "string"
+              ? data.config
+              : JSON.stringify(
+                  data.config
+                );
+
+          updates.push(
+            "config = ?"
+          );
+
+          values.push(value);
+        }
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            data,
+            "status"
+          )
+        ) {
+          const value =
+            String(
+              data.status || ""
+            ).trim();
+
+          if (
+            ![
+              "draft",
+              "active",
+              "inactive"
+            ].includes(value)
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Statut invalide."
+              },
+              400
+            );
+          }
+
+          updates.push(
+            "status = ?"
+          );
+
+          values.push(value);
+
+          if (value === "active") {
+            updates.push(
+              "activated_at = COALESCE(activated_at, CURRENT_TIMESTAMP)"
+            );
+          } else {
+            updates.push(
+              "activated_at = NULL"
+            );
+          }
+        }
+
+        if (!updates.length) {
+          return json({
+            success: true,
+            message:
+              "Aucune modification."
+          });
+        }
+
+        updates.push(
+          "updated_at = CURRENT_TIMESTAMP"
+        );
+
+        values.push(serviceId);
+
+        await env.DB
+          .prepare(`
+            UPDATE services
+            SET ${updates.join(", ")}
+            WHERE id = ?
+          `)
+          .bind(...values)
+          .run();
+
+        return json({
+          success: true,
+          message:
+            "Service modifié avec succès."
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // DELETE SERVICE
+    // =====================================================
+
+    if (
+      serviceId !== null &&
+      url.pathname ===
+        `/api/services/${serviceId}` &&
+      request.method === "DELETE"
+    ) {
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM services
+              WHERE id = ?
+              LIMIT 1
+            `)
+            .bind(serviceId)
+            .first();
+
+        if (!service) {
+          return json(
+            {
+              success: false,
+              error:
+                "Service introuvable."
+            },
+            404
+          );
+        }
+
+        await env.DB
+          .prepare(`
+            DELETE FROM services
+            WHERE id = ?
+          `)
+          .bind(serviceId)
+          .run();
+
+        return json({
+          success: true,
+          message:
+            "Service supprimé avec succès."
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // DYNAMIC SERVICE QR
+    // /s/SERVICECODE
+    // =====================================================
+
+    if (
+      url.pathname.startsWith("/s/")
+    ) {
+      const serviceCode =
+        url.pathname
+          .replace("/s/", "")
+          .replace(/\/$/, "")
+          .trim();
+
+      if (!serviceCode) {
+        return html(
+          "Service introuvable",
+          404
+        );
+      }
+
+      try {
+        const service =
+          await env.DB
+            .prepare(`
+              SELECT
+                s.*,
+                c.name AS client_name
+              FROM services s
+              LEFT JOIN clients c
+                ON s.client_id = c.id
+              WHERE s.service_code = ?
+              LIMIT 1
+            `)
+            .bind(serviceCode)
+            .first();
+
+        if (!service) {
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>TAPNIVO</h2>
+<h3>Service introuvable</h3>
+<p>
+Ce QR code n'existe pas.
+</p>
+</body>
+</html>
+`,
+            404
+          );
+        }
+
+        if (
+          service.status !== "active"
+        ) {
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>TAPNIVO</h2>
+<h3>Service indisponible</h3>
+<p>
+Ce service n'est pas actuellement disponible.
+</p>
+</body>
+</html>
+`
+          );
+        }
+
+        await env.DB
+          .prepare(`
+            INSERT INTO service_scans (
+              service_id
+            )
+            VALUES (?)
+          `)
+          .bind(service.id)
+          .run();
+
+        const config =
+          parseConfig(
+            service.config
+          );
+
+        // =================================================
+        // WIFI
+        // =================================================
+
+        if (
+          service.service_type ===
+          "wifi"
+        ) {
+          const ssid =
+            config &&
+            typeof config === "object"
+              ? config.wifi_name ||
+                config.ssid ||
+                ""
+              : "";
+
+          const password =
+            config &&
+            typeof config === "object"
+              ? config.password || ""
+              : "";
+
+          const security =
+            config &&
+            typeof config === "object"
+              ? config.security || "WPA"
+              : "WPA";
+
+          return html(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>${escapeHTML(
+            service.service_name
+          )}</title>
+
+<style>
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(
+135deg,#f5f7fb,#eef2ff
+);
+padding:20px;
+}
+
+.box{
+width:100%;
+max-width:430px;
+background:white;
+border-radius:25px;
+padding:30px;
+text-align:center;
+box-shadow:0 15px 45px rgba(0,0,0,.09);
+}
+
+.logo{
+font-size:21px;
+font-weight:800;
+margin-bottom:25px;
+}
+
+.logo span{
+color:#4f46e5;
+}
+
+.icon{
+font-size:50px;
+margin-bottom:10px;
+}
+
+h1{
+font-size:25px;
+margin:0;
+}
+
+.client{
+color:#6b7280;
+margin-top:8px;
+}
+
+.wifi{
+margin-top:25px;
+background:#f9fafb;
+border-radius:15px;
+padding:20px;
+text-align:left;
+}
+
+.row{
+padding:12px 0;
+border-bottom:1px solid #e5e7eb;
+}
+
+.row:last-child{
+border-bottom:0;
+}
+
+.label{
+font-size:11px;
+color:#9ca3af;
+}
+
+.value{
+font-weight:800;
+margin-top:5px;
+word-break:break-word;
+}
+
+.password{
+background:#eef2ff;
+color:#3730a3;
+padding:12px;
+border-radius:10px;
+margin-top:7px;
+font-size:18px;
+letter-spacing:1px;
+}
+
+.footer{
+margin-top:25px;
+font-size:11px;
+color:#9ca3af;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+
+<div class="icon">
+📶
+</div>
+
+<h1>
+${escapeHTML(
+  service.service_name
+)}
+</h1>
+
+<div class="client">
+${escapeHTML(
+  service.client_name || ""
+)}
+</div>
+
+<div class="wifi">
+
+<div class="row">
+<div class="label">
+NOM DU WI-FI
+</div>
+
+<div class="value">
+${escapeHTML(
+  ssid || "—"
+)}
+</div>
+</div>
+
+<div class="row">
+<div class="label">
+MOT DE PASSE
+</div>
+
+<div class="password">
+${escapeHTML(
+  password || "—"
+)}
+</div>
+</div>
+
+<div class="row">
+<div class="label">
+SÉCURITÉ
+</div>
+
+<div class="value">
+${escapeHTML(
+  security
+)}
+</div>
+</div>
+
+</div>
+
+<div class="footer">
+Service Wi-Fi créé avec TAPNIVO
+</div>
+
+</div>
+
+</body>
+</html>
+`);
+        }
+
+        // =================================================
+        // REDIRECT SERVICES
+        // =================================================
+
+        if (
+          [
+            "google_review",
+            "menu",
+            "custom_link"
+          ].includes(
+            service.service_type
+          )
+        ) {
+          if (
+            service.destination_url
+          ) {
+            return Response.redirect(
+              service.destination_url,
+              302
+            );
+          }
+
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+</head>
+
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+
+<h2>TAPNIVO</h2>
+
+<p>
+Aucune destination configurée.
+</p>
+
+</body>
+</html>
+`
+          );
+        }
+
+        // =================================================
+        // DIGITAL CARD
+        // =================================================
+
+        if (
+          service.service_type ===
+          "digital_card"
+        ) {
+          const client =
+            await env.DB
+              .prepare(`
+                SELECT *
+                FROM clients
+                WHERE id = ?
+                LIMIT 1
+              `)
+              .bind(service.client_id)
+              .first();
+
+          if (!client) {
+            return html(
+              "Client introuvable",
+              404
+            );
+          }
+
+          const buttons = [];
+
+          if (client.phone) {
+            buttons.push(`
+<a
+href="tel:${escapeHTML(
+              client.phone
+            )}">
+📞 Appeler
+</a>
+`);
+          }
+
+          if (client.whatsapp) {
+            buttons.push(`
+<a
+href="https://wa.me/${escapeHTML(
+              client.whatsapp.replace(
+                /[^0-9]/g,
+                ""
+              )
+            )}"
+target="_blank">
+💬 WhatsApp
+</a>
+`);
+          }
+
+          if (client.instagram) {
+            buttons.push(`
+<a
+href="${escapeHTML(
+              client.instagram
+            )}"
+target="_blank">
+Instagram
+</a>
+`);
+          }
+
+          if (client.maps) {
+            buttons.push(`
+<a
+href="${escapeHTML(
+              client.maps
+            )}"
+target="_blank">
+📍 Google Maps
+</a>
+`);
+          }
+
+          return html(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>${escapeHTML(
+            client.name
+          )}</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#f5f7fb;
+padding:30px 20px;
+}
+
+.card{
+max-width:500px;
+margin:auto;
+background:white;
+padding:30px;
+border-radius:25px;
+text-align:center;
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+}
+
+.logo{
+font-weight:800;
+font-size:20px;
+margin-bottom:25px;
+}
+
+.logo span{
+color:#4f46e5;
+}
+
+h1{
+margin-bottom:5px;
+}
+
+.profession{
+color:#4f46e5;
+font-weight:bold;
+}
+
+.bio{
+color:#6b7280;
+line-height:1.6;
+margin:20px 0;
+}
+
+a{
+display:block;
+background:#4f46e5;
+color:white;
+text-decoration:none;
+padding:14px;
+border-radius:12px;
+margin-top:10px;
+font-weight:bold;
+}
+
+.footer{
+margin-top:25px;
+color:#9ca3af;
+font-size:11px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+
+<h1>
+${escapeHTML(
+  client.name
+)}
+</h1>
+
+<div class="profession">
+${escapeHTML(
+  client.profession || ""
+)}
+</div>
+
+<div class="bio">
+${escapeHTML(
+  client.bio || ""
+)}
+</div>
+
+${buttons.join("")}
+
+<div class="footer">
+Profil digital créé avec TAPNIVO
+</div>
+
+</div>
+
+</body>
+</html>
+`);
+        }
+
+        return html(
+          `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>TAPNIVO</h2>
+<p>
+Service configuré mais aucune action disponible.
+</p>
+</body>
+</html>
+`
+        );
+
+      } catch (error) {
+        return html(
+          `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>TAPNIVO</title>
+</head>
+<body style="
+font-family:Arial;
+text-align:center;
+padding:50px;
+">
+<h2>Erreur serveur</h2>
+<p>${escapeHTML(
+            error.message
+          )}</p>
+</body>
+</html>
+`,
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // EXISTING STAND DYNAMIC QR
+    // /r/STANDCODE
+    // =====================================================
+
+    if (
+      url.pathname.startsWith("/r/")
+    ) {
+      const standCode =
+        url.pathname
+          .replace("/r/", "")
+          .replace(/\/$/, "")
+          .trim();
+
+      if (!standCode) {
+        return html(
+          "Stand introuvable",
+          404
+        );
+      }
+
+      try {
+        const stand =
+          await env.DB
+            .prepare(`
+              SELECT
+                stand_code,
+                destination_url,
+                status
+              FROM stands
+              WHERE stand_code = ?
+              LIMIT 1
+            `)
+            .bind(standCode)
+            .first();
+
+        if (!stand) {
+          return html(
+            "Stand introuvable",
+            404
+          );
+        }
+
+        if (
+          stand.status !== "active" ||
+          !stand.destination_url
+        ) {
+          return html(
+            `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+<title>TAPNIVO</title>
+
+<style>
+body{
+margin:0;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:Arial;
+background:#f5f7fb;
+text-align:center;
+}
+
+.box{
+background:white;
+padding:35px;
+border-radius:20px;
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+}
+
+.logo{
+font-size:24px;
+font-weight:800;
+}
+
+.logo span{
+color:#4f46e5;
+}
+
+p{
+color:#6b7280;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+
+<h2>Stand non activé</h2>
+
+<p>
+Ce QR code est prêt à être activé.
+</p>
+
+</div>
+
+</body>
+</html>
+`
+          );
+        }
+
+        await env.DB
+          .prepare(`
+            INSERT INTO stand_scans (
+              stand_code
+            )
+            VALUES (?)
+          `)
+          .bind(standCode)
+          .run();
+
+        return Response.redirect(
+          stand.destination_url,
+          302
+        );
+
+      } catch (error) {
+        return html(
+          "Erreur serveur : " +
+          escapeHTML(
+            error.message
+          ),
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // CLIENT PROFILE
+    // =====================================================
+
+    if (
+      url.pathname.startsWith("/client/")
+    ) {
+      const slug =
+        url.pathname
+          .replace("/client/", "")
+          .replace(/\/$/, "")
+          .trim();
+
+      if (!slug) {
+        return html(
+          "Profil introuvable",
+          404
+        );
+      }
+
+      try {
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT *
+              FROM clients
+              WHERE slug = ?
+              LIMIT 1
+            `)
+            .bind(slug)
+            .first();
+
+        if (!result) {
+          return html(
+            "Client introuvable",
+            404
+          );
+        }
+
+        return html(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>
+${escapeHTML(
+  result.name
+)} | TAPNIVO
+</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(
+135deg,#f5f7fb,#eef2ff
+);
+color:#111827;
+}
+
+.container{
+max-width:600px;
+margin:auto;
+padding:40px 20px;
+}
+
+.profile{
+background:white;
+border-radius:25px;
+padding:35px 25px;
+text-align:center;
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+}
+
+.logo{
+font-size:20px;
+font-weight:800;
+margin-bottom:30px;
+}
+
+.logo span{
+color:#4f46e5;
+}
+
+.avatar{
+width:100px;
+height:100px;
+border-radius:50%;
+margin:auto auto 20px;
+background:#eef2ff;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+}
+
+h1{
+margin:0;
+font-size:28px;
+}
+
+.profession{
+color:#4f46e5;
+font-weight:bold;
+margin-top:8px;
+}
+
+.bio{
+color:#6b7280;
+line-height:1.6;
+margin:20px 0;
+}
+
+.buttons{
+display:grid;
+gap:10px;
+margin-top:25px;
+}
+
+.button{
+display:block;
+padding:14px;
+border-radius:12px;
+text-decoration:none;
+font-weight:bold;
+background:#4f46e5;
+color:white;
+}
+
+.button.secondary{
+background:#f3f4f6;
+color:#374151;
+}
+
+.info{
+margin-top:25px;
+text-align:left;
+}
+
+.info div{
+padding:12px 0;
+border-bottom:1px solid #eee;
+}
+
+.label{
+font-size:12px;
+color:#9ca3af;
+}
+
+.value{
+margin-top:4px;
+font-weight:600;
+}
+
+.footer{
+margin-top:25px;
+color:#9ca3af;
+font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="profile">
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
+
+<div class="avatar">
+👤
+</div>
+
+<h1>
+${escapeHTML(
+  result.name
+)}
+</h1>
+
+${
+  result.profession
+    ? `
+<div class="profession">
+${escapeHTML(
+  result.profession
+)}
+</div>
+`
+    : ""
+}
+
+${
+  result.bio
+    ? `
+<div class="bio">
+${escapeHTML(
+  result.bio
+)}
+</div>
+`
+    : ""
+}
+
+<div class="buttons">
+
+${
+  result.phone
+    ? `
+<a
+class="button"
+href="tel:${escapeHTML(
+  result.phone
+)}">
+📞 Appeler
+</a>
+`
+    : ""
+}
+
+${
+  result.whatsapp
+    ? `
+<a
+class="button"
+href="https://wa.me/${escapeHTML(
+  result.whatsapp.replace(
+    /[^0-9]/g,
+    ""
+  )
+)}"
+target="_blank">
+💬 WhatsApp
+</a>
+`
+    : ""
+}
+
+${
+  result.instagram
+    ? `
+<a
+class="button secondary"
+href="${escapeHTML(
+  result.instagram
+)}"
+target="_blank">
+Instagram
+</a>
+`
+    : ""
+}
+
+${
+  result.maps
+    ? `
+<a
+class="button secondary"
+href="${escapeHTML(
+  result.maps
+)}"
+target="_blank">
+📍 Google Maps
+</a>
+`
+    : ""
+}
+
+</div>
+
+<div class="info">
+
+${
+  result.email
+    ? `
+<div>
+<div class="label">
+Email
+</div>
+<div class="value">
+${escapeHTML(
+  result.email
+)}
+</div>
+</div>
+`
+    : ""
+}
+
+${
+  result.address
+    ? `
+<div>
+<div class="label">
+Adresse
+</div>
+<div class="value">
+${escapeHTML(
+  result.address
+)}
+</div>
+</div>
+`
+    : ""
+}
+
+</div>
+
+<div class="footer">
+Profil digital créé avec TAPNIVO
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
+`);
+
+      } catch (error) {
+        return html(
+          "Erreur serveur : " +
+          escapeHTML(
+            error.message
+          ),
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // STATIC FILES
+    // =====================================================
+
+    return env.ASSETS.fetch(request);
+  }
+};
