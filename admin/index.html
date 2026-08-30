@@ -139,6 +139,11 @@ button{
   font-size:14px;
 }
 
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
 .primary{
   background:#4f46e5;
   color:white;
@@ -216,7 +221,9 @@ button{
   margin-bottom:25px;
 }
 
-.login-card .field{margin-bottom:15px}
+.login-card .field{
+  margin-bottom:15px;
+}
 
 .login-card button{
   width:100%;
@@ -275,6 +282,42 @@ button{
   line-height:1.6;
 }
 
+/* SCAN STATS */
+
+.scan-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:14px;
+}
+
+.scan-stat{
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:11px;
+}
+
+.scan-label{
+  font-size:11px;
+  color:#9ca3af;
+  margin-bottom:4px;
+}
+
+.scan-value{
+  font-size:15px;
+  font-weight:800;
+  color:#111827;
+}
+
+.qr-link{
+  display:block;
+  word-break:break-all;
+  margin-top:8px;
+  color:#4f46e5;
+  font-size:12px;
+}
+
 .stand-actions{
   margin-top:14px;
   display:flex;
@@ -289,20 +332,16 @@ button{
   display:none;
 }
 
-.activate-box.show{display:block}
-
-.activate-box .field{margin-bottom:10px}
-
-.qr-link{
+.activate-box.show{
   display:block;
-  word-break:break-all;
-  margin-top:8px;
-  color:#4f46e5;
-  font-size:12px;
+}
+
+.activate-box .field{
+  margin-bottom:10px;
 }
 
 .copy-btn{
-  margin-top:10px;
+  margin-top:0;
   background:#eef2ff;
   color:#3730a3;
 }
@@ -327,7 +366,9 @@ footer{
   font-size:12px;
 }
 
-#dashboard{display:none}
+#dashboard{
+  display:none;
+}
 
 @media(max-width:700px){
 
@@ -362,13 +403,19 @@ footer{
   .stand-actions button{
     width:100%;
   }
+
+  .scan-stats{
+    grid-template-columns:1fr 1fr;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- =====================================================
+     LOGIN
+===================================================== -->
 
 <div id="loginScreen">
 
@@ -390,7 +437,9 @@ footer{
 
       <div class="field">
 
-        <label>Mot de passe administrateur</label>
+        <label>
+          Mot de passe administrateur
+        </label>
 
         <input
           id="password"
@@ -417,7 +466,9 @@ footer{
 </div>
 
 
-<!-- DASHBOARD -->
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
 
 <div id="dashboard">
 
@@ -449,7 +500,9 @@ footer{
 
 <div class="header">
 
-  <h1>Dashboard TAPNIVO</h1>
+  <h1>
+    Dashboard TAPNIVO
+  </h1>
 
   <p>
     Gérez vos clients et vos Stands NFC / QR.
@@ -461,11 +514,15 @@ footer{
 <div id="globalMessage" class="message"></div>
 
 
-<!-- STANDS -->
+<!-- =====================================================
+     STANDS
+===================================================== -->
 
 <div class="card">
 
-  <h2>📦 Gestion des Stands</h2>
+  <h2>
+    📦 Gestion des Stands
+  </h2>
 
   <p class="description">
     Activez, gérez et réinitialisez vos Stands NFC / QR.
@@ -482,14 +539,18 @@ footer{
 </div>
 
 
-<!-- CLIENT -->
+<!-- =====================================================
+     CLIENT
+===================================================== -->
 
 <div class="card">
 
-<h2>👤 Ajouter un client</h2>
+<h2>
+  👤 Ajouter un client
+</h2>
 
 <p class="description">
-Créez le profil digital TAPNIVO de votre client.
+  Créez le profil digital TAPNIVO de votre client.
 </p>
 
 <form id="clientForm">
@@ -499,14 +560,14 @@ Créez le profil digital TAPNIVO de votre client.
 <div class="field">
 
 <label>
-Nom complet / Nom commercial *
+  Nom complet / Nom commercial *
 </label>
 
 <input
-type="text"
-name="name"
-placeholder="Ex : Gardenia"
-required
+  type="text"
+  name="name"
+  placeholder="Ex : Gardenia"
+  required
 >
 
 </div>
@@ -514,12 +575,14 @@ required
 
 <div class="field">
 
-<label>Profession</label>
+<label>
+  Profession
+</label>
 
 <input
-type="text"
-name="profession"
-placeholder="Ex : Restaurant"
+  type="text"
+  name="profession"
+  placeholder="Ex : Restaurant"
 >
 
 </div>
@@ -527,11 +590,13 @@ placeholder="Ex : Restaurant"
 
 <div class="field full">
 
-<label>Description</label>
+<label>
+  Description
+</label>
 
 <textarea
-name="bio"
-placeholder="Présentez l'activité du client..."
+  name="bio"
+  placeholder="Présentez l'activité du client..."
 ></textarea>
 
 </div>
@@ -539,12 +604,14 @@ placeholder="Présentez l'activité du client..."
 
 <div class="field">
 
-<label>Téléphone</label>
+<label>
+  Téléphone
+</label>
 
 <input
-type="tel"
-name="phone"
-placeholder="+212 6 XX XX XX XX"
+  type="tel"
+  name="phone"
+  placeholder="+212 6 XX XX XX XX"
 >
 
 </div>
@@ -552,12 +619,14 @@ placeholder="+212 6 XX XX XX XX"
 
 <div class="field">
 
-<label>WhatsApp</label>
+<label>
+  WhatsApp
+</label>
 
 <input
-type="tel"
-name="whatsapp"
-placeholder="+212 6 XX XX XX XX"
+  type="tel"
+  name="whatsapp"
+  placeholder="+212 6 XX XX XX XX"
 >
 
 </div>
@@ -565,12 +634,14 @@ placeholder="+212 6 XX XX XX XX"
 
 <div class="field full">
 
-<label>Email</label>
+<label>
+  Email
+</label>
 
 <input
-type="email"
-name="email"
-placeholder="contact@example.com"
+  type="email"
+  name="email"
+  placeholder="contact@example.com"
 >
 
 </div>
@@ -578,12 +649,14 @@ placeholder="contact@example.com"
 
 <div class="field">
 
-<label>Instagram</label>
+<label>
+  Instagram
+</label>
 
 <input
-type="url"
-name="instagram"
-placeholder="https://instagram.com/..."
+  type="url"
+  name="instagram"
+  placeholder="https://instagram.com/..."
 >
 
 </div>
@@ -591,12 +664,14 @@ placeholder="https://instagram.com/..."
 
 <div class="field">
 
-<label>Facebook</label>
+<label>
+  Facebook
+</label>
 
 <input
-type="url"
-name="facebook"
-placeholder="https://facebook.com/..."
+  type="url"
+  name="facebook"
+  placeholder="https://facebook.com/..."
 >
 
 </div>
@@ -604,12 +679,14 @@ placeholder="https://facebook.com/..."
 
 <div class="field">
 
-<label>TikTok</label>
+<label>
+  TikTok
+</label>
 
 <input
-type="url"
-name="tiktok"
-placeholder="https://tiktok.com/@..."
+  type="url"
+  name="tiktok"
+  placeholder="https://tiktok.com/@..."
 >
 
 </div>
@@ -617,12 +694,14 @@ placeholder="https://tiktok.com/@..."
 
 <div class="field">
 
-<label>LinkedIn</label>
+<label>
+  LinkedIn
+</label>
 
 <input
-type="url"
-name="linkedin"
-placeholder="https://linkedin.com/in/..."
+  type="url"
+  name="linkedin"
+  placeholder="https://linkedin.com/in/..."
 >
 
 </div>
@@ -630,12 +709,14 @@ placeholder="https://linkedin.com/in/..."
 
 <div class="field full">
 
-<label>Adresse</label>
+<label>
+  Adresse
+</label>
 
 <input
-type="text"
-name="address"
-placeholder="Ex : Rabat"
+  type="text"
+  name="address"
+  placeholder="Ex : Rabat"
 >
 
 </div>
@@ -643,12 +724,14 @@ placeholder="Ex : Rabat"
 
 <div class="field full">
 
-<label>Google Maps</label>
+<label>
+  Google Maps
+</label>
 
 <input
-type="url"
-name="maps"
-placeholder="https://maps.google.com/..."
+  type="url"
+  name="maps"
+  placeholder="https://maps.google.com/..."
 >
 
 </div>
@@ -656,12 +739,14 @@ placeholder="https://maps.google.com/..."
 
 <div class="field full">
 
-<label>Site web</label>
+<label>
+  Site web
+</label>
 
 <input
-type="url"
-name="website"
-placeholder="https://..."
+  type="url"
+  name="website"
+  placeholder="https://..."
 >
 
 </div>
@@ -669,12 +754,14 @@ placeholder="https://..."
 
 <div class="field full">
 
-<label>Google Reviews</label>
+<label>
+  Google Reviews
+</label>
 
 <input
-type="url"
-name="reviews"
-placeholder="https://..."
+  type="url"
+  name="reviews"
+  placeholder="https://..."
 >
 
 </div>
@@ -685,11 +772,11 @@ placeholder="https://..."
 <div style="margin-top:20px">
 
 <button
-type="submit"
-class="primary"
-id="clientButton"
+  type="submit"
+  class="primary"
+  id="clientButton"
 >
-Créer le profil
+  Créer le profil
 </button>
 
 </div>
@@ -702,7 +789,7 @@ Créer le profil
 
 
 <footer>
-TAPNIVO • Digital Business Cards
+  TAPNIVO • Digital Business Cards
 </footer>
 
 </div>
@@ -750,27 +837,27 @@ document.getElementById("globalMessage");
 ===================================================== */
 
 function showMessage(
-element,
-text,
-type
+  element,
+  text,
+  type
 ){
 
-element.className =
-"message " + type;
+  element.className =
+  "message " + type;
 
-element.textContent =
-text;
+  element.textContent =
+  text;
 
 }
 
 
 function clearMessage(element){
 
-element.className =
-"message";
+  element.className =
+  "message";
 
-element.textContent =
-"";
+  element.textContent =
+  "";
 
 }
 
@@ -781,62 +868,62 @@ element.textContent =
 
 async function checkAdmin(){
 
-try{
+  try{
 
-const response =
-await fetch(
-"/api/admin/me",
-{
-method:"GET",
-credentials:"same-origin"
-}
-);
+    const response =
+    await fetch(
+      "/api/admin/me",
+      {
+        method:"GET",
+        credentials:"same-origin"
+      }
+    );
 
-const result =
-await response.json();
+    const result =
+    await response.json();
 
-if(
-result.success &&
-result.authenticated
-){
+    if(
+      result.success &&
+      result.authenticated
+    ){
 
-showDashboard();
+      showDashboard();
 
-}else{
+    }else{
 
-showLogin();
+      showLogin();
 
-}
+    }
 
-}catch{
+  }catch{
 
-showLogin();
+    showLogin();
 
-}
+  }
 
 }
 
 
 function showLogin(){
 
-loginScreen.style.display =
-"flex";
+  loginScreen.style.display =
+  "flex";
 
-dashboard.style.display =
-"none";
+  dashboard.style.display =
+  "none";
 
 }
 
 
 function showDashboard(){
 
-loginScreen.style.display =
-"none";
+  loginScreen.style.display =
+  "none";
 
-dashboard.style.display =
-"block";
+  dashboard.style.display =
+  "block";
 
-loadStands();
+  loadStands();
 
 }
 
@@ -846,89 +933,89 @@ loadStands();
 ===================================================== */
 
 loginForm.addEventListener(
-"submit",
-async function(event){
+  "submit",
+  async function(event){
 
-event.preventDefault();
+    event.preventDefault();
 
-clearMessage(loginMessage);
+    clearMessage(loginMessage);
 
-loginButton.disabled =
-true;
+    loginButton.disabled =
+    true;
 
-loginButton.textContent =
-"Connexion...";
-
-
-const password =
-document.getElementById(
-"password"
-).value;
+    loginButton.textContent =
+    "Connexion...";
 
 
-try{
-
-const response =
-await fetch(
-"/api/admin/login",
-{
-method:"POST",
-credentials:"same-origin",
-headers:{
-"Content-Type":
-"application/json"
-},
-body:
-JSON.stringify({
-password
-})
-}
-);
+    const password =
+    document.getElementById(
+      "password"
+    ).value;
 
 
-const result =
-await response.json();
+    try{
+
+      const response =
+      await fetch(
+        "/api/admin/login",
+        {
+          method:"POST",
+          credentials:"same-origin",
+          headers:{
+            "Content-Type":
+            "application/json"
+          },
+          body:
+          JSON.stringify({
+            password
+          })
+        }
+      );
 
 
-if(
-!response.ok ||
-!result.success
-){
-
-throw new Error(
-result.error ||
-"Connexion impossible."
-);
-
-}
+      const result =
+      await response.json();
 
 
-document.getElementById(
-"password"
-).value =
-"";
+      if(
+        !response.ok ||
+        !result.success
+      ){
 
-showDashboard();
+        throw new Error(
+          result.error ||
+          "Connexion impossible."
+        );
 
-
-}catch(error){
-
-showMessage(
-loginMessage,
-"❌ " + error.message,
-"error"
-);
-
-}
+      }
 
 
-loginButton.disabled =
-false;
+      document.getElementById(
+        "password"
+      ).value =
+      "";
 
-loginButton.textContent =
-"Se connecter";
+      showDashboard();
 
-}
+
+    }catch(error){
+
+      showMessage(
+        loginMessage,
+        "❌ " + error.message,
+        "error"
+      );
+
+    }
+
+
+    loginButton.disabled =
+    false;
+
+    loginButton.textContent =
+    "Se connecter";
+
+  }
 );
 
 
@@ -937,27 +1024,26 @@ loginButton.textContent =
 ===================================================== */
 
 logoutButton.addEventListener(
-"click",
-async function(){
+  "click",
+  async function(){
 
-try{
+    try{
 
-await fetch(
-"/api/admin/logout",
-{
-method:"POST",
-credentials:
-"same-origin"
-}
-);
+      await fetch(
+        "/api/admin/logout",
+        {
+          method:"POST",
+          credentials:"same-origin"
+        }
+      );
 
-}finally{
+    }finally{
 
-showLogin();
+      showLogin();
 
-}
+    }
 
-}
+  }
 );
 
 
@@ -967,39 +1053,79 @@ showLogin();
 
 async function loadClients(){
 
-const response =
-await fetch(
-"/api/clients",
-{
-method:"GET",
-credentials:
-"same-origin"
+  const response =
+  await fetch(
+    "/api/clients",
+    {
+      method:"GET",
+      credentials:"same-origin"
+    }
+  );
+
+  if(!response.ok){
+
+    throw new Error(
+      "Impossible de charger les clients."
+    );
+
+  }
+
+  const result =
+  await response.json();
+
+  if(
+    !result.success
+  ){
+
+    throw new Error(
+      result.error ||
+      "Impossible de charger les clients."
+    );
+
+  }
+
+  return result.clients || [];
+
 }
-);
 
-if(!response.ok){
 
-throw new Error(
-"Impossible de charger les clients."
-);
+/* =====================================================
+   FORMAT DATE
+===================================================== */
 
-}
+function formatScanDate(value){
 
-const result =
-await response.json();
+  if(!value){
 
-if(
-!result.success
-){
+    return "Aucun scan";
 
-throw new Error(
-result.error ||
-"Impossible de charger les clients."
-);
+  }
 
-}
+  const date =
+  new Date(
+    String(value).replace(" ","T")
+  );
 
-return result.clients || [];
+  if(
+    Number.isNaN(
+      date.getTime()
+    )
+  ){
+
+    return value;
+
+  }
+
+  return date.toLocaleString(
+    "fr-FR",
+    {
+      day:"2-digit",
+      month:"2-digit",
+      year:"numeric",
+      hour:"2-digit",
+      minute:"2-digit"
+    }
+  );
 
 }
 
@@ -1010,69 +1136,68 @@ return result.clients || [];
 
 async function loadStands(){
 
-standsContainer.innerHTML =
-`
-<div class="empty">
-Chargement...
-</div>
-`;
+  standsContainer.innerHTML =
+  `
+  <div class="empty">
+    Chargement...
+  </div>
+  `;
 
 
-try{
+  try{
 
-const [
-standsResult,
-clients
-] =
-await Promise.all([
+    const [
+      standsResult,
+      clients
+    ] =
+    await Promise.all([
 
-fetch(
-"/api/stands",
-{
-method:"GET",
-credentials:
-"same-origin"
-}
-).then(
-response =>
-response.json()
-),
+      fetch(
+        "/api/stands",
+        {
+          method:"GET",
+          credentials:"same-origin"
+        }
+      ).then(
+        response =>
+        response.json()
+      ),
 
-loadClients()
+      loadClients()
 
-]);
-
-
-if(
-!standsResult.success
-){
-
-throw new Error(
-standsResult.error ||
-"Impossible de charger les Stands."
-);
-
-}
+    ]);
 
 
-renderStands(
-standsResult.stands || [],
-clients
-);
+    if(
+      !standsResult.success
+    ){
+
+      throw new Error(
+        standsResult.error ||
+        "Impossible de charger les Stands."
+      );
+
+    }
 
 
-}catch(error){
+    renderStands(
+      standsResult.stands || [],
+      clients
+    );
 
-standsContainer.innerHTML =
-`
-<div class="message error">
-❌ ${escapeHtml(
-error.message
-)}
-</div>
-`;
 
-}
+  }catch(error){
+
+    standsContainer.innerHTML =
+    `
+    <div class="message error">
+      ❌ ${escapeHtml(
+        error.message
+      )}
+    </div>
+    `;
+
+  }
 
 }
 
@@ -1082,659 +1207,703 @@ error.message
 ===================================================== */
 
 function renderStands(
-stands,
-clients
+  stands,
+  clients
 ){
 
-if(!stands.length){
+  if(!stands.length){
 
-standsContainer.innerHTML =
-`
-<div class="empty">
-Aucun Stand trouvé dans la base de données.
-</div>
-`;
+    standsContainer.innerHTML =
+    `
+    <div class="empty">
+      Aucun Stand trouvé dans la base de données.
+    </div>
+    `;
 
-return;
+    return;
 
-}
+  }
 
 
-const wrapper =
-document.createElement(
-"div"
-);
+  const wrapper =
+  document.createElement(
+    "div"
+  );
 
-wrapper.className =
-"stands-grid";
+  wrapper.className =
+  "stands-grid";
 
 
-stands.forEach(
-function(stand){
+  stands.forEach(
+    function(stand){
 
-const box =
-document.createElement(
-"div"
-);
+      const box =
+      document.createElement(
+        "div"
+      );
 
-box.className =
-"stand";
+      box.className =
+      "stand";
 
 
-const isActive =
-stand.status === "active";
+      const isActive =
+      stand.status === "active";
 
 
-let clientOptions =
-`
-<option value="">
--- Sélectionner un client --
-</option>
-`;
+      let clientOptions =
+      `
+      <option value="">
+        -- Sélectionner un client --
+      </option>
+      `;
 
 
-clients.forEach(
-function(client){
+      clients.forEach(
+        function(client){
 
-clientOptions +=
-`
-<option value="${
-client.id
-}">
-${escapeHtml(
-client.name
-)}
-</option>
-`;
+          clientOptions +=
+          `
+          <option value="${
+            client.id
+          }">
+            ${escapeHtml(
+              client.name
+            )}
+          </option>
+          `;
 
-});
+        }
+      );
 
 
-box.innerHTML =
-`
+      const scansCount =
+      Number(
+        stand.scans_count || 0
+      );
 
-<div class="stand-top">
 
-<div class="stand-code">
-${escapeHtml(
-stand.stand_code
-)}
-</div>
+      box.innerHTML =
+      `
 
-<span class="badge ${
-isActive
-? "active"
-: "available"
-}">
+      <div class="stand-top">
 
-${
-isActive
-? "ACTIF"
-: "DISPONIBLE"
-}
+        <div class="stand-code">
+          ${escapeHtml(
+            stand.stand_code
+          )}
+        </div>
 
-</span>
+        <span class="badge ${
+          isActive
+          ? "active"
+          : "available"
+        }">
 
-</div>
+          ${
+            isActive
+            ? "ACTIF"
+            : "DISPONIBLE"
+          }
 
+        </span>
 
-<div class="stand-info">
+      </div>
 
-${
-isActive
 
-? `
+      <div class="stand-info">
 
-Client :
-<strong>
-${escapeHtml(
-stand.client_name ||
-"Client"
-)}
-</strong>
+      ${
+        isActive
 
-<br>
+        ? `
 
-Destination :
+          Client :
+          <strong>
+            ${escapeHtml(
+              stand.client_name ||
+              "Client"
+            )}
+          </strong>
 
-<span class="qr-link">
-${escapeHtml(
-stand.destination_url ||
-""
-)}
-</span>
+          <br>
 
-`
+          Destination :
 
-: `
+          <span class="qr-link">
+            ${escapeHtml(
+              stand.destination_url ||
+              ""
+            )}
+          </span>
 
-Ce Stand est disponible
-et prêt à être attribué.
 
-`
+          <!-- SCAN STATISTICS -->
 
-}
+          <div class="scan-stats">
 
-</div>
+            <div class="scan-stat">
 
+              <div class="scan-label">
+                📊 Nombre de scans
+              </div>
 
-<div class="stand-actions">
+              <div class="scan-value">
+                ${scansCount}
+              </div>
 
-${
-isActive
+            </div>
 
-? `
 
-<button
-class="copy-btn"
-data-copy="${
-escapeHtml(
-stand.destination_url ||
-""
-)
-}"
->
-Copier le lien
-</button>
+            <div class="scan-stat">
 
-<button
-class="danger reset-btn"
-data-stand="${
-escapeHtml(
-stand.stand_code
-)
-}"
->
-🔄 Réinitialiser
-</button>
+              <div class="scan-label">
+                🕐 Dernier scan
+              </div>
 
-`
+              <div class="scan-value">
+                ${escapeHtml(
+                  formatScanDate(
+                    stand.last_scan
+                  )
+                )}
+              </div>
 
-: `
+            </div>
 
-<button
-class="primary activate-toggle"
-data-stand="${
-escapeHtml(
-stand.stand_code
-)
-}"
->
-Activer ce Stand
-</button>
+          </div>
 
-`
+        `
 
-}
+        : `
 
-</div>
+          Ce Stand est disponible
+          et prêt à être attribué.
 
+        `
 
-${
-!isActive
+      }
 
-? `
+      </div>
 
-<div
-class="activate-box"
-id="activate-${
-escapeHtml(
-stand.stand_code
-)
-}"
->
 
-<div class="field">
+      <div class="stand-actions">
 
-<label>
-Client
-</label>
+      ${
+        isActive
 
-<select class="client-select">
+        ? `
 
-${clientOptions}
+          <button
+            class="copy-btn"
+            data-copy="${
+              escapeHtml(
+                stand.destination_url ||
+                ""
+              )
+            }"
+          >
+            Copier le lien
+          </button>
 
-</select>
+          <button
+            class="danger reset-btn"
+            data-stand="${
+              escapeHtml(
+                stand.stand_code
+              )
+            }"
+          >
+            🔄 Réinitialiser
+          </button>
 
-</div>
+        `
 
+        : `
 
-<div class="field">
+          <button
+            class="primary activate-toggle"
+            data-stand="${
+              escapeHtml(
+                stand.stand_code
+              )
+            }"
+          >
+            Activer ce Stand
+          </button>
 
-<label>
-Destination URL
-</label>
+        `
 
-<input
-type="url"
-class="destination-url"
-placeholder="https://..."
->
+      }
 
-</div>
+      </div>
 
 
-<button
-class="primary activate-submit"
-data-stand="${
-escapeHtml(
-stand.stand_code
-)
-}"
->
-Activer maintenant
-</button>
+      ${
+        !isActive
 
-</div>
+        ? `
 
-`
+        <div
+          class="activate-box"
+          id="activate-${
+            escapeHtml(
+              stand.stand_code
+            )
+          }"
+        >
 
-: ""
+          <div class="field">
 
-}
+            <label>
+              Client
+            </label>
 
-`;
+            <select
+              class="client-select"
+            >
 
+              ${clientOptions}
 
-wrapper.appendChild(
-box
-);
+            </select>
 
-});
+          </div>
 
 
-standsContainer.innerHTML =
-"";
+          <div class="field">
 
-standsContainer.appendChild(
-wrapper
-);
+            <label>
+              Destination URL
+            </label>
 
+            <input
+              type="url"
+              class="destination-url"
+              placeholder="https://..."
+            >
 
-/* =====================================================
-   TOGGLE ACTIVATION
-===================================================== */
+          </div>
 
-document
-.querySelectorAll(
-".activate-toggle"
-)
-.forEach(
-function(button){
 
-button.addEventListener(
-"click",
-function(){
+          <button
+            class="primary activate-submit"
+            data-stand="${
+              escapeHtml(
+                stand.stand_code
+              )
+            }"
+          >
+            Activer maintenant
+          </button>
 
-const code =
-button.dataset.stand;
+        </div>
 
-const box =
-document.getElementById(
-"activate-" +
-code
-);
+        `
 
-box.classList.toggle(
-"show"
-);
+        : ""
 
-}
-);
+      }
 
-}
-);
+      `;
 
 
-/* =====================================================
-   ACTIVATE STAND
-===================================================== */
+      wrapper.appendChild(
+        box
+      );
 
-document
-.querySelectorAll(
-".activate-submit"
-)
-.forEach(
-function(button){
+    }
+  );
 
-button.addEventListener(
-"click",
-async function(){
 
-const code =
-button.dataset.stand;
+  standsContainer.innerHTML =
+  "";
 
-const parent =
-button.closest(
-".activate-box"
-);
+  standsContainer.appendChild(
+    wrapper
+  );
 
 
-const clientSelect =
-parent.querySelector(
-".client-select"
-);
+  /* ===================================================
+     TOGGLE ACTIVATION
+  =================================================== */
 
-const destinationInput =
-parent.querySelector(
-".destination-url"
-);
+  document
+  .querySelectorAll(
+    ".activate-toggle"
+  )
+  .forEach(
+    function(button){
 
+      button.addEventListener(
+        "click",
+        function(){
 
-const clientId =
-clientSelect.value;
+          const code =
+          button.dataset.stand;
 
-const destinationUrl =
-destinationInput.value.trim();
+          const box =
+          document.getElementById(
+            "activate-" +
+            code
+          );
 
+          box.classList.toggle(
+            "show"
+          );
 
-if(!clientId){
+        }
+      );
 
-alert(
-"Sélectionnez un client."
-);
+    }
+  );
 
-return;
 
-}
+  /* ===================================================
+     ACTIVATE STAND
+  =================================================== */
 
+  document
+  .querySelectorAll(
+    ".activate-submit"
+  )
+  .forEach(
+    function(button){
 
-if(!destinationUrl){
+      button.addEventListener(
+        "click",
+        async function(){
 
-alert(
-"Entrez la destination URL."
-);
+          const code =
+          button.dataset.stand;
 
-return;
+          const parent =
+          button.closest(
+            ".activate-box"
+          );
 
-}
 
+          const clientSelect =
+          parent.querySelector(
+            ".client-select"
+          );
 
-button.disabled =
-true;
+          const destinationInput =
+          parent.querySelector(
+            ".destination-url"
+          );
 
-button.textContent =
-"Activation...";
 
+          const clientId =
+          clientSelect.value;
 
-try{
+          const destinationUrl =
+          destinationInput.value.trim();
 
-const response =
-await fetch(
-"/api/stands/activate",
-{
-method:"POST",
-credentials:
-"same-origin",
-headers:{
-"Content-Type":
-"application/json"
-},
-body:
-JSON.stringify({
 
-stand_code:
-code,
+          if(!clientId){
 
-client_id:
-Number(clientId),
+            alert(
+              "Sélectionnez un client."
+            );
 
-destination_url:
-destinationUrl
+            return;
 
-})
-}
-);
+          }
 
 
-if(
-response.status === 401
-){
+          if(!destinationUrl){
 
-showLogin();
+            alert(
+              "Entrez la destination URL."
+            );
 
-return;
+            return;
 
-}
+          }
 
 
-const result =
-await response.json();
+          button.disabled =
+          true;
 
+          button.textContent =
+          "Activation...";
 
-if(
-!response.ok ||
-!result.success
-){
 
-throw new Error(
-result.error ||
-"Activation impossible."
-);
+          try{
 
-}
+            const response =
+            await fetch(
+              "/api/stands/activate",
+              {
+                method:"POST",
+                credentials:"same-origin",
+                headers:{
+                  "Content-Type":
+                  "application/json"
+                },
+                body:
+                JSON.stringify({
 
+                  stand_code:
+                  code,
 
-showMessage(
-globalMessage,
-"✅ " +
-code +
-" activé avec succès.",
-"success"
-);
+                  client_id:
+                  Number(clientId),
 
+                  destination_url:
+                  destinationUrl
 
-await loadStands();
+                })
+              }
+            );
 
 
-}catch(error){
+            if(
+              response.status === 401
+            ){
 
-showMessage(
-globalMessage,
-"❌ " +
-error.message,
-"error"
-);
+              showLogin();
 
-}finally{
+              return;
 
-button.disabled =
-false;
+            }
 
-button.textContent =
-"Activer maintenant";
 
-}
+            const result =
+            await response.json();
 
-}
-);
 
-}
-);
+            if(
+              !response.ok ||
+              !result.success
+            ){
 
+              throw new Error(
+                result.error ||
+                "Activation impossible."
+              );
 
-/* =====================================================
-   RESET STAND
-===================================================== */
+            }
 
-document
-.querySelectorAll(
-".reset-btn"
-)
-.forEach(
-function(button){
 
-button.addEventListener(
-"click",
-async function(){
+            showMessage(
+              globalMessage,
+              "✅ " +
+              code +
+              " activé avec succès.",
+              "success"
+            );
 
-const code =
-button.dataset.stand;
 
+            await loadStands();
 
-const confirmed =
-confirm(
-"⚠️ Réinitialiser le Stand " +
-code +
-" ?\n\n" +
-"Le Stand redeviendra DISPONIBLE.\n" +
-"Le client ne sera PAS supprimé."
-);
 
+          }catch(error){
 
-if(!confirmed){
+            showMessage(
+              globalMessage,
+              "❌ " +
+              error.message,
+              "error"
+            );
 
-return;
+          }finally{
 
-}
+            button.disabled =
+            false;
 
+            button.textContent =
+            "Activer maintenant";
 
-button.disabled =
-true;
+          }
 
-button.textContent =
-"Réinitialisation...";
+        }
+      );
 
+    }
+  );
 
-try{
 
-const response =
-await fetch(
-"/api/stands/reset",
-{
-method:"POST",
-credentials:
-"same-origin",
-headers:{
-"Content-Type":
-"application/json"
-},
-body:
-JSON.stringify({
+  /* ===================================================
+     RESET STAND
+  =================================================== */
 
-stand_code:
-code
+  document
+  .querySelectorAll(
+    ".reset-btn"
+  )
+  .forEach(
+    function(button){
 
-})
-}
-);
+      button.addEventListener(
+        "click",
+        async function(){
 
+          const code =
+          button.dataset.stand;
 
-if(
-response.status === 401
-){
 
-showLogin();
+          const confirmed =
+          confirm(
+            "⚠️ Réinitialiser le Stand " +
+            code +
+            " ?\n\n" +
+            "Le Stand redeviendra DISPONIBLE.\n" +
+            "Le client ne sera PAS supprimé."
+          );
 
-return;
 
-}
+          if(!confirmed){
 
+            return;
 
-const result =
-await response.json();
+          }
 
 
-if(
-!response.ok ||
-!result.success
-){
+          button.disabled =
+          true;
 
-throw new Error(
-result.error ||
-"Réinitialisation impossible."
-);
+          button.textContent =
+          "Réinitialisation...";
 
-}
 
+          try{
 
-showMessage(
-globalMessage,
-"✅ " +
-code +
-" réinitialisé avec succès.",
-"success"
-);
+            const response =
+            await fetch(
+              "/api/stands/reset",
+              {
+                method:"POST",
+                credentials:"same-origin",
+                headers:{
+                  "Content-Type":
+                  "application/json"
+                },
+                body:
+                JSON.stringify({
 
+                  stand_code:
+                  code
 
-await loadStands();
+                })
+              }
+            );
 
 
-}catch(error){
+            if(
+              response.status === 401
+            ){
 
-showMessage(
-globalMessage,
-"❌ " +
-error.message,
-"error"
-);
+              showLogin();
 
-}finally{
+              return;
 
-button.disabled =
-false;
+            }
 
-button.textContent =
-"🔄 Réinitialiser";
 
-}
+            const result =
+            await response.json();
 
-}
-);
 
-}
-);
+            if(
+              !response.ok ||
+              !result.success
+            ){
 
+              throw new Error(
+                result.error ||
+                "Réinitialisation impossible."
+              );
 
-/* =====================================================
-   COPY LINK
-===================================================== */
+            }
 
-document
-.querySelectorAll(
-".copy-btn"
-)
-.forEach(
-function(button){
 
-button.addEventListener(
-"click",
-async function(){
+            showMessage(
+              globalMessage,
+              "✅ " +
+              code +
+              " réinitialisé avec succès.",
+              "success"
+            );
 
-const value =
-button.dataset.copy;
 
-try{
+            await loadStands();
 
-await navigator.clipboard
-.writeText(value);
 
-button.textContent =
-"Copié ✓";
+          }catch(error){
 
-setTimeout(
-function(){
+            showMessage(
+              globalMessage,
+              "❌ " +
+              error.message,
+              "error"
+            );
 
-button.textContent =
-"Copier le lien";
+          }finally{
 
-},
-1500
-);
+            button.disabled =
+            false;
 
-}catch{
+            button.textContent =
+            "🔄 Réinitialiser";
 
-alert(
-"Impossible de copier le lien."
-);
+          }
 
-}
+        }
+      );
 
-}
-);
+    }
+  );
 
-}
-);
+
+  /* ===================================================
+     COPY LINK
+  =================================================== */
+
+  document
+  .querySelectorAll(
+    ".copy-btn"
+  )
+  .forEach(
+    function(button){
+
+      button.addEventListener(
+        "click",
+        async function(){
+
+          const value =
+          button.dataset.copy;
+
+          try{
+
+            await navigator.clipboard
+            .writeText(value);
+
+            button.textContent =
+            "Copié ✓";
+
+            setTimeout(
+              function(){
+
+                button.textContent =
+                "Copier le lien";
+
+              },
+              1500
+            );
+
+          }catch{
+
+            alert(
+              "Impossible de copier le lien."
+            );
+
+          }
+
+        }
+      );
+
+    }
+  );
 
 }
 
@@ -1744,166 +1913,166 @@ alert(
 ===================================================== */
 
 clientForm.addEventListener(
-"submit",
-async function(event){
+  "submit",
+  async function(event){
 
-event.preventDefault();
-
-
-clientButton.disabled =
-true;
-
-clientButton.textContent =
-"Création...";
+    event.preventDefault();
 
 
-clearMessage(
-globalMessage
-);
+    clientButton.disabled =
+    true;
+
+    clientButton.textContent =
+    "Création...";
 
 
-const data = {
-
-name:
-clientForm.elements[
-"name"
-].value.trim(),
-
-profession:
-clientForm.elements[
-"profession"
-].value.trim(),
-
-bio:
-clientForm.elements[
-"bio"
-].value.trim(),
-
-phone:
-clientForm.elements[
-"phone"
-].value.trim(),
-
-whatsapp:
-clientForm.elements[
-"whatsapp"
-].value.trim(),
-
-email:
-clientForm.elements[
-"email"
-].value.trim(),
-
-instagram:
-clientForm.elements[
-"instagram"
-].value.trim(),
-
-facebook:
-clientForm.elements[
-"facebook"
-].value.trim(),
-
-tiktok:
-clientForm.elements[
-"tiktok"
-].value.trim(),
-
-linkedin:
-clientForm.elements[
-"linkedin"
-].value.trim(),
-
-address:
-clientForm.elements[
-"address"
-].value.trim(),
-
-maps:
-clientForm.elements[
-"maps"
-].value.trim(),
-
-website:
-clientForm.elements[
-"website"
-].value.trim(),
-
-reviews:
-clientForm.elements[
-"reviews"
-].value.trim()
-
-};
+    clearMessage(
+      globalMessage
+    );
 
 
-try{
+    const data = {
 
-const response =
-await fetch(
-"/api/clients",
-{
-method:"POST",
-credentials:
-"same-origin",
-headers:{
-"Content-Type":
-"application/json"
-},
-body:
-JSON.stringify(data)
-}
-);
+      name:
+      clientForm.elements[
+        "name"
+      ].value.trim(),
+
+      profession:
+      clientForm.elements[
+        "profession"
+      ].value.trim(),
+
+      bio:
+      clientForm.elements[
+        "bio"
+      ].value.trim(),
+
+      phone:
+      clientForm.elements[
+        "phone"
+      ].value.trim(),
+
+      whatsapp:
+      clientForm.elements[
+        "whatsapp"
+      ].value.trim(),
+
+      email:
+      clientForm.elements[
+        "email"
+      ].value.trim(),
+
+      instagram:
+      clientForm.elements[
+        "instagram"
+      ].value.trim(),
+
+      facebook:
+      clientForm.elements[
+        "facebook"
+      ].value.trim(),
+
+      tiktok:
+      clientForm.elements[
+        "tiktok"
+      ].value.trim(),
+
+      linkedin:
+      clientForm.elements[
+        "linkedin"
+      ].value.trim(),
+
+      address:
+      clientForm.elements[
+        "address"
+      ].value.trim(),
+
+      maps:
+      clientForm.elements[
+        "maps"
+      ].value.trim(),
+
+      website:
+      clientForm.elements[
+        "website"
+      ].value.trim(),
+
+      reviews:
+      clientForm.elements[
+        "reviews"
+      ].value.trim()
+
+    };
 
 
-const result =
-await response.json();
+    try{
+
+      const response =
+      await fetch(
+        "/api/clients",
+        {
+          method:"POST",
+          credentials:"same-origin",
+          headers:{
+            "Content-Type":
+            "application/json"
+          },
+          body:
+          JSON.stringify(data)
+        }
+      );
 
 
-if(
-!response.ok ||
-!result.success
-){
-
-throw new Error(
-result.error ||
-"Une erreur est survenue."
-);
-
-}
+      const result =
+      await response.json();
 
 
-showMessage(
-globalMessage,
-"✅ Client créé avec succès.",
-"success"
-);
+      if(
+        !response.ok ||
+        !result.success
+      ){
+
+        throw new Error(
+          result.error ||
+          "Une erreur est survenue."
+        );
+
+      }
 
 
-clientForm.reset();
-
-await loadStands();
-
-
-}catch(error){
-
-showMessage(
-globalMessage,
-"❌ " +
-error.message,
-"error"
-);
-
-}
+      showMessage(
+        globalMessage,
+        "✅ Client créé avec succès.",
+        "success"
+      );
 
 
-clientButton.disabled =
-false;
+      clientForm.reset();
 
-clientButton.textContent =
-"Créer le profil";
 
-}
+      await loadStands();
+
+
+    }catch(error){
+
+      showMessage(
+        globalMessage,
+        "❌ " +
+        error.message,
+        "error"
+      );
+
+    }
+
+
+    clientButton.disabled =
+    false;
+
+    clientButton.textContent =
+    "Créer le profil";
+
+  }
 );
 
 
@@ -1913,36 +2082,36 @@ clientButton.textContent =
 
 function escapeHtml(value){
 
-if(
-value === null ||
-value === undefined
-){
+  if(
+    value === null ||
+    value === undefined
+  ){
 
-return "";
+    return "";
 
-}
+  }
 
-return String(value)
-.replace(
-/&/g,
-"&amp;"
-)
-.replace(
-/</g,
-"&lt;"
-)
-.replace(
-/>/g,
-"&gt;"
-)
-.replace(
-/"/g,
-"&quot;"
-)
-.replace(
-/'/g,
-"&#039;"
-);
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 
 }
 
