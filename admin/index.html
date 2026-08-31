@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>TAPNIVO | Admin</title>
 
 <style>
+
+/* =====================================================
+   RESET
+===================================================== */
+
 *{
   box-sizing:border-box;
   margin:0;
@@ -17,6 +28,7 @@ body{
   font-family:Arial,Helvetica,sans-serif;
   background:#f5f7fb;
   color:#111827;
+  line-height:1.5;
 }
 
 button,
@@ -36,11 +48,14 @@ button:disabled{
   cursor:not-allowed;
 }
 
-/* TOPBAR */
+
+/* =====================================================
+   TOPBAR
+===================================================== */
 
 .topbar{
   min-height:70px;
-  background:white;
+  background:#fff;
   border-bottom:1px solid #e5e7eb;
   display:flex;
   align-items:center;
@@ -78,7 +93,10 @@ button:disabled{
   font-weight:bold;
 }
 
-/* CONTAINER */
+
+/* =====================================================
+   CONTAINER
+===================================================== */
 
 .container{
   max-width:1200px;
@@ -99,10 +117,13 @@ button:disabled{
   color:#6b7280;
 }
 
-/* CARD */
+
+/* =====================================================
+   CARDS
+===================================================== */
 
 .card{
-  background:white;
+  background:#fff;
   border:1px solid #e5e7eb;
   border-radius:18px;
   padding:25px;
@@ -120,7 +141,10 @@ button:disabled{
   margin-bottom:22px;
 }
 
-/* MESSAGES */
+
+/* =====================================================
+   MESSAGES
+===================================================== */
 
 .message{
   display:none;
@@ -142,11 +166,14 @@ button:disabled{
   color:#991b1b;
 }
 
-/* BUTTONS */
+
+/* =====================================================
+   BUTTONS
+===================================================== */
 
 .primary{
   background:#4f46e5;
-  color:white;
+  color:#fff;
   padding:12px 17px;
   border-radius:10px;
   font-weight:bold;
@@ -175,7 +202,35 @@ button:disabled{
   font-weight:bold;
 }
 
-/* FIELDS */
+.copy{
+  background:#eef2ff;
+  color:#3730a3;
+}
+
+.edit{
+  background:#e0e7ff;
+  color:#3730a3;
+}
+
+.activate{
+  background:#d1fae5;
+  color:#065f46;
+}
+
+.disable{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.stats{
+  background:#f3f4f6;
+  color:#374151;
+}
+
+
+/* =====================================================
+   FIELDS
+===================================================== */
 
 .field{
   display:flex;
@@ -199,7 +254,7 @@ select{
   border-radius:10px;
   font-size:14px;
   outline:none;
-  background:white;
+  background:#fff;
 }
 
 input:focus,
@@ -213,7 +268,10 @@ textarea{
   resize:vertical;
 }
 
-/* LOGIN */
+
+/* =====================================================
+   LOGIN
+===================================================== */
 
 #loginScreen{
   min-height:100vh;
@@ -226,7 +284,7 @@ textarea{
 .login-card{
   width:100%;
   max-width:420px;
-  background:white;
+  background:#fff;
   border:1px solid #e5e7eb;
   border-radius:20px;
   padding:30px;
@@ -258,13 +316,19 @@ textarea{
   margin-top:5px;
 }
 
-/* DASHBOARD */
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
 
 #dashboard{
   display:none;
 }
 
-/* STATS */
+
+/* =====================================================
+   STATS
+===================================================== */
 
 .stats-grid{
   display:grid;
@@ -274,7 +338,7 @@ textarea{
 }
 
 .stat{
-  background:white;
+  background:#fff;
   border:1px solid #e5e7eb;
   border-radius:15px;
   padding:20px;
@@ -291,7 +355,10 @@ textarea{
   font-weight:800;
 }
 
-/* SERVICES */
+
+/* =====================================================
+   SERVICES
+===================================================== */
 
 .services-toolbar{
   display:flex;
@@ -368,10 +435,16 @@ textarea{
   color:#374151;
 }
 
+.contact-badge{
+  background:#dbeafe;
+  color:#1e40af;
+  margin-top:5px;
+}
+
 .service-info{
   color:#6b7280;
   font-size:12px;
-  line-height:1.7;
+  line-height:1.8;
   margin-bottom:12px;
 }
 
@@ -393,32 +466,10 @@ textarea{
   margin-top:14px;
 }
 
-.copy{
-  background:#eef2ff;
-  color:#3730a3;
-}
 
-.edit{
-  background:#e0e7ff;
-  color:#3730a3;
-}
-
-.activate{
-  background:#d1fae5;
-  color:#065f46;
-}
-
-.disable{
-  background:#fef3c7;
-  color:#92400e;
-}
-
-.stats{
-  background:#f3f4f6;
-  color:#374151;
-}
-
-/* MODAL */
+/* =====================================================
+   MODAL
+===================================================== */
 
 .modal{
   display:none;
@@ -438,8 +489,8 @@ textarea{
 
 .modal-card{
   width:100%;
-  max-width:600px;
-  background:white;
+  max-width:650px;
+  background:#fff;
   border-radius:18px;
   padding:25px;
 }
@@ -470,7 +521,45 @@ textarea{
   margin-top:20px;
 }
 
-/* STANDS */
+
+/* =====================================================
+   CONTACT OPTION
+===================================================== */
+
+.contact-option{
+  display:flex;
+  flex-direction:row;
+  align-items:flex-start;
+  gap:12px;
+  padding:15px;
+  border:1px solid #dbeafe;
+  background:#eff6ff;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+
+.contact-option input{
+  width:18px;
+  height:18px;
+  margin-top:2px;
+}
+
+.contact-option-text strong{
+  display:block;
+  color:#1e3a8a;
+  margin-bottom:4px;
+}
+
+.contact-option-text span{
+  display:block;
+  color:#475569;
+  font-size:12px;
+}
+
+
+/* =====================================================
+   STANDS
+===================================================== */
 
 .stands-grid{
   display:grid;
@@ -511,7 +600,7 @@ textarea{
 .stand-info{
   color:#6b7280;
   font-size:13px;
-  line-height:1.6;
+  line-height:1.7;
 }
 
 .stand-actions{
@@ -532,7 +621,10 @@ textarea{
   display:block;
 }
 
-/* CLIENT */
+
+/* =====================================================
+   CLIENT
+===================================================== */
 
 .grid{
   display:grid;
@@ -544,7 +636,10 @@ textarea{
   grid-column:1/-1;
 }
 
-/* EMPTY */
+
+/* =====================================================
+   EMPTY
+===================================================== */
 
 .empty{
   padding:25px;
@@ -554,7 +649,10 @@ textarea{
   border-radius:12px;
 }
 
-/* FOOTER */
+
+/* =====================================================
+   FOOTER
+===================================================== */
 
 footer{
   text-align:center;
@@ -563,7 +661,10 @@ footer{
   font-size:12px;
 }
 
-/* MOBILE */
+
+/* =====================================================
+   MOBILE
+===================================================== */
 
 @media(max-width:800px){
 
@@ -575,6 +676,7 @@ footer{
   .stands-grid{
     grid-template-columns:1fr;
   }
+
 }
 
 @media(max-width:700px){
@@ -618,14 +720,14 @@ footer{
     width:100%;
   }
 
-  .stats-grid{
-    grid-template-columns:1fr 1fr;
-  }
 }
+
 </style>
+
 </head>
 
 <body>
+
 
 <!-- =====================================================
      LOGIN
@@ -645,7 +747,10 @@ footer{
       Connectez-vous à votre espace administrateur.
     </p>
 
-    <div id="loginMessage" class="message"></div>
+    <div
+      id="loginMessage"
+      class="message"
+    ></div>
 
     <form id="loginForm">
 
@@ -713,6 +818,7 @@ footer{
 
 <main class="container">
 
+
 <div class="header">
 
   <h1>
@@ -726,7 +832,10 @@ footer{
 </div>
 
 
-<div id="globalMessage" class="message"></div>
+<div
+  id="globalMessage"
+  class="message"
+></div>
 
 
 <!-- =====================================================
@@ -805,7 +914,10 @@ footer{
      SERVICES
 ===================================================== -->
 
-<div class="card" id="servicesCard">
+<div
+  class="card"
+  id="servicesCard"
+>
 
   <div class="services-toolbar">
 
@@ -874,254 +986,255 @@ footer{
 
 <div class="card">
 
-<h2>
-👤 Ajouter un client
-</h2>
+  <h2>
+    👤 Ajouter un client
+  </h2>
 
-<p class="description">
-Créez le profil digital TAPNIVO de votre client.
-</p>
-
-
-<form id="clientForm">
-
-<div class="grid">
+  <p class="description">
+    Créez le profil digital TAPNIVO de votre client.
+  </p>
 
 
-<div class="field">
+  <form id="clientForm">
 
-<label>
-Nom complet / Nom commercial *
-</label>
+    <div class="grid">
 
-<input
-type="text"
-name="name"
-placeholder="Ex : Gardenia"
-required
->
+
+      <div class="field">
+
+        <label>
+          Nom complet / Nom commercial *
+        </label>
+
+        <input
+          type="text"
+          name="name"
+          placeholder="Ex : Gardenia"
+          required
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Profession
+        </label>
+
+        <input
+          type="text"
+          name="profession"
+          placeholder="Ex : Restaurant"
+        >
+
+      </div>
+
+
+      <div class="field full">
+
+        <label>
+          Description
+        </label>
+
+        <textarea
+          name="bio"
+          placeholder="Présentez l'activité du client..."
+        ></textarea>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Téléphone
+        </label>
+
+        <input
+          type="tel"
+          name="phone"
+          placeholder="+212 6 XX XX XX XX"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          WhatsApp
+        </label>
+
+        <input
+          type="tel"
+          name="whatsapp"
+          placeholder="+212 6 XX XX XX XX"
+        >
+
+      </div>
+
+
+      <div class="field full">
+
+        <label>
+          Email
+        </label>
+
+        <input
+          type="email"
+          name="email"
+          placeholder="contact@example.com"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Instagram
+        </label>
+
+        <input
+          type="url"
+          name="instagram"
+          placeholder="https://instagram.com/..."
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Facebook
+        </label>
+
+        <input
+          type="url"
+          name="facebook"
+          placeholder="https://facebook.com/..."
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          TikTok
+        </label>
+
+        <input
+          type="url"
+          name="tiktok"
+          placeholder="https://tiktok.com/@..."
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          LinkedIn
+        </label>
+
+        <input
+          type="url"
+          name="linkedin"
+          placeholder="https://linkedin.com/in/..."
+        >
+
+      </div>
+
+
+      <div class="field full">
+
+        <label>
+          Adresse
+        </label>
+
+        <input
+          type="text"
+          name="address"
+          placeholder="Ex : Laayoune"
+        >
+
+      </div>
+
+
+      <div class="field full">
+
+        <label>
+          Google Maps
+        </label>
+
+        <input
+          type="url"
+          name="maps"
+          placeholder="https://maps.google.com/..."
+        >
+
+      </div>
+
+
+      <div class="field full">
+
+        <label>
+          Site web
+        </label>
+
+        <input
+          type="url"
+          name="website"
+          placeholder="https://..."
+        >
+
+      </div>
+
+
+      <div class="field full">
+
+        <label>
+          Google Reviews
+        </label>
+
+        <input
+          type="url"
+          name="reviews"
+          placeholder="https://..."
+        >
+
+      </div>
+
+
+    </div>
+
+
+    <div style="margin-top:20px">
+
+      <button
+        type="submit"
+        class="primary"
+        id="clientButton"
+      >
+        Créer le profil
+      </button>
+
+    </div>
+
+  </form>
 
 </div>
 
-
-<div class="field">
-
-<label>
-Profession
-</label>
-
-<input
-type="text"
-name="profession"
-placeholder="Ex : Restaurant"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-Description
-</label>
-
-<textarea
-name="bio"
-placeholder="Présentez l'activité du client..."
-></textarea>
-
-</div>
-
-
-<div class="field">
-
-<label>
-Téléphone
-</label>
-
-<input
-type="tel"
-name="phone"
-placeholder="+212 6 XX XX XX XX"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-WhatsApp
-</label>
-
-<input
-type="tel"
-name="whatsapp"
-placeholder="+212 6 XX XX XX XX"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-Email
-</label>
-
-<input
-type="email"
-name="email"
-placeholder="contact@example.com"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-Instagram
-</label>
-
-<input
-type="url"
-name="instagram"
-placeholder="https://instagram.com/..."
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-Facebook
-</label>
-
-<input
-type="url"
-name="facebook"
-placeholder="https://facebook.com/..."
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-TikTok
-</label>
-
-<input
-type="url"
-name="tiktok"
-placeholder="https://tiktok.com/@..."
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-LinkedIn
-</label>
-
-<input
-type="url"
-name="linkedin"
-placeholder="https://linkedin.com/in/..."
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-Adresse
-</label>
-
-<input
-type="text"
-name="address"
-placeholder="Ex : Laayoune"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-Google Maps
-</label>
-
-<input
-type="url"
-name="maps"
-placeholder="https://maps.google.com/..."
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-Site web
-</label>
-
-<input
-type="url"
-name="website"
-placeholder="https://..."
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-Google Reviews
-</label>
-
-<input
-type="url"
-name="reviews"
-placeholder="https://..."
->
-
-</div>
-
-
-</div>
-
-
-<div style="margin-top:20px">
-
-<button
-type="submit"
-class="primary"
-id="clientButton"
->
-Créer le profil
-</button>
-
-</div>
-
-</form>
-
-</div>
 
 </main>
 
 
 <footer>
-TAPNIVO • Digital Business Cards & Smart Services
+  TAPNIVO • Digital Business Cards & Smart Services
 </footer>
 
 </div>
@@ -1136,208 +1249,251 @@ TAPNIVO • Digital Business Cards & Smart Services
   id="serviceModal"
 >
 
-<div class="modal-card">
+  <div class="modal-card">
 
-<div class="modal-header">
+    <div class="modal-header">
 
-<h2 id="serviceModalTitle">
-Ajouter un service
-</h2>
+      <h2 id="serviceModalTitle">
+        Ajouter un service
+      </h2>
 
-<button
-  type="button"
-  class="close"
-  id="closeServiceModal"
->
-×
-</button>
+      <button
+        type="button"
+        class="close"
+        id="closeServiceModal"
+      >
+        ×
+      </button>
 
-</div>
-
-
-<form id="serviceForm">
+    </div>
 
 
-<div class="field">
+    <form id="serviceForm">
 
-<label>
-Client *
-</label>
+      <div class="field">
 
-<select
-  id="serviceClient"
-  required
->
+        <label>
+          Client *
+        </label>
 
-<option value="">
--- Sélectionner un client --
-</option>
+        <select
+          id="serviceClient"
+          required
+        >
 
-</select>
+          <option value="">
+            -- Sélectionner un client --
+          </option>
 
-</div>
+        </select>
 
-
-<div class="field">
-
-<label>
-Type de service *
-</label>
-
-<select
-  id="serviceType"
-  required
->
-
-<option value="">
--- Sélectionner --
-</option>
-
-<option value="google_review">
-⭐ Google Review
-</option>
-
-<option value="wifi">
-📶 Wi-Fi
-</option>
-
-<option value="menu">
-🍽️ Menu
-</option>
-
-<option value="digital_card">
-💳 Digital Business Card
-</option>
-
-<option value="custom_link">
-🔗 Lien personnalisé
-</option>
-
-</select>
-
-</div>
+      </div>
 
 
-<div class="field">
+      <div class="field">
 
-<label>
-Nom du service
-</label>
+        <label>
+          Type de service *
+        </label>
 
-<input
-  type="text"
-  id="serviceName"
-  placeholder="Ex : Wi-Fi Gardenia"
->
+        <select
+          id="serviceType"
+          required
+        >
 
-</div>
+          <option value="">
+            -- Sélectionner --
+          </option>
 
+          <option value="google_review">
+            ⭐ Google Review
+          </option>
 
-<div class="field">
+          <option value="wifi">
+            📶 Wi-Fi
+          </option>
 
-<label>
-Destination URL
-</label>
+          <option value="menu">
+            🍽️ Menu
+          </option>
 
-<input
-  type="url"
-  id="serviceDestination"
-  placeholder="https://..."
->
+          <option value="digital_card">
+            💳 Digital Business Card / Carte NFC
+          </option>
 
-</div>
+          <option value="custom_link">
+            🔗 Lien personnalisé
+          </option>
 
+        </select>
 
-<div class="field">
-
-<label>
-Stand associé
-</label>
-
-<select
-  id="serviceStand"
->
-
-<option value="">
-Aucun Stand
-</option>
-
-</select>
-
-</div>
+      </div>
 
 
-<div class="field">
+      <div class="field">
 
-<label>
-Statut
-</label>
+        <label>
+          Nom du service
+        </label>
 
-<select
-  id="serviceStatus"
->
+        <input
+          type="text"
+          id="serviceName"
+          placeholder="Ex : Carte NFC Gardenia"
+        >
 
-<option value="draft">
-Brouillon
-</option>
-
-<option value="active">
-Actif
-</option>
-
-<option value="inactive">
-Inactif
-</option>
-
-</select>
-
-</div>
+      </div>
 
 
-<div class="field">
+      <div class="field">
 
-<label>
-Configuration JSON
-</label>
+        <label>
+          Destination URL
+        </label>
 
-<textarea
-  id="serviceConfig"
-  placeholder='Ex : {"wifi_name":"Gardenia","password":"12345678"}'
-></textarea>
+        <input
+          type="url"
+          id="serviceDestination"
+          placeholder="https://..."
+        >
 
-</div>
+        <small
+          id="destinationHelp"
+          style="color:#6b7280;font-size:12px"
+        >
+          Destination vers laquelle le visiteur doit être envoyé.
+        </small>
+
+      </div>
 
 
-<div class="modal-actions">
+      <div class="field">
 
-<button
-  type="button"
-  class="secondary"
-  id="cancelServiceButton"
->
-Annuler
-</button>
+        <label>
+          Stand associé
+        </label>
 
-<button
-  type="submit"
-  class="primary"
-  id="saveServiceButton"
->
-Créer le service
-</button>
+        <select
+          id="serviceStand"
+        >
 
-</div>
+          <option value="">
+            Aucun Stand
+          </option>
 
-</form>
+        </select>
 
-</div>
+      </div>
+
+
+      <!-- =================================================
+           CONTACT SAVE OPTION
+      ================================================= -->
+
+      <div
+        class="contact-option"
+        id="contactOptionBox"
+      >
+
+        <input
+          type="checkbox"
+          id="contactSaveEnabled"
+        >
+
+        <div class="contact-option-text">
+
+          <strong>
+            📇 Permettre « Ajouter aux contacts »
+          </strong>
+
+          <span>
+            Le visiteur pourra enregistrer les informations
+            du client dans les contacts de son téléphone.
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Statut
+        </label>
+
+        <select
+          id="serviceStatus"
+        >
+
+          <option value="draft">
+            Brouillon
+          </option>
+
+          <option value="active">
+            Actif
+          </option>
+
+          <option value="inactive">
+            Inactif
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          Configuration JSON
+        </label>
+
+        <textarea
+          id="serviceConfig"
+          placeholder='Ex : {"wifi_name":"Gardenia","password":"12345678"}'
+        ></textarea>
+
+        <small
+          style="color:#6b7280;font-size:12px"
+        >
+          Pour une Digital Business Card, l'option
+          « Ajouter aux contacts » est enregistrée
+          automatiquement dans cette configuration.
+        </small>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary"
+          id="cancelServiceButton"
+        >
+          Annuler
+        </button>
+
+        <button
+          type="submit"
+          class="primary"
+          id="saveServiceButton"
+        >
+          Créer le service
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
 
 </div>
 
 
 <script>
-
-/* =====================================================
+  /* =====================================================
    ELEMENTS
 ===================================================== */
 
@@ -1428,14 +1584,26 @@ document.getElementById("closeServiceModal");
 const cancelServiceButton =
 document.getElementById("cancelServiceButton");
 
+const contactOptionBox =
+document.getElementById("contactOptionBox");
+
+const contactSaveEnabled =
+document.getElementById("contactSaveEnabled");
+
+const destinationHelp =
+document.getElementById("destinationHelp");
+
 
 /* =====================================================
    STATE
 ===================================================== */
 
 let clients = [];
+
 let stands = [];
+
 let services = [];
+
 let editingServiceId = null;
 
 
@@ -1494,6 +1662,136 @@ function escapeHtml(
 }
 
 
+function isTrue(value){
+
+  return (
+    value === true ||
+    value === 1 ||
+    value === "1" ||
+    value === "true"
+  );
+
+}
+
+
+/* =====================================================
+   JSON HELPERS
+===================================================== */
+
+function parseConfig(value){
+
+  if(
+    value === null ||
+    value === undefined ||
+    value === ""
+  ){
+
+    return {};
+
+  }
+
+  if(
+    typeof value === "object"
+  ){
+
+    return {
+      ...value
+    };
+
+  }
+
+  try{
+
+    const parsed =
+      JSON.parse(value);
+
+    if(
+      parsed &&
+      typeof parsed === "object"
+    ){
+
+      return parsed;
+
+    }
+
+    return {};
+
+  }catch(error){
+
+    return {};
+
+  }
+
+}
+
+
+function buildServiceConfig(){
+
+  let config = {};
+
+  const text =
+    serviceConfig.value.trim();
+
+
+  if(text){
+
+    try{
+
+      const parsed =
+        JSON.parse(text);
+
+      if(
+        parsed &&
+        typeof parsed === "object"
+      ){
+
+        config = parsed;
+
+      }else{
+
+        throw new Error(
+          "Configuration JSON invalide."
+        );
+
+      }
+
+    }catch(error){
+
+      throw new Error(
+        "Configuration JSON invalide."
+      );
+
+    }
+
+  }
+
+
+  /*
+   * Cette valeur permet de conserver l'option
+   * « Ajouter aux contacts » sans modifier le
+   * schéma D1.
+   */
+
+  if(
+    serviceType.value ===
+    "digital_card"
+  ){
+
+    config.contact_save_enabled =
+      contactSaveEnabled.checked;
+
+  }else{
+
+    delete config.contact_save_enabled;
+
+  }
+
+
+  return config;
+
+}
+
+
 /* =====================================================
    AUTH
 ===================================================== */
@@ -1511,8 +1809,10 @@ async function checkAdmin(){
         }
       );
 
+
     const result =
       await response.json();
+
 
     if(
       result.success &&
@@ -1529,7 +1829,10 @@ async function checkAdmin(){
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      "Auth:",
+      error
+    );
 
     showLogin();
 
@@ -1582,10 +1885,12 @@ loginForm.addEventListener(
     loginButton.textContent =
       "Connexion...";
 
+
     const password =
       document.getElementById(
         "password"
       ).value;
+
 
     try{
 
@@ -1606,8 +1911,10 @@ loginForm.addEventListener(
           }
         );
 
+
       const result =
         await response.json();
+
 
       if(
         !response.ok ||
@@ -1621,17 +1928,21 @@ loginForm.addEventListener(
 
       }
 
+
       document.getElementById(
         "password"
       ).value = "";
 
+
       showDashboard();
+
 
     }catch(error){
 
       showMessage(
         loginMessage,
-        "❌ " + error.message,
+        "❌ " +
+        error.message,
         "error"
       );
 
@@ -1669,7 +1980,10 @@ logoutButton.addEventListener(
 
     }catch(error){
 
-      console.error(error);
+      console.error(
+        "Logout:",
+        error
+      );
 
     }finally{
 
@@ -1715,6 +2029,7 @@ async function loadClients(){
         }
       );
 
+
     if(
       response.status === 401
     ){
@@ -1725,8 +2040,10 @@ async function loadClients(){
 
     }
 
+
     const result =
       await response.json();
+
 
     if(
       !response.ok ||
@@ -1740,10 +2057,17 @@ async function loadClients(){
 
     }
 
+
     clients =
-      result.clients || [];
+      Array.isArray(
+        result.clients
+      )
+        ? result.clients
+        : [];
+
 
     populateClientSelect();
+
 
   }catch(error){
 
@@ -1753,6 +2077,8 @@ async function loadClients(){
     );
 
     clients = [];
+
+    populateClientSelect();
 
   }
 
@@ -1772,6 +2098,7 @@ function populateClientSelect(){
 </option>
 `;
 
+
   clients.forEach(
     client => {
 
@@ -1780,11 +2107,16 @@ function populateClientSelect(){
           "option"
         );
 
+
       option.value =
         client.id;
 
+
       option.textContent =
-        client.name;
+        client.name ||
+        "Client #" +
+        client.id;
+
 
       serviceClient.appendChild(
         option
@@ -1809,6 +2141,7 @@ Chargement des Stands...
 </div>
 `;
 
+
   try{
 
     const response =
@@ -1820,6 +2153,7 @@ Chargement des Stands...
         }
       );
 
+
     if(
       response.status === 401
     ){
@@ -1830,8 +2164,10 @@ Chargement des Stands...
 
     }
 
+
     const result =
       await response.json();
+
 
     if(
       !response.ok ||
@@ -1845,12 +2181,19 @@ Chargement des Stands...
 
     }
 
+
     stands =
-      result.stands || [];
+      Array.isArray(
+        result.stands
+      )
+        ? result.stands
+        : [];
+
 
     renderStands();
 
     populateStandSelect();
+
 
   }catch(error){
 
@@ -1859,10 +2202,16 @@ Chargement des Stands...
       error
     );
 
+
+    stands = [];
+
+
     standsContainer.innerHTML =
       `
 <div class="message error">
-❌ ${escapeHtml(error.message)}
+❌ ${escapeHtml(
+  error.message
+)}
 </div>
 `;
 
@@ -1884,6 +2233,7 @@ Aucun Stand
 </option>
 `;
 
+
   stands.forEach(
     stand => {
 
@@ -1892,17 +2242,24 @@ Aucun Stand
           "option"
         );
 
+
       option.value =
         stand.id;
 
+
       option.textContent =
-        stand.stand_code +
+        (
+          stand.stand_code ||
+          "STAND #" +
+          stand.id
+        ) +
         " — " +
         (
           stand.status === "active"
             ? "ACTIF"
             : "DISPONIBLE"
         );
+
 
       serviceStand.appendChild(
         option
@@ -1927,6 +2284,7 @@ Chargement des Services...
 </div>
 `;
 
+
   try{
 
     const response =
@@ -1938,6 +2296,7 @@ Chargement des Services...
         }
       );
 
+
     if(
       response.status === 401
     ){
@@ -1948,8 +2307,10 @@ Chargement des Services...
 
     }
 
+
     const result =
       await response.json();
+
 
     if(
       !response.ok ||
@@ -1963,10 +2324,17 @@ Chargement des Services...
 
     }
 
+
     services =
-      result.services || [];
+      Array.isArray(
+        result.services
+      )
+        ? result.services
+        : [];
+
 
     renderServices();
+
 
   }catch(error){
 
@@ -1975,10 +2343,16 @@ Chargement des Services...
       error
     );
 
+
+    services = [];
+
+
     servicesContainer.innerHTML =
       `
 <div class="message error">
-❌ ${escapeHtml(error.message)}
+❌ ${escapeHtml(
+  error.message
+)}
 </div>
 `;
 
@@ -1988,6 +2362,244 @@ Chargement des Services...
 
 
 /* =====================================================
+   SERVICE LABELS
+===================================================== */
+
+const serviceLabels = {
+
+  google_review:
+    "⭐ Google Review",
+
+  wifi:
+    "📶 Wi-Fi",
+
+  menu:
+    "🍽️ Menu",
+
+  digital_card:
+    "💳 Digital Business Card / Carte NFC",
+
+  custom_link:
+    "🔗 Lien personnalisé"
+
+};
+
+
+/* =====================================================
+   SERVICE TYPE UI
+===================================================== */
+
+function updateServiceTypeUI(){
+
+  const type =
+    serviceType.value;
+
+
+  if(
+    type ===
+    "digital_card"
+  ){
+
+    contactOptionBox.style.display =
+      "flex";
+
+
+    destinationHelp.textContent =
+      "يمكنك ترك Destination URL فارغاً إذا كانت الوجهة هي صفحة بطاقة العميل.";
+
+  }else{
+
+    contactOptionBox.style.display =
+      "none";
+
+
+    contactSaveEnabled.checked =
+      false;
+
+
+    destinationHelp.textContent =
+      "Destination vers laquelle le visiteur doit être envoyé.";
+
+  }
+
+}
+
+
+serviceType.addEventListener(
+  "change",
+  updateServiceTypeUI
+);
+
+
+/* =====================================================
+   COPY HELPER
+===================================================== */
+
+async function copyText(
+  text
+){
+
+  try{
+
+    if(
+      navigator.clipboard &&
+      window.isSecureContext
+    ){
+
+      await navigator.clipboard.writeText(
+        text
+      );
+
+      return true;
+
+    }
+
+
+    const textarea =
+      document.createElement(
+        "textarea"
+      );
+
+
+    textarea.value =
+      text;
+
+
+    textarea.style.position =
+      "fixed";
+
+    textarea.style.opacity =
+      "0";
+
+
+    document.body.appendChild(
+      textarea
+    );
+
+
+    textarea.focus();
+
+    textarea.select();
+
+
+    const copied =
+      document.execCommand(
+        "copy"
+      );
+
+
+    textarea.remove();
+
+
+    return copied;
+
+
+  }catch(error){
+
+    return false;
+
+  }
+
+}
+
+
+/* =====================================================
+   OPEN SERVICE MODAL
+===================================================== */
+
+function openCreateService(){
+
+  editingServiceId =
+    null;
+
+
+  serviceModalTitle.textContent =
+    "Ajouter un service";
+
+
+  saveServiceButton.textContent =
+    "Créer le service";
+
+
+  serviceForm.reset();
+
+
+  serviceStatus.value =
+    "draft";
+
+
+  serviceStand.value =
+    "";
+
+
+  contactSaveEnabled.checked =
+    false;
+
+
+  serviceConfig.value =
+    "";
+
+
+  updateServiceTypeUI();
+
+
+  serviceModal.classList.add(
+    "show"
+  );
+
+}
+
+
+/* =====================================================
+   CLOSE MODAL
+===================================================== */
+
+function closeModal(){
+
+  serviceModal.classList.remove(
+    "show"
+  );
+
+
+  editingServiceId =
+    null;
+
+}
+
+
+addServiceButton.addEventListener(
+  "click",
+  openCreateService
+);
+
+
+closeServiceModal.addEventListener(
+  "click",
+  closeModal
+);
+
+
+cancelServiceButton.addEventListener(
+  "click",
+  closeModal
+);
+
+
+serviceModal.addEventListener(
+  "click",
+  function(event){
+
+    if(
+      event.target ===
+      serviceModal
+    ){
+
+      closeModal();
+
+    }
+
+  }
+);/* =====================================================
    RENDER SERVICES
 ===================================================== */
 
@@ -2017,30 +2629,11 @@ pour commencer.
   }
 
 
-  const labels = {
-
-    google_review:
-      "⭐ Google Review",
-
-    wifi:
-      "📶 Wi-Fi",
-
-    menu:
-      "🍽️ Menu",
-
-    digital_card:
-      "💳 Digital Business Card",
-
-    custom_link:
-      "🔗 Lien personnalisé"
-
-  };
-
-
   const wrapper =
     document.createElement(
       "div"
     );
+
 
   wrapper.className =
     "services-grid";
@@ -2054,15 +2647,19 @@ pour commencer.
           "div"
         );
 
+
       box.className =
         "service";
 
 
       const isActive =
-        service.status === "active";
+        service.status ===
+        "active";
+
 
       const isInactive =
-        service.status === "inactive";
+        service.status ===
+        "inactive";
 
 
       const statusClass =
@@ -2087,192 +2684,260 @@ pour commencer.
         service.service_code;
 
 
+      const config =
+        parseConfig(
+          service.config
+        );
+
+
+      const contactEnabled =
+        isTrue(
+          config.contact_save_enabled
+        );
+
+
       box.innerHTML =
         `
 
 <div class="service-top">
 
-<div>
+  <div>
 
-<div class="service-title">
-${escapeHtml(
-  service.service_name ||
-  "Service"
-)}
-</div>
+    <div class="service-title">
+      ${escapeHtml(
+        service.service_name ||
+        "Service"
+      )}
+    </div>
 
-<div class="service-client">
-👤 ${
-  escapeHtml(
-    service.client_name ||
-    "Client"
-  )
-}
-</div>
+    <div class="service-client">
+      👤 ${
+        escapeHtml(
+          service.client_name ||
+          "Client"
+        )
+      }
+    </div>
 
-<div class="service-type">
-${
-  labels[
-    service.service_type
-  ] ||
-  escapeHtml(
-    service.service_type ||
-    ""
-  )
-}
-</div>
+    <div class="service-type">
+      ${
+        serviceLabels[
+          service.service_type
+        ] ||
+        escapeHtml(
+          service.service_type ||
+          ""
+        )
+      }
+    </div>
 
-</div>
+  </div>
 
-<span class="badge ${statusClass}">
-${statusLabel}
-</span>
+
+  <div>
+
+    <span class="badge ${statusClass}">
+      ${statusLabel}
+    </span>
+
+
+    ${
+      service.service_type ===
+      "digital_card" &&
+      contactEnabled
+
+      ? `
+
+      <span class="badge contact-badge">
+        📇 Contacts
+      </span>
+
+      `
+
+      : ""
+    }
+
+  </div>
 
 </div>
 
 
 <div class="service-info">
 
-<div>
-🔢 Code :
-<strong>
-${escapeHtml(
-  service.service_code
-)}
-</strong>
-</div>
+  <div>
+    🔢 Code :
+    <strong>
+      ${escapeHtml(
+        service.service_code
+      )}
+    </strong>
+  </div>
 
-<div>
-📊 Total scans :
-<strong>
-${Number(
-  service.scans_count || 0
-)}
-</strong>
-</div>
 
-<div>
-📅 Aujourd'hui :
-<strong>
-${Number(
-  service.scans_today || 0
-)}
-</strong>
-</div>
+  <div>
+    📊 Total scans :
+    <strong>
+      ${Number(
+        service.scans_count || 0
+      )}
+    </strong>
+  </div>
 
-<div>
-📆 7 jours :
-<strong>
-${Number(
-  service.scans_7_days || 0
-)}
-</strong>
-</div>
 
-<div>
-🗓️ 30 jours :
-<strong>
-${Number(
-  service.scans_30_days || 0
-)}
-</strong>
-</div>
+  <div>
+    📅 Aujourd'hui :
+    <strong>
+      ${Number(
+        service.scans_today || 0
+      )}
+    </strong>
+  </div>
 
-<div>
-🪧 Support :
-<strong>
-${
-  service.stand_code
-    ? escapeHtml(service.stand_code)
-    : "QR / lien"
-}
-</strong>
-</div>
 
-<div class="dynamic-link">
-${escapeHtml(
-  dynamicUrl
-)}
-</div>
+  <div>
+    📆 7 jours :
+    <strong>
+      ${Number(
+        service.scans_7_days || 0
+      )}
+    </strong>
+  </div>
+
+
+  <div>
+    🗓️ 30 jours :
+    <strong>
+      ${Number(
+        service.scans_30_days || 0
+      )}
+    </strong>
+  </div>
+
+
+  <div>
+    🪧 Support :
+    <strong>
+      ${
+        service.stand_code
+          ? escapeHtml(
+              service.stand_code
+            )
+          : "QR / lien"
+      }
+    </strong>
+  </div>
+
+
+  ${
+    service.service_type ===
+    "digital_card"
+
+    ? `
+
+    <div>
+      📇 Ajouter aux contacts :
+      <strong>
+        ${
+          contactEnabled
+            ? "OUI"
+            : "NON"
+        }
+      </strong>
+    </div>
+
+    `
+
+    : ""
+  }
+
+
+  <div class="dynamic-link">
+    ${escapeHtml(
+      dynamicUrl
+    )}
+  </div>
 
 </div>
 
 
 <div class="service-actions">
 
-<button
-type="button"
-class="small-btn copy"
-data-action="copy"
-data-url="${escapeHtml(dynamicUrl)}"
->
-🔗 Copier lien
-</button>
+  <button
+    type="button"
+    class="small-btn copy"
+    data-action="copy"
+    data-url="${escapeHtml(
+      dynamicUrl
+    )}"
+  >
+    🔗 Copier lien
+  </button>
 
 
-<button
-type="button"
-class="small-btn edit"
-data-action="edit"
-data-id="${service.id}"
->
-✏️ Modifier
-</button>
+  <button
+    type="button"
+    class="small-btn edit"
+    data-action="edit"
+    data-id="${service.id}"
+  >
+    ✏️ Modifier
+  </button>
 
 
-${
-  isActive
+  ${
+    isActive
 
-  ? `
+    ? `
 
-<button
-type="button"
-class="small-btn disable"
-data-action="disable"
-data-id="${service.id}"
->
-⏸️ Désactiver
-</button>
+    <button
+      type="button"
+      class="small-btn disable"
+      data-action="disable"
+      data-id="${service.id}"
+    >
+      ⏸️ Désactiver
+    </button>
 
-`
+    `
 
-  : `
+    : `
 
-<button
-type="button"
-class="small-btn activate"
-data-action="activate"
-data-id="${service.id}"
->
-▶️ Activer
-</button>
+    <button
+      type="button"
+      class="small-btn activate"
+      data-action="activate"
+      data-id="${service.id}"
+    >
+      ▶️ Activer
+    </button>
 
-`
-}
-
-
-<button
-type="button"
-class="small-btn stats"
-data-action="stats"
-data-id="${service.id}"
->
-📊 Stats
-</button>
+    `
+  }
 
 
-<button
-type="button"
-class="small-btn danger"
-data-action="delete"
-data-id="${service.id}"
->
-🗑️ Supprimer
-</button>
+  <button
+    type="button"
+    class="small-btn stats"
+    data-action="stats"
+    data-id="${service.id}"
+  >
+    📊 Stats
+  </button>
+
+
+  <button
+    type="button"
+    class="small-btn danger"
+    data-action="delete"
+    data-id="${service.id}"
+  >
+    🗑️ Supprimer
+  </button>
 
 </div>
 
 `;
+
 
       wrapper.appendChild(
         box
@@ -2284,6 +2949,7 @@ data-id="${service.id}"
 
   servicesContainer.innerHTML =
     "";
+
 
   servicesContainer.appendChild(
     wrapper
@@ -2319,8 +2985,10 @@ async function handleServiceAction(
   const button =
     event.currentTarget;
 
+
   const action =
     button.dataset.action;
+
 
   const id =
     Number(
@@ -2329,20 +2997,27 @@ async function handleServiceAction(
 
 
   if(
-    action === "copy"
+    action ===
+    "copy"
   ){
 
-    try{
-
-      await navigator.clipboard.writeText(
+    const copied =
+      await copyText(
         button.dataset.url
       );
+
+
+    if(
+      copied
+    ){
 
       const oldText =
         button.textContent;
 
+
       button.textContent =
         "Copié ✓";
+
 
       setTimeout(
         () => {
@@ -2354,7 +3029,7 @@ async function handleServiceAction(
         1500
       );
 
-    }catch(error){
+    }else{
 
       alert(
         "Impossible de copier le lien."
@@ -2362,16 +3037,20 @@ async function handleServiceAction(
 
     }
 
+
     return;
 
   }
 
 
   if(
-    action === "edit"
+    action ===
+    "edit"
   ){
 
-    openEditService(id);
+    openEditService(
+      id
+    );
 
     return;
 
@@ -2379,7 +3058,8 @@ async function handleServiceAction(
 
 
   if(
-    action === "activate"
+    action ===
+    "activate"
   ){
 
     await changeServiceStatus(
@@ -2393,7 +3073,8 @@ async function handleServiceAction(
 
 
   if(
-    action === "disable"
+    action ===
+    "disable"
   ){
 
     await changeServiceStatus(
@@ -2407,10 +3088,13 @@ async function handleServiceAction(
 
 
   if(
-    action === "stats"
+    action ===
+    "stats"
   ){
 
-    await showServiceStats(id);
+    await showServiceStats(
+      id
+    );
 
     return;
 
@@ -2418,89 +3102,17 @@ async function handleServiceAction(
 
 
   if(
-    action === "delete"
+    action ===
+    "delete"
   ){
 
-    await deleteService(id);
-
-  }
-
-}
-
-
-/* =====================================================
-   ADD SERVICE
-===================================================== */
-
-addServiceButton.addEventListener(
-  "click",
-  function(){
-
-    editingServiceId =
-      null;
-
-    serviceModalTitle.textContent =
-      "Ajouter un service";
-
-    saveServiceButton.textContent =
-      "Créer le service";
-
-    serviceForm.reset();
-
-    serviceStatus.value =
-      "draft";
-
-    serviceModal.classList.add(
-      "show"
+    await deleteService(
+      id
     );
 
   }
-);
-
-
-/* =====================================================
-   CLOSE MODAL
-===================================================== */
-
-function closeModal(){
-
-  serviceModal.classList.remove(
-    "show"
-  );
-
-  editingServiceId =
-    null;
 
 }
-
-
-closeServiceModal.addEventListener(
-  "click",
-  closeModal
-);
-
-
-cancelServiceButton.addEventListener(
-  "click",
-  closeModal
-);
-
-
-serviceModal.addEventListener(
-  "click",
-  function(event){
-
-    if(
-      event.target ===
-      serviceModal
-    ){
-
-      closeModal();
-
-    }
-
-  }
-);
 
 
 /* =====================================================
@@ -2513,16 +3125,20 @@ serviceForm.addEventListener(
 
     event.preventDefault();
 
+
     const clientId =
       Number(
         serviceClient.value
       );
 
+
     const type =
       serviceType.value;
 
 
-    if(!clientId){
+    if(
+      !clientId
+    ){
 
       alert(
         "Sélectionnez un client."
@@ -2533,7 +3149,9 @@ serviceForm.addEventListener(
     }
 
 
-    if(!type){
+    if(
+      !type
+    ){
 
       alert(
         "Sélectionnez un type de service."
@@ -2544,31 +3162,21 @@ serviceForm.addEventListener(
     }
 
 
-    let config =
-      null;
-
-    const configText =
-      serviceConfig.value.trim();
+    let config;
 
 
-    if(configText){
+    try{
 
-      try{
+      config =
+        buildServiceConfig();
 
-        config =
-          JSON.parse(
-            configText
-          );
+    }catch(error){
 
-      }catch(error){
+      alert(
+        error.message
+      );
 
-        alert(
-          "Configuration JSON invalide."
-        );
-
-        return;
-
-      }
+      return;
 
     }
 
@@ -2605,6 +3213,7 @@ serviceForm.addEventListener(
 
     saveServiceButton.disabled =
       true;
+
 
     saveServiceButton.textContent =
       editingServiceId
@@ -2662,7 +3271,8 @@ serviceForm.addEventListener(
 
 
       if(
-        response.status === 401
+        response.status ===
+        401
       ){
 
         showLogin();
@@ -2714,21 +3324,28 @@ serviceForm.addEventListener(
 
     }catch(error){
 
+      console.error(
+        "Save service:",
+        error
+      );
+
+
       showMessage(
         globalMessage,
-        "❌ " + error.message,
+        "❌ " +
+        error.message,
         "error"
       );
+
 
     }finally{
 
       saveServiceButton.disabled =
         false;
 
+
       saveServiceButton.textContent =
-        editingServiceId
-          ? "Enregistrer"
-          : "Créer le service";
+        "Enregistrer";
 
     }
 
@@ -2752,7 +3369,15 @@ function openEditService(
     );
 
 
-  if(!service){
+  if(
+    !service
+  ){
+
+    showMessage(
+      globalMessage,
+      "❌ Service introuvable.",
+      "error"
+    );
 
     return;
 
@@ -2760,7 +3385,7 @@ function openEditService(
 
 
   editingServiceId =
-    id;
+    Number(id);
 
 
   serviceModalTitle.textContent =
@@ -2772,66 +3397,80 @@ function openEditService(
 
 
   serviceClient.value =
-    service.client_id || "";
+    service.client_id ||
+    "";
 
 
   serviceType.value =
-    service.service_type || "";
+    service.service_type ||
+    "";
 
 
   serviceName.value =
-    service.service_name || "";
+    service.service_name ||
+    "";
 
 
   serviceDestination.value =
-    service.destination_url || "";
+    service.destination_url ||
+    "";
 
 
   serviceStand.value =
-    service.stand_id || "";
+    service.stand_id ||
+    "";
 
 
   serviceStatus.value =
-    service.status || "draft";
+    service.status ||
+    "draft";
 
 
-  try{
-
-    if(
+  const config =
+    parseConfig(
       service.config
-    ){
-
-      const parsed =
-        typeof service.config ===
-        "string"
-
-          ? JSON.parse(
-              service.config
-            )
-
-          : service.config;
+    );
 
 
-      serviceConfig.value =
-        JSON.stringify(
-          parsed,
+  /*
+   * On récupère l'option Contacts depuis
+   * la configuration existante.
+   */
+
+  contactSaveEnabled.checked =
+    isTrue(
+      config.contact_save_enabled
+    );
+
+
+  /*
+   * On ne montre pas contact_save_enabled
+   * dans la zone JSON pour éviter de créer
+   * un doublon ou une confusion.
+   */
+
+  const visibleConfig = {
+    ...config
+  };
+
+
+  delete visibleConfig
+    .contact_save_enabled;
+
+
+  serviceConfig.value =
+    Object.keys(
+      visibleConfig
+    ).length
+      ? JSON.stringify(
+          visibleConfig,
           null,
           2
-        );
+        )
+      : "";
 
-    }else{
 
-      serviceConfig.value =
-        "";
-
-    }
-
-  }catch(error){
-
-    serviceConfig.value =
-      service.config || "";
-
-  }
+  updateServiceTypeUI();
 
 
   serviceModal.classList.add(
@@ -2872,7 +3511,8 @@ async function changeServiceStatus(
 
 
     if(
-      response.status === 401
+      response.status ===
+      401
     ){
 
       showLogin();
@@ -2915,9 +3555,16 @@ async function changeServiceStatus(
 
   }catch(error){
 
+    console.error(
+      "Status:",
+      error
+    );
+
+
     showMessage(
       globalMessage,
-      "❌ " + error.message,
+      "❌ " +
+      error.message,
       "error"
     );
 
@@ -2951,11 +3598,14 @@ async function deleteService(
           : ""
       ) +
       " ?\n\n" +
-      "Les statistiques de scans de ce service seront également supprimées."
+      "Les statistiques de scans de ce service " +
+      "seront également supprimées."
     );
 
 
-  if(!confirmed){
+  if(
+    !confirmed
+  ){
 
     return;
 
@@ -2976,7 +3626,8 @@ async function deleteService(
 
 
     if(
-      response.status === 401
+      response.status ===
+      401
     ){
 
       showLogin();
@@ -3017,9 +3668,16 @@ async function deleteService(
 
   }catch(error){
 
+    console.error(
+      "Delete:",
+      error
+    );
+
+
     showMessage(
       globalMessage,
-      "❌ " + error.message,
+      "❌ " +
+      error.message,
       "error"
     );
 
@@ -3051,7 +3709,8 @@ async function showServiceStats(
 
 
     if(
-      response.status === 401
+      response.status ===
+      401
     ){
 
       showLogin();
@@ -3079,18 +3738,23 @@ async function showServiceStats(
 
 
     const stats =
-      result.statistics;
+      result.statistics ||
+      {};
 
 
     const service =
-      result.service;
+      result.service ||
+      {};
 
 
     alert(
       "📊 STATISTIQUES\n\n" +
 
       "Service : " +
-      service.service_name +
+      (
+        service.service_name ||
+        "—"
+      ) +
       "\n" +
 
       "Client : " +
@@ -3101,19 +3765,27 @@ async function showServiceStats(
       "\n\n" +
 
       "Total : " +
-      stats.total +
+      Number(
+        stats.total || 0
+      ) +
       "\n" +
 
       "Aujourd'hui : " +
-      stats.today +
+      Number(
+        stats.today || 0
+      ) +
       "\n" +
 
       "7 jours : " +
-      stats.seven_days +
+      Number(
+        stats.seven_days || 0
+      ) +
       "\n" +
 
       "30 jours : " +
-      stats.thirty_days +
+      Number(
+        stats.thirty_days || 0
+      ) +
       "\n\n" +
 
       "Dernier scan : " +
@@ -3126,18 +3798,23 @@ async function showServiceStats(
 
   }catch(error){
 
+    console.error(
+      "Stats:",
+      error
+    );
+
+
     showMessage(
       globalMessage,
-      "❌ " + error.message,
+      "❌ " +
+      error.message,
       "error"
     );
 
   }
 
 }
-
-
-/* =====================================================
+  /* =====================================================
    RENDER STANDS
 ===================================================== */
 
@@ -3150,7 +3827,9 @@ function renderStands(){
     standsContainer.innerHTML =
       `
 <div class="empty">
+
 Aucun Stand trouvé.
+
 </div>
 `;
 
@@ -3164,6 +3843,7 @@ Aucun Stand trouvé.
       "div"
     );
 
+
   wrapper.className =
     "stands-grid";
 
@@ -3176,6 +3856,7 @@ Aucun Stand trouvé.
           "div"
         );
 
+
       box.className =
         "stand";
 
@@ -3185,30 +3866,38 @@ Aucun Stand trouvé.
         "active";
 
 
+      const standCode =
+        stand.stand_code ||
+        "STAND-" +
+        stand.id;
+
+
       box.innerHTML =
         `
 
 <div class="stand-top">
 
-<div class="stand-code">
-${escapeHtml(
-  stand.stand_code
-)}
-</div>
+  <div class="stand-code">
+    ${escapeHtml(
+      standCode
+    )}
+  </div>
 
-<span class="badge ${
-  isActive
-    ? "active-stand"
-    : "available"
-}">
+  <span
+    class="badge ${
+      isActive
+        ? "active-stand"
+        : "available"
+    }"
+  >
 
-${
-  isActive
-    ? "ACTIF"
-    : "DISPONIBLE"
-}
+    ${
+      isActive
+        ? "ACTIF"
+        : "DISPONIBLE"
+    }
 
-</span>
+  </span>
 
 </div>
 
@@ -3220,43 +3909,43 @@ ${
 
   ? `
 
-Client :
-<strong>
-${escapeHtml(
-  stand.client_name ||
-  "Client"
-)}
-</strong>
+    Client :
+    <strong>
+      ${escapeHtml(
+        stand.client_name ||
+        "Client"
+      )}
+    </strong>
 
-<br>
+    <br>
 
-Destination :
+    Destination :
 
-<span class="dynamic-link">
-${escapeHtml(
-  stand.destination_url ||
-  ""
-)}
-</span>
+    <span class="dynamic-link">
+      ${escapeHtml(
+        stand.destination_url ||
+        ""
+      )}
+    </span>
 
-<br>
+    <br>
 
-📊 Scans :
-<strong>
-${Number(
-  stand.scans_count || 0
-)}
-</strong>
+    📊 Scans :
+    <strong>
+      ${Number(
+        stand.scans_count ||
+        0
+      )}
+    </strong>
 
-`
+  `
 
   : `
 
-Ce Stand est disponible
-et prêt à être attribué.
+    Ce Stand est disponible
+    et prêt à être attribué.
 
-`
-
+  `
 }
 
 </div>
@@ -3269,45 +3958,46 @@ ${
 
   ? `
 
-<button
-type="button"
-class="small-btn copy"
-data-stand-action="copy"
-data-url="${escapeHtml(
-  stand.destination_url || ""
-)}"
->
-Copier le lien
-</button>
+    <button
+      type="button"
+      class="small-btn copy"
+      data-stand-action="copy"
+      data-url="${escapeHtml(
+        stand.destination_url ||
+        ""
+      )}"
+    >
+      🔗 Copier le lien
+    </button>
 
-<button
-type="button"
-class="small-btn danger"
-data-stand-action="reset"
-data-stand="${escapeHtml(
-  stand.stand_code
-)}"
->
-🔄 Réinitialiser
-</button>
 
-`
+    <button
+      type="button"
+      class="small-btn danger"
+      data-stand-action="reset"
+      data-stand="${escapeHtml(
+        standCode
+      )}"
+    >
+      🔄 Réinitialiser
+    </button>
+
+  `
 
   : `
 
-<button
-type="button"
-class="primary"
-data-stand-action="activate-toggle"
-data-stand="${escapeHtml(
-  stand.stand_code
-)}"
->
-Activer ce Stand
-</button>
+    <button
+      type="button"
+      class="primary"
+      data-stand-action="activate-toggle"
+      data-stand="${escapeHtml(
+        standCode
+      )}"
+    >
+      Activer ce Stand
+    </button>
 
-`
-
+  `
 }
 
 </div>
@@ -3319,71 +4009,84 @@ ${
   ? `
 
 <div
-class="activate-box"
-id="activate-${escapeHtml(
-  stand.stand_code
-)}"
+  class="activate-box"
+  id="activate-${escapeHtml(
+    standCode
+  )}"
 >
 
-<div class="field">
+  <div class="field">
 
-<label>
-Client
-</label>
+    <label>
+      Client
+    </label>
 
-<select class="stand-client-select">
+    <select
+      class="stand-client-select"
+    >
 
-<option value="">
--- Sélectionner un client --
-</option>
+      <option value="">
+        -- Sélectionner un client --
+      </option>
 
-${
-  clients.map(
-    client =>
-      `
-<option value="${client.id}">
-${escapeHtml(
-  client.name
-)}
+      ${
+        clients
+          .map(
+            client =>
+              `
+<option value="${escapeHtml(
+  client.id
+)}">
+  ${escapeHtml(
+    client.name
+  )}
 </option>
 `
-  ).join("")
-}
+          )
+          .join("")
+      }
 
-</select>
+    </select>
+
+  </div>
+
+
+  <div class="field">
+
+    <label>
+      Destination URL
+    </label>
+
+    <input
+      type="url"
+      class="stand-destination-url"
+      placeholder="https://..."
+    >
+
+    <small
+      style="color:#6b7280;font-size:12px"
+    >
+      Pour un Stand dynamique TAPNIVO,
+      utilisez le lien du service correspondant.
+    </small>
+
+  </div>
+
+
+  <button
+    type="button"
+    class="primary"
+    data-stand-action="activate-submit"
+    data-stand="${escapeHtml(
+      standCode
+    )}"
+  >
+    Activer maintenant
+  </button>
 
 </div>
 
-
-<div class="field">
-
-<label>
-Destination URL
-</label>
-
-<input
-type="url"
-class="stand-destination-url"
-placeholder="https://..."
->
-
-</div>
-
-
-<button
-type="button"
-class="primary"
-data-stand-action="activate-submit"
-data-stand="${escapeHtml(
-  stand.stand_code
-)}"
->
-Activer maintenant
-</button>
-
-</div>
-
-`
+  `
 
   : ""
 
@@ -3401,6 +4104,7 @@ Activer maintenant
 
   standsContainer.innerHTML =
     "";
+
 
   standsContainer.appendChild(
     wrapper
@@ -3436,12 +4140,14 @@ async function handleStandAction(
   const button =
     event.currentTarget;
 
+
   const action =
     button.dataset.standAction;
 
 
   if(
-    action === "activate-toggle"
+    action ===
+    "activate-toggle"
   ){
 
     const code =
@@ -3455,7 +4161,9 @@ async function handleStandAction(
       );
 
 
-    if(box){
+    if(
+      box
+    ){
 
       box.classList.toggle(
         "show"
@@ -3463,13 +4171,15 @@ async function handleStandAction(
 
     }
 
+
     return;
 
   }
 
 
   if(
-    action === "activate-submit"
+    action ===
+    "activate-submit"
   ){
 
     const code =
@@ -3502,7 +4212,9 @@ async function handleStandAction(
       destinationInput.value.trim();
 
 
-    if(!clientId){
+    if(
+      !clientId
+    ){
 
       alert(
         "Sélectionnez un client."
@@ -3513,7 +4225,9 @@ async function handleStandAction(
     }
 
 
-    if(!destinationUrl){
+    if(
+      !destinationUrl
+    ){
 
       alert(
         "Entrez la destination URL."
@@ -3526,6 +4240,7 @@ async function handleStandAction(
 
     button.disabled =
       true;
+
 
     button.textContent =
       "Activation...";
@@ -3563,7 +4278,8 @@ async function handleStandAction(
 
 
       if(
-        response.status === 401
+        response.status ===
+        401
       ){
 
         showLogin();
@@ -3606,12 +4322,19 @@ async function handleStandAction(
 
     }catch(error){
 
+      console.error(
+        "Activate stand:",
+        error
+      );
+
+
       showMessage(
         globalMessage,
         "❌ " +
         error.message,
         "error"
       );
+
 
     }finally{
 
@@ -3623,26 +4346,34 @@ async function handleStandAction(
 
     }
 
+
     return;
 
   }
 
 
   if(
-    action === "copy"
+    action ===
+    "copy"
   ){
 
-    try{
-
-      await navigator.clipboard.writeText(
+    const copied =
+      await copyText(
         button.dataset.url
       );
+
+
+    if(
+      copied
+    ){
 
       const oldText =
         button.textContent;
 
+
       button.textContent =
         "Copié ✓";
+
 
       setTimeout(
         () => {
@@ -3654,7 +4385,7 @@ async function handleStandAction(
         1500
       );
 
-    }catch(error){
+    }else{
 
       alert(
         "Impossible de copier le lien."
@@ -3662,13 +4393,15 @@ async function handleStandAction(
 
     }
 
+
     return;
 
   }
 
 
   if(
-    action === "reset"
+    action ===
+    "reset"
   ){
 
     const code =
@@ -3685,7 +4418,9 @@ async function handleStandAction(
       );
 
 
-    if(!confirmed){
+    if(
+      !confirmed
+    ){
 
       return;
 
@@ -3694,6 +4429,7 @@ async function handleStandAction(
 
     button.disabled =
       true;
+
 
     button.textContent =
       "Réinitialisation...";
@@ -3721,7 +4457,8 @@ async function handleStandAction(
 
 
       if(
-        response.status === 401
+        response.status ===
+        401
       ){
 
         showLogin();
@@ -3764,6 +4501,12 @@ async function handleStandAction(
 
     }catch(error){
 
+      console.error(
+        "Reset stand:",
+        error
+      );
+
+
       showMessage(
         globalMessage,
         "❌ " +
@@ -3771,10 +4514,12 @@ async function handleStandAction(
         "error"
       );
 
+
     }finally{
 
       button.disabled =
         false;
+
 
       button.textContent =
         "🔄 Réinitialiser";
@@ -3799,6 +4544,7 @@ clientForm.addEventListener(
 
     clientButton.disabled =
       true;
+
 
     clientButton.textContent =
       "Création...";
@@ -3884,6 +4630,30 @@ clientForm.addEventListener(
     };
 
 
+    if(
+      !data.name
+    ){
+
+      showMessage(
+        globalMessage,
+        "❌ Le nom du client est obligatoire.",
+        "error"
+      );
+
+
+      clientButton.disabled =
+        false;
+
+
+      clientButton.textContent =
+        "Créer le profil";
+
+
+      return;
+
+    }
+
+
     try{
 
       const response =
@@ -3905,7 +4675,8 @@ clientForm.addEventListener(
 
 
       if(
-        response.status === 401
+        response.status ===
+        401
       ){
 
         showLogin();
@@ -3946,10 +4717,18 @@ clientForm.addEventListener(
 
       await loadServices();
 
+      await loadStands();
+
       updateGlobalStats();
 
 
     }catch(error){
+
+      console.error(
+        "Create client:",
+        error
+      );
+
 
       showMessage(
         globalMessage,
@@ -3958,10 +4737,12 @@ clientForm.addEventListener(
         "error"
       );
 
+
     }finally{
 
       clientButton.disabled =
         false;
+
 
       clientButton.textContent =
         "Créer le profil";
@@ -4001,7 +4782,38 @@ function updateGlobalStats(){
 
 
 /* =====================================================
-   START
+   ESCAPE MODAL WITH ESC KEY
+===================================================== */
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(
+      event.key ===
+      "Escape" &&
+      serviceModal.classList.contains(
+        "show"
+      )
+    ){
+
+      closeModal();
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   INITIAL UI
+===================================================== */
+
+updateServiceTypeUI();
+
+
+/* =====================================================
+   START TAPNIVO ADMIN
 ===================================================== */
 
 checkAdmin();
@@ -4009,4 +4821,5 @@ checkAdmin();
 </script>
 
 </body>
+
 </html>
