@@ -25,7 +25,8 @@ export default {
       new Response(content, {
         status,
         headers: {
-          "Content-Type": "text/html; charset=UTF-8"
+          "Content-Type": "text/html; charset=UTF-8",
+          "Cache-Control": "no-store"
         }
       });
 
@@ -133,27 +134,10 @@ export default {
     // CONSTANTS
     // =====================================================
 
-    const SERVICE_TYPES = [
-      "google_review",
-      "instagram",
-      "whatsapp",
-      "tiktok",
-      "digital_card",
-      "menu",
-      "wifi",
-      "custom_link"
-    ];
-
     const SERVICE_STATUSES = [
       "draft",
       "active",
       "inactive"
-    ];
-
-    const SUPPORT_TYPES = [
-      "nfc_stand",
-      "nfc_card",
-      "qr_plaque"
     ];
 
     const SUPPORT_STATUSES = [
@@ -278,7 +262,7 @@ export default {
     };
 
     // =====================================================
-    // LOGIN
+    // ADMIN LOGIN
     // =====================================================
 
     if (
@@ -360,7 +344,7 @@ export default {
     }
 
     // =====================================================
-    // LOGOUT
+    // ADMIN LOGOUT
     // =====================================================
 
     if (
@@ -405,6 +389,118 @@ export default {
           success: true,
           database: "tapnivo-db",
           tables: result.results
+        });
+
+      } catch (error) {
+
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // DASHBOARD SUMMARY
+    // =====================================================
+
+    if (
+      url.pathname === "/api/dashboard" &&
+      request.method === "GET"
+    ) {
+
+      if (!(await isAdmin())) {
+        return json(
+          {
+            success: false,
+            error: "Non autorisé."
+          },
+          401
+        );
+      }
+
+      try {
+
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+
+                (SELECT COUNT(*)
+                 FROM clients) AS clients,
+
+                (SELECT COUNT(*)
+                 FROM services) AS services,
+
+                (SELECT COUNT(*)
+                 FROM services
+                 WHERE status = 'active') AS active_services,
+
+                (SELECT COUNT(*)
+                 FROM supports) AS supports,
+
+                (SELECT COUNT(*)
+                 FROM supports
+                 WHERE status = 'available') AS available_supports,
+
+                (SELECT COUNT(*)
+                 FROM supports
+                 WHERE status = 'active') AS active_supports,
+
+                (SELECT COUNT(*)
+                 FROM service_scans) AS service_scans,
+
+                (SELECT COUNT(*)
+                 FROM support_scans) AS support_scans,
+
+                (SELECT COUNT(*)
+                 FROM service_scans
+                 WHERE date(scanned_at) = date('now'))
+                 AS service_scans_today,
+
+                (SELECT COUNT(*)
+                 FROM support_scans
+                 WHERE date(scanned_at) = date('now'))
+                 AS support_scans_today
+            `)
+            .first();
+
+        return json({
+          success: true,
+          statistics: {
+            clients:
+              Number(result?.clients || 0),
+
+            services:
+              Number(result?.services || 0),
+
+            active_services:
+              Number(result?.active_services || 0),
+
+            supports:
+              Number(result?.supports || 0),
+
+            available_supports:
+              Number(result?.available_supports || 0),
+
+            active_supports:
+              Number(result?.active_supports || 0),
+
+            service_scans:
+              Number(result?.service_scans || 0),
+
+            support_scans:
+              Number(result?.support_scans || 0),
+
+            service_scans_today:
+              Number(result?.service_scans_today || 0),
+
+            support_scans_today:
+              Number(result?.support_scans_today || 0)
+          }
         });
 
       } catch (error) {
@@ -517,8 +613,31 @@ export default {
         }
 
         const slug =
-          data.slug ||
-          `${baseSlug}-${Date.now()}`;
+          data.slug
+            ? String(data.slug).trim()
+            : `${baseSlug}-${Date.now()}`;
+
+        const existingSlug =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM clients
+              WHERE slug = ?
+              LIMIT 1
+            `)
+            .bind(slug)
+            .first();
+
+        if (existingSlug) {
+          return json(
+            {
+              success: false,
+              error:
+                "Ce slug existe déjà."
+            },
+            409
+          );
+        }
 
         await env.DB
           .prepare(`
@@ -837,7 +956,11 @@ export default {
     const generateUniqueServiceCode =
       async () => {
 
-        for (let attempt = 0; attempt < 30; attempt++) {
+        for (
+          let attempt = 0;
+          attempt < 30;
+          attempt++
+        ) {
 
           const candidate =
             generateServiceCode();
@@ -907,7 +1030,11 @@ export default {
     const generateUniqueSupportCode =
       async (supportType) => {
 
-        for (let attempt = 0; attempt < 30; attempt++) {
+        for (
+          let attempt = 0;
+          attempt < 30;
+          attempt++
+        ) {
 
           const code =
             generateSupportCode(
@@ -1669,12 +1796,15 @@ export default {
           success: true,
           message:
             "Service créé avec succès.",
+
           service_code:
             serviceCode,
+
           qr_url:
             `${url.origin}/s/${encodeURIComponent(
               serviceCode
             )}`,
+
           nfc_url:
             `${url.origin}/s/${encodeURIComponent(
               serviceCode
@@ -1793,7 +1923,6 @@ export default {
                 MAX(scanned_at) AS last_scan
 
               FROM service_scans
-
               WHERE service_id = ?
             `)
             .bind(serviceId)
@@ -2439,6 +2568,24 @@ export default {
         const bindings = [];
 
         if (requestedType) {
+
+          if (
+            ![
+              "nfc_stand",
+              "nfc_card",
+              "qr_plaque"
+            ].includes(requestedType)
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Type de Support invalide."
+              },
+              400
+            );
+          }
+
           query += `
             AND support_type = ?
           `;
@@ -2782,11 +2929,12 @@ export default {
 
 // =====================================================
 // SUPPORT ID
+// IMPORTANT: FIX FOR assign/reset/status
 // =====================================================
 
     const supportIdMatch =
       url.pathname.match(
-        /^\/api\/supports\/(\d+)$/
+        /^\/api\/supports\/(\d+)(?:\/(assign|reset|status))?$/
       );
 
     const supportId =
@@ -2800,6 +2948,8 @@ export default {
 
     if (
       supportId !== null &&
+      url.pathname ===
+        `/api/supports/${supportId}` &&
       request.method === "GET"
     ) {
 
@@ -3017,14 +3167,13 @@ export default {
         }
 
         if (
-          support.status === "active" &&
           support.service_id !== null
         ) {
           return json(
             {
               success: false,
               error:
-                "Ce Support est déjà associé à un Service."
+                "Ce Support est déjà associé à un Service. Faites Reset d'abord."
             },
             409
           );
@@ -3297,10 +3446,21 @@ export default {
         await env.DB
           .prepare(`
             UPDATE supports
-            SET status = ?
+            SET
+              status = ?,
+              activated_at =
+                CASE
+                  WHEN ? = 'active'
+                  THEN COALESCE(
+                    activated_at,
+                    CURRENT_TIMESTAMP
+                  )
+                  ELSE NULL
+                END
             WHERE id = ?
           `)
           .bind(
+            status,
             status,
             supportId
           )
@@ -3753,21 +3913,30 @@ color:#9ca3af;
 <div class="icon">📶</div>
 <h1>${escapeHTML(support.service_name)}</h1>
 <div class="client">${escapeHTML(support.client_name || "")}</div>
+
 <div class="wifi">
+
 <div class="row">
 <div class="label">NOM DU WI-FI</div>
 <div class="value">${escapeHTML(ssid || "—")}</div>
 </div>
+
 <div class="row">
 <div class="label">MOT DE PASSE</div>
 <div class="password">${escapeHTML(password || "—")}</div>
 </div>
+
 <div class="row">
 <div class="label">SÉCURITÉ</div>
 <div class="value">${escapeHTML(security)}</div>
 </div>
+
 </div>
-<div class="footer">Service Wi-Fi créé avec TAPNIVO</div>
+
+<div class="footer">
+Service Wi-Fi créé avec TAPNIVO
+</div>
+
 </div>
 </body>
 </html>
@@ -4106,21 +4275,30 @@ color:#9ca3af;
 <div class="icon">📶</div>
 <h1>${escapeHTML(service.service_name)}</h1>
 <div class="client">${escapeHTML(service.client_name || "")}</div>
+
 <div class="wifi">
+
 <div class="row">
 <div class="label">NOM DU WI-FI</div>
 <div class="value">${escapeHTML(ssid || "—")}</div>
 </div>
+
 <div class="row">
 <div class="label">MOT DE PASSE</div>
 <div class="password">${escapeHTML(password || "—")}</div>
 </div>
+
 <div class="row">
 <div class="label">SÉCURITÉ</div>
 <div class="value">${escapeHTML(security)}</div>
 </div>
+
 </div>
-<div class="footer">Service Wi-Fi créé avec TAPNIVO</div>
+
+<div class="footer">
+Service Wi-Fi créé avec TAPNIVO
+</div>
+
 </div>
 </body>
 </html>
@@ -4412,7 +4590,10 @@ font-size:11px;
 <body>
 <div class="container">
 <div class="card">
-<div class="logo">TAP<span>NIVO</span></div>
+
+<div class="logo">
+TAP<span>NIVO</span>
+</div>
 
 ${photoHTML}
 
@@ -4572,7 +4753,7 @@ Profil digital créé avec TAPNIVO
 
 // =====================================================
 // CLIENT CONTACT VCF
-// IMPORTANT: قبل /contact/:service
+// /contact/client/SLUG.vcf
 // =====================================================
 
     if (
@@ -5312,6 +5493,7 @@ color:#9ca3af;
 </style>
 </head>
 <body>
+
 <div class="container">
 <div class="profile">
 
@@ -5398,6 +5580,7 @@ Profil digital créé avec TAPNIVO
 
 </div>
 </div>
+
 </body>
 </html>
 `);
