@@ -1,3 +1,7 @@
+// =====================================================
+// PART 1 / 4 — CORE + ADMIN + CLIENTS
+// =====================================================
+
 export default {
   async fetch(request, env) {
 
@@ -7,36 +11,26 @@ export default {
     // HELPERS
     // =====================================================
 
-    const json = (data, status = 200, extraHeaders = {}) => {
-      return new Response(
-        JSON.stringify(data, null, 2),
-        {
-          status,
-          headers: {
-            "Content-Type": "application/json; charset=UTF-8",
-            "Cache-Control": "no-store",
-            ...extraHeaders
-          }
+    const json = (data, status = 200, extraHeaders = {}) =>
+      new Response(JSON.stringify(data, null, 2), {
+        status,
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          "Cache-Control": "no-store",
+          ...extraHeaders
         }
-      );
-    };
+      });
 
-    const html = (content, status = 200) => {
-      return new Response(
-        content,
-        {
-          status,
-          headers: {
-            "Content-Type": "text/html; charset=UTF-8"
-          }
+    const html = (content, status = 200) =>
+      new Response(content, {
+        status,
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8"
         }
-      );
-    };
+      });
 
     const escapeHTML = (value) => {
-      if (value === null || value === undefined) {
-        return "";
-      }
+      if (value === null || value === undefined) return "";
 
       return String(value)
         .replace(/&/g, "&amp;")
@@ -49,9 +43,7 @@ export default {
     const getCookie = (request, name) => {
       const cookieHeader = request.headers.get("Cookie");
 
-      if (!cookieHeader) {
-        return null;
-      }
+      if (!cookieHeader) return null;
 
       for (const cookie of cookieHeader.split(";")) {
         const parts = cookie.trim().split("=");
@@ -65,9 +57,7 @@ export default {
     };
 
     const timingSafeEqual = (a, b) => {
-      if (a.length !== b.length) {
-        return false;
-      }
+      if (a.length !== b.length) return false;
 
       let result = 0;
 
@@ -96,19 +86,14 @@ export default {
     };
 
     const fromBase64url = (input) => {
-      const padding =
-        (4 - (input.length % 4)) % 4;
+      const padding = (4 - (input.length % 4)) % 4;
 
       const base64 =
-        input
-          .replace(/-/g, "+")
-          .replace(/_/g, "/") +
+        input.replace(/-/g, "+").replace(/_/g, "/") +
         "=".repeat(padding);
 
       const binary = atob(base64);
-
-      const bytes =
-        new Uint8Array(binary.length);
+      const bytes = new Uint8Array(binary.length);
 
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
@@ -118,13 +103,9 @@ export default {
     };
 
     const parseConfig = (value) => {
-      if (!value) {
-        return null;
-      }
+      if (!value) return null;
 
-      if (typeof value === "object") {
-        return value;
-      }
+      if (typeof value === "object") return value;
 
       try {
         return JSON.parse(value);
@@ -134,9 +115,7 @@ export default {
     };
 
     const isValidHttpUrl = (value) => {
-      if (!value) {
-        return false;
-      }
+      if (!value) return false;
 
       try {
         const parsed = new URL(value);
@@ -148,11 +127,6 @@ export default {
       } catch {
         return false;
       }
-    };
-
-    const cleanPhone = (value) => {
-      return String(value || "")
-        .replace(/[^0-9+]/g, "");
     };
 
     // =====================================================
@@ -195,37 +169,30 @@ export default {
     const createAdminToken = async () => {
 
       if (!env.ADMIN_KEY) {
-        throw new Error(
-          "ADMIN_KEY non configurée."
-        );
+        throw new Error("ADMIN_KEY non configurée.");
       }
 
-      const timestamp =
-        Date.now().toString();
+      const timestamp = Date.now().toString();
+      const encoder = new TextEncoder();
 
-      const encoder =
-        new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(env.ADMIN_KEY),
+        {
+          name: "HMAC",
+          hash: "SHA-256"
+        },
+        false,
+        ["sign"]
+      );
 
-      const key =
-        await crypto.subtle.importKey(
-          "raw",
-          encoder.encode(env.ADMIN_KEY),
-          {
-            name: "HMAC",
-            hash: "SHA-256"
-          },
-          false,
-          ["sign"]
-        );
-
-      const signature =
-        new Uint8Array(
-          await crypto.subtle.sign(
-            "HMAC",
-            key,
-            encoder.encode(timestamp)
-          )
-        );
+      const signature = new Uint8Array(
+        await crypto.subtle.sign(
+          "HMAC",
+          key,
+          encoder.encode(timestamp)
+        )
+      );
 
       return (
         base64url(timestamp) +
@@ -236,15 +203,11 @@ export default {
 
     const verifyAdminToken = async (token) => {
 
-      if (!token || !env.ADMIN_KEY) {
-        return false;
-      }
+      if (!token || !env.ADMIN_KEY) return false;
 
       const parts = token.split(".");
 
-      if (parts.length !== 2) {
-        return false;
-      }
+      if (parts.length !== 2) return false;
 
       try {
 
@@ -252,18 +215,14 @@ export default {
           fromBase64url(parts[0]);
 
         const timestamp =
-          new TextDecoder()
-            .decode(timestampBytes);
+          new TextDecoder().decode(timestampBytes);
 
         const time = Number(timestamp);
 
-        if (!Number.isFinite(time)) {
-          return false;
-        }
+        if (!Number.isFinite(time)) return false;
 
         const now = Date.now();
 
-        // Token valable 8 heures
         if (
           now - time >
           8 * 60 * 60 * 1000
@@ -275,29 +234,26 @@ export default {
           return false;
         }
 
-        const encoder =
-          new TextEncoder();
+        const encoder = new TextEncoder();
 
-        const key =
-          await crypto.subtle.importKey(
-            "raw",
-            encoder.encode(env.ADMIN_KEY),
-            {
-              name: "HMAC",
-              hash: "SHA-256"
-            },
-            false,
-            ["sign"]
-          );
+        const key = await crypto.subtle.importKey(
+          "raw",
+          encoder.encode(env.ADMIN_KEY),
+          {
+            name: "HMAC",
+            hash: "SHA-256"
+          },
+          false,
+          ["sign"]
+        );
 
-        const expected =
-          new Uint8Array(
-            await crypto.subtle.sign(
-              "HMAC",
-              key,
-              encoder.encode(timestamp)
-            )
-          );
+        const expected = new Uint8Array(
+          await crypto.subtle.sign(
+            "HMAC",
+            key,
+            encoder.encode(timestamp)
+          )
+        );
 
         const received =
           fromBase64url(parts[1]);
@@ -313,41 +269,35 @@ export default {
     };
 
     const isAdmin = async () => {
-      const token =
-        getCookie(
-          request,
-          "tapnivo_admin"
-        );
+      const token = getCookie(
+        request,
+        "tapnivo_admin"
+      );
 
       return await verifyAdminToken(token);
     };
 
     // =====================================================
-    // ADMIN LOGIN
+    // LOGIN
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/admin/login" &&
+      url.pathname === "/api/admin/login" &&
       request.method === "POST"
     ) {
 
       try {
 
-        const data =
-          await request.json();
+        const data = await request.json();
 
         const password =
-          String(
-            data.password || ""
-          );
+          String(data.password || "");
 
         if (!env.ADMIN_KEY) {
           return json(
             {
               success: false,
-              error:
-                "ADMIN_KEY non configurée."
+              error: "ADMIN_KEY non configurée."
             },
             500
           );
@@ -360,8 +310,7 @@ export default {
           return json(
             {
               success: false,
-              error:
-                "Mot de passe incorrect."
+              error: "Mot de passe incorrect."
             },
             401
           );
@@ -400,25 +349,22 @@ export default {
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/admin/me" &&
+      url.pathname === "/api/admin/me" &&
       request.method === "GET"
     ) {
 
       return json({
         success: true,
-        authenticated:
-          await isAdmin()
+        authenticated: await isAdmin()
       });
     }
 
     // =====================================================
-    // ADMIN LOGOUT
+    // LOGOUT
     // =====================================================
 
     if (
-      url.pathname ===
-        "/api/admin/logout" &&
+      url.pathname === "/api/admin/logout" &&
       request.method === "POST"
     ) {
 
@@ -448,8 +394,7 @@ export default {
         const result =
           await env.DB
             .prepare(`
-              SELECT
-                name
+              SELECT name
               FROM sqlite_master
               WHERE type = 'table'
               ORDER BY name
@@ -475,7 +420,7 @@ export default {
     }
 
     // =====================================================
-    // CLIENTS - GET
+    // CLIENTS GET
     // =====================================================
 
     if (
@@ -522,7 +467,7 @@ export default {
     }
 
     // =====================================================
-    // CLIENTS - POST
+    // CLIENTS POST
     // =====================================================
 
     if (
@@ -546,9 +491,7 @@ export default {
           await request.json();
 
         const name =
-          String(
-            data.name || ""
-          ).trim();
+          String(data.name || "").trim();
 
         if (!name) {
           return json(
@@ -565,18 +508,9 @@ export default {
           name
             .toLowerCase()
             .normalize("NFD")
-            .replace(
-              /[\u0300-\u036f]/g,
-              ""
-            )
-            .replace(
-              /[^a-z0-9]+/g,
-              "-"
-            )
-            .replace(
-              /^-|-$/g,
-              ""
-            );
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
 
         if (!baseSlug) {
           baseSlug = "client";
@@ -652,7 +586,7 @@ export default {
     }
 
     // =====================================================
-    // CLIENT UPDATE
+    // CLIENT ID
     // =====================================================
 
     const clientIdMatch =
@@ -664,6 +598,10 @@ export default {
       clientIdMatch
         ? Number(clientIdMatch[1])
         : null;
+
+    // =====================================================
+    // CLIENT UPDATE
+    // =====================================================
 
     if (
       clientId !== null &&
@@ -697,8 +635,7 @@ export default {
           return json(
             {
               success: false,
-              error:
-                "Client introuvable."
+              error: "Client introuvable."
             },
             404
           );
@@ -738,12 +675,9 @@ export default {
             )
           ) {
 
-            let value =
-              data[field];
+            let value = data[field];
 
-            if (
-              typeof value === "string"
-            ) {
+            if (typeof value === "string") {
               value = value.trim();
             }
 
@@ -761,21 +695,15 @@ export default {
               );
             }
 
-            updates.push(
-              `${field} = ?`
-            );
-
-            values.push(
-              value || null
-            );
+            updates.push(`${field} = ?`);
+            values.push(value || null);
           }
         }
 
         if (!updates.length) {
           return json({
             success: true,
-            message:
-              "Aucune modification."
+            message: "Aucune modification."
           });
         }
 
@@ -848,8 +776,7 @@ export default {
           return json(
             {
               success: false,
-              error:
-                "Client introuvable."
+              error: "Client introuvable."
             },
             404
           );
@@ -882,57 +809,7 @@ export default {
     }
 
     // =====================================================
-    // SERVICE TYPES - GET
-    // =====================================================
-
-    if (
-      url.pathname ===
-        "/api/service-types" &&
-      request.method === "GET"
-    ) {
-
-      if (!(await isAdmin())) {
-        return json(
-          {
-            success: false,
-            error: "Non autorisé."
-          },
-          401
-        );
-      }
-
-      try {
-
-        const result =
-          await env.DB
-            .prepare(`
-              SELECT *
-              FROM service_types
-              WHERE active = 1
-              ORDER BY id ASC
-            `)
-            .all();
-
-        return json({
-          success: true,
-          service_types:
-            result.results
-        });
-
-      } catch (error) {
-
-        return json(
-          {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
-
-    // =====================================================
-    // SERVICE CODE HELPER
+    // SERVICE CODE HELPERS
     // =====================================================
 
     const generateServiceCode = () => {
@@ -947,11 +824,10 @@ export default {
 
       let code = "";
 
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < bytes.length; i++) {
         code +=
           chars[
-            bytes[i] %
-            chars.length
+            bytes[i] % chars.length
           ];
       }
 
@@ -961,11 +837,7 @@ export default {
     const generateUniqueServiceCode =
       async () => {
 
-        for (
-          let attempt = 0;
-          attempt < 20;
-          attempt++
-        ) {
+        for (let attempt = 0; attempt < 30; attempt++) {
 
           const candidate =
             generateServiceCode();
@@ -992,7 +864,7 @@ export default {
       };
 
     // =====================================================
-    // SUPPORT CODE HELPER
+    // SUPPORT CODE HELPERS
     // =====================================================
 
     const SUPPORT_CHARS =
@@ -1002,41 +874,30 @@ export default {
       supportType
     ) => {
 
-      let prefix = "SUP";
-
-      if (
-        supportType ===
-        "nfc_stand"
-      ) {
-        prefix = "ST";
-      }
-
-      if (
-        supportType ===
-        "nfc_card"
-      ) {
-        prefix = "CARD";
-      }
-
-      if (
-        supportType ===
-        "qr_plaque"
-      ) {
-        prefix = "QR";
-      }
-
       const bytes =
         new Uint8Array(8);
 
       crypto.getRandomValues(bytes);
 
+      let prefix = "SUP";
+
+      if (supportType === "nfc_stand") {
+        prefix = "ST";
+      } else if (supportType === "nfc_card") {
+        prefix = "CARD";
+      } else if (
+        supportType === "qr_plaque" ||
+        supportType === "qr"
+      ) {
+        prefix = "QR";
+      }
+
       let code = "";
 
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < bytes.length; i++) {
         code +=
           SUPPORT_CHARS[
-            bytes[i] %
-            SUPPORT_CHARS.length
+            bytes[i] % SUPPORT_CHARS.length
           ];
       }
 
@@ -1044,15 +905,9 @@ export default {
     };
 
     const generateUniqueSupportCode =
-      async (
-        supportType
-      ) => {
+      async (supportType) => {
 
-        for (
-          let attempt = 0;
-          attempt < 20;
-          attempt++
-        ) {
+        for (let attempt = 0; attempt < 30; attempt++) {
 
           const code =
             generateSupportCode(
@@ -1083,13 +938,13 @@ export default {
     // =====================================================
     // END PART 1
     // =====================================================
-      // =====================================================
-    // PART 2 — SERVICE TYPES + SERVICES
-    // =====================================================
+  // =====================================================
+// PART 2 / 4 — SERVICE TYPES + SERVICES
+// =====================================================
 
-    // =====================================================
-    // GET SERVICE TYPES
-    // =====================================================
+// =====================================================
+// GET SERVICE TYPES
+// =====================================================
 
     if (
       url.pathname === "/api/service-types" &&
@@ -1138,15 +993,12 @@ export default {
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // ADD SERVICE TYPE
-    // =====================================================
+// =====================================================
+// ADD SERVICE TYPE
+// =====================================================
 
     if (
       url.pathname === "/api/service-types" &&
@@ -1169,16 +1021,12 @@ export default {
           await request.json();
 
         const code =
-          String(
-            data.code || ""
-          )
+          String(data.code || "")
             .trim()
             .toLowerCase();
 
         const name =
-          String(
-            data.name || ""
-          ).trim();
+          String(data.name || "").trim();
 
         const icon =
           data.icon
@@ -1191,19 +1039,17 @@ export default {
             : null;
 
         if (!code) {
-
           return json(
             {
               success: false,
-              error: "Code du service obligatoire."
+              error:
+                "Code du service obligatoire."
             },
             400
           );
-
         }
 
         if (!/^[a-z0-9_]+$/.test(code)) {
-
           return json(
             {
               success: false,
@@ -1212,19 +1058,17 @@ export default {
             },
             400
           );
-
         }
 
         if (!name) {
-
           return json(
             {
               success: false,
-              error: "Nom du service obligatoire."
+              error:
+                "Nom du service obligatoire."
             },
             400
           );
-
         }
 
         const exists =
@@ -1239,15 +1083,14 @@ export default {
             .first();
 
         if (exists) {
-
           return json(
             {
               success: false,
-              error: "Ce type de service existe déjà."
+              error:
+                "Ce type de service existe déjà."
             },
             409
           );
-
         }
 
         await env.DB
@@ -1271,7 +1114,8 @@ export default {
 
         return json({
           success: true,
-          message: "Type de service créé avec succès.",
+          message:
+            "Type de service créé avec succès.",
           code
         });
 
@@ -1284,15 +1128,12 @@ export default {
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // UPDATE SERVICE TYPE
-    // =====================================================
+// =====================================================
+// SERVICE TYPE ID
+// =====================================================
 
     const serviceTypeIdMatch =
       url.pathname.match(
@@ -1304,6 +1145,9 @@ export default {
         ? Number(serviceTypeIdMatch[1])
         : null;
 
+// =====================================================
+// UPDATE SERVICE TYPE
+// =====================================================
 
     if (
       serviceTypeId !== null &&
@@ -1334,15 +1178,14 @@ export default {
             .first();
 
         if (!existing) {
-
           return json(
             {
               success: false,
-              error: "Type de service introuvable."
+              error:
+                "Type de service introuvable."
             },
             404
           );
-
         }
 
         const data =
@@ -1359,12 +1202,9 @@ export default {
         ) {
 
           const value =
-            String(
-              data.name || ""
-            ).trim();
+            String(data.name || "").trim();
 
           if (!value) {
-
             return json(
               {
                 success: false,
@@ -1372,12 +1212,10 @@ export default {
               },
               400
             );
-
           }
 
           updates.push("name = ?");
           values.push(value);
-
         }
 
         if (
@@ -1393,7 +1231,6 @@ export default {
               ? String(data.icon).trim()
               : null
           );
-
         }
 
         if (
@@ -1409,7 +1246,6 @@ export default {
               ? String(data.description).trim()
               : null
           );
-
         }
 
         if (
@@ -1423,16 +1259,13 @@ export default {
           values.push(
             data.active ? 1 : 0
           );
-
         }
 
         if (!updates.length) {
-
           return json({
             success: true,
             message: "Aucune modification."
           });
-
         }
 
         values.push(serviceTypeId);
@@ -1461,15 +1294,12 @@ export default {
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // GET SERVICES
-    // =====================================================
+// =====================================================
+// GET SERVICES
+// =====================================================
 
     if (
       url.pathname === "/api/services" &&
@@ -1492,7 +1322,6 @@ export default {
           await env.DB
             .prepare(`
               SELECT
-
                 s.id,
                 s.client_id,
                 s.service_type,
@@ -1564,51 +1393,37 @@ export default {
             .all();
 
         const services =
-          result.results.map(
-            service => ({
-              ...service,
+          result.results.map(service => ({
+            ...service,
 
-              scans_count:
-                Number(
-                  service.scans_count || 0
-                ),
+            scans_count:
+              Number(service.scans_count || 0),
 
-              scans_today:
-                Number(
-                  service.scans_today || 0
-                ),
+            scans_today:
+              Number(service.scans_today || 0),
 
-              scans_7_days:
-                Number(
-                  service.scans_7_days || 0
-                ),
+            scans_7_days:
+              Number(service.scans_7_days || 0),
 
-              scans_30_days:
-                Number(
-                  service.scans_30_days || 0
-                ),
+            scans_30_days:
+              Number(service.scans_30_days || 0),
 
-              supports_count:
-                Number(
-                  service.supports_count || 0
-                ),
+            supports_count:
+              Number(service.supports_count || 0),
 
-              config:
-                parseConfig(
-                  service.config
-                ),
+            config:
+              parseConfig(service.config),
 
-              qr_url:
-                `${url.origin}/s/${encodeURIComponent(
-                  service.service_code
-                )}`,
+            qr_url:
+              `${url.origin}/s/${encodeURIComponent(
+                service.service_code
+              )}`,
 
-              nfc_url:
-                `${url.origin}/s/${encodeURIComponent(
-                  service.service_code
-                )}`
-            })
-          );
+            nfc_url:
+              `${url.origin}/s/${encodeURIComponent(
+                service.service_code
+              )}`
+          }));
 
         return json({
           success: true,
@@ -1624,85 +1439,12 @@ export default {
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // GENERATE SERVICE CODE
-    // =====================================================
-
-    const generateServiceCode = () => {
-
-      const chars =
-        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-      const bytes =
-        new Uint8Array(8);
-
-      crypto.getRandomValues(bytes);
-
-      let result = "";
-
-      for (
-        let i = 0;
-        i < bytes.length;
-        i++
-      ) {
-
-        result +=
-          chars[
-            bytes[i] % chars.length
-          ];
-
-      }
-
-      return result;
-
-    };
-
-
-    const generateUniqueServiceCode =
-      async () => {
-
-        for (
-          let attempt = 0;
-          attempt < 30;
-          attempt++
-        ) {
-
-          const code =
-            generateServiceCode();
-
-          const exists =
-            await env.DB
-              .prepare(`
-                SELECT id
-                FROM services
-                WHERE service_code = ?
-                LIMIT 1
-              `)
-              .bind(code)
-              .first();
-
-          if (!exists) {
-            return code;
-          }
-
-        }
-
-        throw new Error(
-          "Impossible de générer un code service unique."
-        );
-
-      };
-
-
-    // =====================================================
-    // CREATE SERVICE
-    // =====================================================
+// =====================================================
+// CREATE SERVICE
+// =====================================================
 
     if (
       url.pathname === "/api/services" &&
@@ -1725,32 +1467,25 @@ export default {
           await request.json();
 
         const clientId =
-          Number(
-            data.client_id
-          );
+          Number(data.client_id);
 
         const serviceType =
-          String(
-            data.service_type || ""
-          ).trim();
+          String(data.service_type || "")
+            .trim();
 
         const serviceName =
-          String(
-            data.service_name || ""
-          ).trim();
+          String(data.service_name || "")
+            .trim();
 
         const destinationUrl =
-          String(
-            data.destination_url || ""
-          ).trim();
+          String(data.destination_url || "")
+            .trim();
 
         const status =
-          String(
-            data.status || "draft"
-          ).trim();
+          String(data.status || "draft")
+            .trim();
 
         if (!clientId) {
-
           return json(
             {
               success: false,
@@ -1759,7 +1494,6 @@ export default {
             },
             400
           );
-
         }
 
         const client =
@@ -1774,7 +1508,6 @@ export default {
             .first();
 
         if (!client) {
-
           return json(
             {
               success: false,
@@ -1782,11 +1515,9 @@ export default {
             },
             404
           );
-
         }
 
         if (!serviceType) {
-
           return json(
             {
               success: false,
@@ -1795,16 +1526,12 @@ export default {
             },
             400
           );
-
         }
 
         const serviceTypeExists =
           await env.DB
             .prepare(`
-              SELECT
-                id,
-                code,
-                name
+              SELECT id, code, name
               FROM service_types
               WHERE code = ?
               AND active = 1
@@ -1814,7 +1541,6 @@ export default {
             .first();
 
         if (!serviceTypeExists) {
-
           return json(
             {
               success: false,
@@ -1823,11 +1549,9 @@ export default {
             },
             400
           );
-
         }
 
         if (!serviceName) {
-
           return json(
             {
               success: false,
@@ -1836,35 +1560,22 @@ export default {
             },
             400
           );
-
         }
 
-        if (
-          ![
-            "draft",
-            "active",
-            "inactive"
-          ].includes(status)
-        ) {
-
+        if (!SERVICE_STATUSES.includes(status)) {
           return json(
             {
               success: false,
-              error:
-                "Statut invalide."
+              error: "Statut invalide."
             },
             400
           );
-
         }
 
         if (
           destinationUrl &&
-          !isValidHttpUrl(
-            destinationUrl
-          )
+          !isValidHttpUrl(destinationUrl)
         ) {
-
           return json(
             {
               success: false,
@@ -1873,12 +1584,7 @@ export default {
             },
             400
           );
-
         }
-
-        // =================================================
-        // CONFIG
-        // =================================================
 
         let config = null;
 
@@ -1892,16 +1598,9 @@ export default {
           ) {
 
             try {
-
-              JSON.parse(
-                data.config
-              );
-
-              config =
-                data.config;
-
+              JSON.parse(data.config);
+              config = data.config;
             } catch {
-
               return json(
                 {
                   success: false,
@@ -1910,20 +1609,14 @@ export default {
                 },
                 400
               );
-
             }
 
           } else {
 
             try {
-
               config =
-                JSON.stringify(
-                  data.config
-                );
-
+                JSON.stringify(data.config);
             } catch {
-
               return json(
                 {
                   success: false,
@@ -1932,11 +1625,8 @@ export default {
                 },
                 400
               );
-
             }
-
           }
-
         }
 
         const serviceCode =
@@ -1945,7 +1635,6 @@ export default {
         await env.DB
           .prepare(`
             INSERT INTO services (
-
               client_id,
               service_type,
               service_name,
@@ -1955,18 +1644,14 @@ export default {
               config,
               activated_at,
               updated_at
-
             )
-
             VALUES (
-
               ?, ?, ?, ?, ?,
               ?, ?,
               ${status === "active"
                 ? "CURRENT_TIMESTAMP"
                 : "NULL"},
               CURRENT_TIMESTAMP
-
             )
           `)
           .bind(
@@ -1981,25 +1666,19 @@ export default {
           .run();
 
         return json({
-
           success: true,
-
           message:
             "Service créé avec succès.",
-
           service_code:
             serviceCode,
-
           qr_url:
             `${url.origin}/s/${encodeURIComponent(
               serviceCode
             )}`,
-
           nfc_url:
             `${url.origin}/s/${encodeURIComponent(
               serviceCode
             )}`
-
         });
 
       } catch (error) {
@@ -2011,15 +1690,12 @@ export default {
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // SERVICE ID
-    // =====================================================
+// =====================================================
+// SERVICE ID
+// =====================================================
 
     const serviceIdMatch =
       url.pathname.match(
@@ -2028,15 +1704,12 @@ export default {
 
     const serviceId =
       serviceIdMatch
-        ? Number(
-            serviceIdMatch[1]
-          )
+        ? Number(serviceIdMatch[1])
         : null;
 
-
-    // =====================================================
-    // SERVICE STATS
-    // =====================================================
+// =====================================================
+// SERVICE STATS
+// =====================================================
 
     if (
       serviceId !== null &&
@@ -2046,7 +1719,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -2054,7 +1726,6 @@ export default {
           },
           401
         );
-
       }
 
       try {
@@ -2063,29 +1734,22 @@ export default {
           await env.DB
             .prepare(`
               SELECT
-
                 s.id,
                 s.service_name,
                 s.service_type,
                 s.service_code,
                 s.status,
-
                 c.name AS client_name
-
               FROM services s
-
               LEFT JOIN clients c
                 ON s.client_id = c.id
-
               WHERE s.id = ?
-
               LIMIT 1
             `)
             .bind(serviceId)
             .first();
 
         if (!service) {
-
           return json(
             {
               success: false,
@@ -2094,14 +1758,12 @@ export default {
             },
             404
           );
-
         }
 
         const statistics =
           await env.DB
             .prepare(`
               SELECT
-
                 COUNT(*) AS total,
 
                 SUM(
@@ -2141,59 +1803,42 @@ export default {
           await env.DB
             .prepare(`
               SELECT
-
                 id,
                 support_code,
                 support_type,
                 status,
                 created_at,
                 activated_at
-
               FROM supports
-
               WHERE service_id = ?
-
               ORDER BY id DESC
             `)
             .bind(serviceId)
             .all();
 
         return json({
-
           success: true,
-
           service,
 
           statistics: {
-
             total:
-              Number(
-                statistics?.total || 0
-              ),
+              Number(statistics?.total || 0),
 
             today:
-              Number(
-                statistics?.today || 0
-              ),
+              Number(statistics?.today || 0),
 
             seven_days:
-              Number(
-                statistics?.seven_days || 0
-              ),
+              Number(statistics?.seven_days || 0),
 
             thirty_days:
-              Number(
-                statistics?.thirty_days || 0
-              ),
+              Number(statistics?.thirty_days || 0),
 
             last_scan:
               statistics?.last_scan || null
-
           },
 
           supports:
             supports.results
-
         });
 
       } catch (error) {
@@ -2205,15 +1850,12 @@ export default {
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // UPDATE SERVICE
-    // =====================================================
+// =====================================================
+// UPDATE SERVICE
+// =====================================================
 
     if (
       serviceId !== null &&
@@ -2223,7 +1865,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -2231,7 +1872,6 @@ export default {
           },
           401
         );
-
       }
 
       try {
@@ -2248,7 +1888,6 @@ export default {
             .first();
 
         if (!existing) {
-
           return json(
             {
               success: false,
@@ -2257,7 +1896,6 @@ export default {
             },
             404
           );
-
         }
 
         const data =
@@ -2265,10 +1903,6 @@ export default {
 
         const updates = [];
         const values = [];
-
-        // -------------------------------------------------
-        // CLIENT
-        // -------------------------------------------------
 
         if (
           Object.prototype.hasOwnProperty.call(
@@ -2278,12 +1912,9 @@ export default {
         ) {
 
           const value =
-            Number(
-              data.client_id
-            );
+            Number(data.client_id);
 
           if (!value) {
-
             return json(
               {
                 success: false,
@@ -2292,7 +1923,6 @@ export default {
               },
               400
             );
-
           }
 
           const client =
@@ -2307,7 +1937,6 @@ export default {
               .first();
 
           if (!client) {
-
             return json(
               {
                 success: false,
@@ -2316,21 +1945,11 @@ export default {
               },
               404
             );
-
           }
 
-          updates.push(
-            "client_id = ?"
-          );
-
+          updates.push("client_id = ?");
           values.push(value);
-
         }
-
-
-        // -------------------------------------------------
-        // SERVICE TYPE
-        // -------------------------------------------------
 
         if (
           Object.prototype.hasOwnProperty.call(
@@ -2340,9 +1959,8 @@ export default {
         ) {
 
           const value =
-            String(
-              data.service_type || ""
-            ).trim();
+            String(data.service_type || "")
+              .trim();
 
           const type =
             await env.DB
@@ -2357,7 +1975,6 @@ export default {
               .first();
 
           if (!type) {
-
             return json(
               {
                 success: false,
@@ -2366,21 +1983,11 @@ export default {
               },
               400
             );
-
           }
 
-          updates.push(
-            "service_type = ?"
-          );
-
+          updates.push("service_type = ?");
           values.push(value);
-
         }
-
-
-        // -------------------------------------------------
-        // SERVICE NAME
-        // -------------------------------------------------
 
         if (
           Object.prototype.hasOwnProperty.call(
@@ -2390,12 +1997,10 @@ export default {
         ) {
 
           const value =
-            String(
-              data.service_name || ""
-            ).trim();
+            String(data.service_name || "")
+              .trim();
 
           if (!value) {
-
             return json(
               {
                 success: false,
@@ -2404,21 +2009,11 @@ export default {
               },
               400
             );
-
           }
 
-          updates.push(
-            "service_name = ?"
-          );
-
+          updates.push("service_name = ?");
           values.push(value);
-
         }
-
-
-        // -------------------------------------------------
-        // DESTINATION URL
-        // -------------------------------------------------
 
         if (
           Object.prototype.hasOwnProperty.call(
@@ -2428,24 +2023,20 @@ export default {
         ) {
 
           const value =
-            String(
-              data.destination_url || ""
-            ).trim();
+            String(data.destination_url || "")
+              .trim();
 
           if (
             value &&
             !isValidHttpUrl(value)
           ) {
-
             return json(
               {
                 success: false,
-                error:
-                  "URL invalide."
+                error: "URL invalide."
               },
               400
             );
-
           }
 
           updates.push(
@@ -2455,13 +2046,7 @@ export default {
           values.push(
             value || null
           );
-
         }
-
-
-        // -------------------------------------------------
-        // CONFIG
-        // -------------------------------------------------
 
         if (
           Object.prototype.hasOwnProperty.call(
@@ -2472,25 +2057,16 @@ export default {
 
           let value = null;
 
-          if (
-            data.config !== null
-          ) {
+          if (data.config !== null) {
 
             if (
               typeof data.config === "string"
             ) {
 
               try {
-
-                JSON.parse(
-                  data.config
-                );
-
-                value =
-                  data.config;
-
+                JSON.parse(data.config);
+                value = data.config;
               } catch {
-
                 return json(
                   {
                     success: false,
@@ -2499,20 +2075,16 @@ export default {
                   },
                   400
                 );
-
               }
 
             } else {
 
               try {
-
                 value =
                   JSON.stringify(
                     data.config
                   );
-
               } catch {
-
                 return json(
                   {
                     success: false,
@@ -2521,25 +2093,13 @@ export default {
                   },
                   400
                 );
-
               }
-
             }
-
           }
 
-          updates.push(
-            "config = ?"
-          );
-
+          updates.push("config = ?");
           values.push(value);
-
         }
-
-
-        // -------------------------------------------------
-        // STATUS
-        // -------------------------------------------------
 
         if (
           Object.prototype.hasOwnProperty.call(
@@ -2549,18 +2109,12 @@ export default {
         ) {
 
           const value =
-            String(
-              data.status || ""
-            ).trim();
+            String(data.status || "")
+              .trim();
 
           if (
-            ![
-              "draft",
-              "active",
-              "inactive"
-            ].includes(value)
+            !SERVICE_STATUSES.includes(value)
           ) {
-
             return json(
               {
                 success: false,
@@ -2569,18 +2123,12 @@ export default {
               },
               400
             );
-
           }
 
-          updates.push(
-            "status = ?"
-          );
-
+          updates.push("status = ?");
           values.push(value);
 
-          if (
-            value === "active"
-          ) {
+          if (value === "active") {
 
             updates.push(
               "activated_at = COALESCE(activated_at, CURRENT_TIMESTAMP)"
@@ -2591,57 +2139,36 @@ export default {
             updates.push(
               "activated_at = NULL"
             );
-
           }
-
         }
-
-
-        // -------------------------------------------------
-        // NOTHING
-        // -------------------------------------------------
 
         if (!updates.length) {
-
           return json({
-
             success: true,
-
             message:
               "Aucune modification."
-
           });
-
         }
-
 
         updates.push(
           "updated_at = CURRENT_TIMESTAMP"
         );
 
-        values.push(
-          serviceId
-        );
+        values.push(serviceId);
 
         await env.DB
           .prepare(`
             UPDATE services
-
-            SET
-              ${updates.join(", ")}
-
+            SET ${updates.join(", ")}
             WHERE id = ?
           `)
           .bind(...values)
           .run();
 
         return json({
-
           success: true,
-
           message:
             "Service modifié avec succès."
-
         });
 
       } catch (error) {
@@ -2653,15 +2180,12 @@ export default {
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // DELETE SERVICE
-    // =====================================================
+// =====================================================
+// DELETE SERVICE
+// =====================================================
 
     if (
       serviceId !== null &&
@@ -2671,7 +2195,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -2679,7 +2202,6 @@ export default {
           },
           401
         );
-
       }
 
       try {
@@ -2698,7 +2220,6 @@ export default {
             .first();
 
         if (!service) {
-
           return json(
             {
               success: false,
@@ -2707,15 +2228,19 @@ export default {
             },
             404
           );
-
         }
 
-        // بسبب ON DELETE CASCADE:
-        // service_scans غادي يتحيدو.
-        //
-        // supports.service_id عندو ON DELETE SET NULL
-        // وبالتالي الـSupport ما غاديش يتحيد.
-        // غادي يرجع available من بعد فـPart ديال Supports.
+        await env.DB
+          .prepare(`
+            UPDATE supports
+            SET
+              service_id = NULL,
+              status = 'available',
+              activated_at = NULL
+            WHERE service_id = ?
+          `)
+          .bind(serviceId)
+          .run();
 
         await env.DB
           .prepare(`
@@ -2725,30 +2250,10 @@ export default {
           .bind(serviceId)
           .run();
 
-        // نرجعو الـSupports اللي كانو مربوطين
-        // بالخدمة للمخزون.
-
-        await env.DB
-          .prepare(`
-            UPDATE supports
-
-            SET
-              status = 'available',
-              service_id = NULL,
-              activated_at = NULL
-
-            WHERE service_id IS NULL
-            AND status != 'available'
-          `)
-          .run();
-
         return json({
-
           success: true,
-
           message:
             "Service supprimé avec succès."
-
         });
 
       } catch (error) {
@@ -2760,172 +2265,33 @@ export default {
           },
           500
         );
-
       }
-
     }
 
+// =====================================================
+// END PART 2
+// =====================================================
+  // =====================================================
+// PART 3 / 4 — SUPPORTS
+// =====================================================
 
-    // =====================================================
-    // END PART 2
-    // =====================================================
-      // =====================================================
-    // PART 3 — SUPPORTS
-    //
-    // SUPPORT = الوسيط الفيزيائي للخدمة
-    //
-    // أمثلة:
-    // STAND001  -> NFC Stand
-    // CARD001   -> NFC Card
-    // PLAQUE001 -> QR Plaque
-    //
-    // Service هو المحتوى/الخدمة
-    // Support هو الشيء الفيزيائي اللي كيوصل ليها
-    // =====================================================
-
-
-    // =====================================================
-    // SUPPORT HELPERS
-    // =====================================================
-
-    const SUPPORT_CHARS =
-      "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-
-    const generateSupportCode = (
-      supportType
-    ) => {
-
-      const bytes =
-        new Uint8Array(8);
-
-      crypto.getRandomValues(
-        bytes
-      );
-
-      let prefix = "SUP";
-
-      if (
-        supportType === "nfc_stand"
-      ) {
-        prefix = "ST";
-      }
-
-      else if (
-        supportType === "nfc_card"
-      ) {
-        prefix = "CARD";
-      }
-
-      else if (
-        supportType === "qr_plaque"
-      ) {
-        prefix = "QR";
-      }
-
-      else if (
-        supportType === "qr"
-      ) {
-        prefix = "QR";
-      }
-
-      let code = "";
-
-      for (
-        let i = 0;
-        i < bytes.length;
-        i++
-      ) {
-
-        code +=
-          SUPPORT_CHARS[
-            bytes[i] %
-            SUPPORT_CHARS.length
-          ];
-
-      }
-
-      return (
-        prefix +
-        "-" +
-        code
-      );
-
-    };
-
-
-    const generateUniqueSupportCode =
-      async (
-        supportType
-      ) => {
-
-        for (
-          let attempt = 0;
-          attempt < 30;
-          attempt++
-        ) {
-
-          const code =
-            generateSupportCode(
-              supportType
-            );
-
-          const exists =
-            await env.DB
-
-              .prepare(`
-                SELECT id
-                FROM supports
-                WHERE support_code = ?
-                LIMIT 1
-              `)
-
-              .bind(code)
-
-              .first();
-
-          if (!exists) {
-
-            return code;
-
-          }
-
-        }
-
-        throw new Error(
-          "Impossible de générer un code Support unique."
-        );
-
-      };
-
-
-    // =====================================================
-    // SUPPORT URL
-    //
-    // جميع Supports عندهم نفس الفكرة:
-    //
-    // /r/SUPPORTCODE
-    //
-    // الـQR/NFC يبقى ثابت
-    // والـService يقدر يتبدل من Dashboard
-    // =====================================================
+// =====================================================
+// SUPPORT PUBLIC URL
+// =====================================================
 
     const supportPublicUrl = (
       supportCode
     ) => {
-
       return (
         `${url.origin}/r/${encodeURIComponent(
           supportCode
         )}`
       );
-
     };
 
-
-    // =====================================================
-    // GET SUPPORTS
-    // =====================================================
+// =====================================================
+// GET SUPPORTS
+// =====================================================
 
     if (
       url.pathname === "/api/supports" &&
@@ -2933,7 +2299,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -2941,14 +2306,12 @@ export default {
           },
           401
         );
-
       }
 
       try {
 
         const result =
           await env.DB
-
             .prepare(`
               SELECT
 
@@ -2990,81 +2353,54 @@ export default {
 
               ORDER BY sp.id ASC
             `)
-
             .all();
 
-
         const supports =
-          result.results.map(
-            support => ({
+          result.results.map(support => ({
+            ...support,
 
-              ...support,
+            scans_count:
+              Number(
+                support.scans_count || 0
+              ),
 
-              scans_count:
-                Number(
-                  support.scans_count || 0
-                ),
+            support_url:
+              supportPublicUrl(
+                support.support_code
+              ),
 
-              support_url:
-                supportPublicUrl(
-                  support.support_code
-                ),
+            qr_url:
+              supportPublicUrl(
+                support.support_code
+              ),
 
-              qr_url:
-                supportPublicUrl(
-                  support.support_code
-                ),
-
-              nfc_url:
-                supportPublicUrl(
-                  support.support_code
-                )
-
-            })
-          );
-
+            nfc_url:
+              supportPublicUrl(
+                support.support_code
+              )
+          }));
 
         return json({
-
           success: true,
-
-          total:
-            supports.length,
-
+          total: supports.length,
           supports
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // GET AVAILABLE SUPPORTS
-    //
-    // مفيد ملي بغينا نختارو Support
-    // من Dashboard باش نربطوه بخدمة.
-    //
-    // GET /api/supports/available
-    //
-    // ممكن:
-    //
-    // ?type=nfc_stand
-    //
-    // =====================================================
+// =====================================================
+// GET AVAILABLE SUPPORTS
+// =====================================================
 
     if (
       url.pathname ===
@@ -3073,7 +2409,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -3081,14 +2416,12 @@ export default {
           },
           401
         );
-
       }
 
       try {
 
         const requestedType =
-          url.searchParams
-            .get("type");
+          url.searchParams.get("type");
 
         let query = `
           SELECT
@@ -3106,15 +2439,11 @@ export default {
         const bindings = [];
 
         if (requestedType) {
-
           query += `
             AND support_type = ?
           `;
 
-          bindings.push(
-            requestedType
-          );
-
+          bindings.push(requestedType);
         }
 
         query += `
@@ -3123,79 +2452,51 @@ export default {
 
         const result =
           await env.DB
-
             .prepare(query)
-
             .bind(...bindings)
-
             .all();
 
-
         const supports =
-          result.results.map(
-            support => ({
+          result.results.map(support => ({
+            ...support,
 
-              ...support,
+            support_url:
+              supportPublicUrl(
+                support.support_code
+              ),
 
-              support_url:
-                supportPublicUrl(
-                  support.support_code
-                ),
+            qr_url:
+              supportPublicUrl(
+                support.support_code
+              ),
 
-              qr_url:
-                supportPublicUrl(
-                  support.support_code
-                ),
-
-              nfc_url:
-                supportPublicUrl(
-                  support.support_code
-                )
-
-            })
-          );
-
+            nfc_url:
+              supportPublicUrl(
+                support.support_code
+              )
+          }));
 
         return json({
-
           success: true,
-
-          total:
-            supports.length,
-
+          total: supports.length,
           supports
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // CREATE SUPPORT
-    //
-    // POST /api/supports
-    //
-    // مثال:
-    //
-    // {
-    //   "support_type": "nfc_stand"
-    // }
-    //
-    // =====================================================
+// =====================================================
+// CREATE SUPPORT
+// =====================================================
 
     if (
       url.pathname === "/api/supports" &&
@@ -3203,7 +2504,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -3211,7 +2511,6 @@ export default {
           },
           401
         );
-
       }
 
       try {
@@ -3219,56 +2518,38 @@ export default {
         const data =
           await request.json();
 
-
         const supportType =
-          String(
-            data.support_type || ""
-          )
+          String(data.support_type || "")
             .trim()
             .toLowerCase();
 
-
         const allowedSupportTypes = [
-
           "nfc_stand",
-
           "nfc_card",
-
-          "qr_plaque",
-
-          "qr"
-
+          "qr_plaque"
         ];
-
 
         if (
           !allowedSupportTypes.includes(
             supportType
           )
         ) {
-
           return json(
             {
               success: false,
-
               error:
                 "Type de Support invalide. Utilisez nfc_stand, nfc_card ou qr_plaque."
             },
-
             400
           );
-
         }
-
 
         const supportCode =
           await generateUniqueSupportCode(
             supportType
           );
 
-
         await env.DB
-
           .prepare(`
             INSERT INTO supports (
               support_code,
@@ -3276,7 +2557,6 @@ export default {
               service_id,
               status
             )
-
             VALUES (
               ?,
               ?,
@@ -3284,30 +2564,24 @@ export default {
               'available'
             )
           `)
-
           .bind(
             supportCode,
             supportType
           )
-
           .run();
-
 
         const supportUrl =
           supportPublicUrl(
             supportCode
           );
 
-
         return json({
-
           success: true,
 
           message:
             "Support créé avec succès.",
 
           support: {
-
             support_code:
               supportCode,
 
@@ -3325,51 +2599,31 @@ export default {
 
             nfc_url:
               supportUrl
-
           }
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // BULK CREATE SUPPORTS
-    //
-    // POST /api/supports/bulk
-    //
-    // مثال:
-    //
-    // {
-    //   "nfc_stand": 20,
-    //   "nfc_card": 10,
-    //   "qr_plaque": 20
-    // }
-    //
-    // =====================================================
+// =====================================================
+// BULK CREATE SUPPORTS
+// =====================================================
 
     if (
-      url.pathname ===
-        "/api/supports/bulk" &&
+      url.pathname === "/api/supports/bulk" &&
       request.method === "POST"
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -3377,7 +2631,6 @@ export default {
           },
           401
         );
-
       }
 
       try {
@@ -3385,124 +2638,74 @@ export default {
         const data =
           await request.json();
 
-
         const supportTypes = [
-
           "nfc_stand",
-
           "nfc_card",
-
           "qr_plaque"
-
         ];
 
-
         const counts = {};
-
         let totalRequested = 0;
 
-
-        for (
-          const type
-          of supportTypes
-        ) {
+        for (const type of supportTypes) {
 
           const count =
-            Number(
-              data[type] || 0
-            );
-
+            Number(data[type] || 0);
 
           if (
             !Number.isInteger(count) ||
             count < 0
           ) {
-
             return json(
               {
                 success: false,
-
                 error:
                   `La quantité pour ${type} doit être un nombre entier positif.`
               },
-
               400
             );
-
           }
 
-
-          counts[type] =
-            count;
-
-          totalRequested +=
-            count;
-
+          counts[type] = count;
+          totalRequested += count;
         }
 
-
-        if (
-          totalRequested <= 0
-        ) {
-
+        if (totalRequested <= 0) {
           return json(
             {
               success: false,
-
               error:
                 "Indiquez au moins un Support à créer."
             },
-
             400
           );
-
         }
 
-
-        if (
-          totalRequested > 5000
-        ) {
-
+        if (totalRequested > 5000) {
           return json(
             {
               success: false,
-
               error:
                 "Maximum 5000 Supports par opération."
             },
-
             400
           );
-
         }
-
 
         const created = [];
 
+        for (const type of supportTypes) {
 
-        for (
-          const type
-          of supportTypes
-        ) {
+          const count = counts[type];
 
-          const count =
-            counts[type];
-
-
-          for (
-            let i = 0;
-            i < count;
-            i++
-          ) {
+          for (let i = 0; i < count; i++) {
 
             const supportCode =
               await generateUniqueSupportCode(
                 type
               );
 
-
             await env.DB
-
               .prepare(`
                 INSERT INTO supports (
                   support_code,
@@ -3510,7 +2713,6 @@ export default {
                   service_id,
                   status
                 )
-
                 VALUES (
                   ?,
                   ?,
@@ -3518,25 +2720,18 @@ export default {
                   'available'
                 )
               `)
-
               .bind(
                 supportCode,
                 type
               )
-
               .run();
-
 
             const supportUrl =
               supportPublicUrl(
                 supportCode
               );
 
-
             created.push({
-
-              id: null,
-
               support_code:
                 supportCode,
 
@@ -3554,16 +2749,11 @@ export default {
 
               nfc_url:
                 supportUrl
-
             });
-
           }
-
         }
 
-
         return json({
-
           success: true,
 
           message:
@@ -3576,47 +2766,37 @@ export default {
 
           supports:
             created
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // SUPPORT ID
-    // =====================================================
+// =====================================================
+// SUPPORT ID
+// =====================================================
 
     const supportIdMatch =
       url.pathname.match(
         /^\/api\/supports\/(\d+)$/
       );
 
-
     const supportId =
       supportIdMatch
-        ? Number(
-            supportIdMatch[1]
-          )
+        ? Number(supportIdMatch[1])
         : null;
 
-
-    // =====================================================
-    // GET SUPPORT DETAILS
-    // =====================================================
+// =====================================================
+// GET SUPPORT DETAILS
+// =====================================================
 
     if (
       supportId !== null &&
@@ -3624,7 +2804,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -3632,15 +2811,12 @@ export default {
           },
           401
         );
-
       }
-
 
       try {
 
         const support =
           await env.DB
-
             .prepare(`
               SELECT
 
@@ -3672,16 +2848,10 @@ export default {
 
               LIMIT 1
             `)
-
-            .bind(
-              supportId
-            )
-
+            .bind(supportId)
             .first();
 
-
         if (!support) {
-
           return json(
             {
               success: false,
@@ -3690,13 +2860,10 @@ export default {
             },
             404
           );
-
         }
-
 
         const statistics =
           await env.DB
-
             .prepare(`
               SELECT
 
@@ -3704,8 +2871,7 @@ export default {
 
                 SUM(
                   CASE
-                    WHEN date(scanned_at) =
-                      date('now')
+                    WHEN date(scanned_at) = date('now')
                     THEN 1
                     ELSE 0
                   END
@@ -3713,8 +2879,7 @@ export default {
 
                 SUM(
                   CASE
-                    WHEN scanned_at >=
-                      datetime('now','-7 days')
+                    WHEN scanned_at >= datetime('now','-7 days')
                     THEN 1
                     ELSE 0
                   END
@@ -3722,34 +2887,25 @@ export default {
 
                 SUM(
                   CASE
-                    WHEN scanned_at >=
-                      datetime('now','-30 days')
+                    WHEN scanned_at >= datetime('now','-30 days')
                     THEN 1
                     ELSE 0
                   END
                 ) AS thirty_days,
 
-                MAX(scanned_at)
-                  AS last_scan
+                MAX(scanned_at) AS last_scan
 
               FROM support_scans
 
               WHERE support_id = ?
             `)
-
-            .bind(
-              supportId
-            )
-
+            .bind(supportId)
             .first();
 
-
         return json({
-
           success: true,
 
           support: {
-
             ...support,
 
             support_url:
@@ -3766,68 +2922,41 @@ export default {
               supportPublicUrl(
                 support.support_code
               )
-
           },
 
           statistics: {
-
             total:
-              Number(
-                statistics?.total || 0
-              ),
+              Number(statistics?.total || 0),
 
             today:
-              Number(
-                statistics?.today || 0
-              ),
+              Number(statistics?.today || 0),
 
             seven_days:
-              Number(
-                statistics?.seven_days || 0
-              ),
+              Number(statistics?.seven_days || 0),
 
             thirty_days:
-              Number(
-                statistics?.thirty_days || 0
-              ),
+              Number(statistics?.thirty_days || 0),
 
             last_scan:
-              statistics?.last_scan ||
-              null
-
+              statistics?.last_scan || null
           }
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // ACTIVATE / ASSIGN SUPPORT
-    //
-    // Support كيربط Service
-    //
-    // POST /api/supports/:id/assign
-    //
-    // {
-    //   "service_id": 12
-    // }
-    //
-    // =====================================================
+// =====================================================
+// ASSIGN SUPPORT
+// =====================================================
 
     if (
       supportId !== null &&
@@ -3837,7 +2966,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -3845,24 +2973,17 @@ export default {
           },
           401
         );
-
       }
-
 
       try {
 
         const data =
           await request.json();
 
-
         const serviceId =
-          Number(
-            data.service_id
-          );
-
+          Number(data.service_id);
 
         if (!serviceId) {
-
           return json(
             {
               success: false,
@@ -3871,29 +2992,20 @@ export default {
             },
             400
           );
-
         }
-
 
         const support =
           await env.DB
-
             .prepare(`
               SELECT *
               FROM supports
               WHERE id = ?
               LIMIT 1
             `)
-
-            .bind(
-              supportId
-            )
-
+            .bind(supportId)
             .first();
 
-
         if (!support) {
-
           return json(
             {
               success: false,
@@ -3902,15 +3014,12 @@ export default {
             },
             404
           );
-
         }
-
 
         if (
           support.status === "active" &&
           support.service_id !== null
         ) {
-
           return json(
             {
               success: false,
@@ -3919,13 +3028,10 @@ export default {
             },
             409
           );
-
         }
-
 
         const service =
           await env.DB
-
             .prepare(`
               SELECT
                 id,
@@ -3938,16 +3044,10 @@ export default {
               WHERE id = ?
               LIMIT 1
             `)
-
-            .bind(
-              serviceId
-            )
-
+            .bind(serviceId)
             .first();
 
-
         if (!service) {
-
           return json(
             {
               success: false,
@@ -3956,14 +3056,9 @@ export default {
             },
             404
           );
-
         }
 
-
-        if (
-          service.status !== "active"
-        ) {
-
+        if (service.status !== "active") {
           return json(
             {
               success: false,
@@ -3972,15 +3067,11 @@ export default {
             },
             409
           );
-
         }
 
-
         await env.DB
-
           .prepare(`
             UPDATE supports
-
             SET
               service_id = ?,
               status = 'active',
@@ -3989,27 +3080,21 @@ export default {
                   activated_at,
                   CURRENT_TIMESTAMP
                 )
-
             WHERE id = ?
           `)
-
           .bind(
             serviceId,
             supportId
           )
-
           .run();
 
-
         return json({
-
           success: true,
 
           message:
             "Support associé au Service avec succès.",
 
           support: {
-
             id:
               supportId,
 
@@ -4029,39 +3114,24 @@ export default {
               supportPublicUrl(
                 support.support_code
               )
-
           }
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // RESET SUPPORT
-    //
-    // مهم:
-    // Reset ما كيحيدش Support من DB.
-    //
-    // غير كيفك الربط مع Service
-    // وكيرجع Support للمخزون.
-    //
-    // QR/NFC URL كيبقى هو نفسه.
-    // =====================================================
+// =====================================================
+// RESET SUPPORT
+// =====================================================
 
     if (
       supportId !== null &&
@@ -4071,7 +3141,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -4079,31 +3148,22 @@ export default {
           },
           401
         );
-
       }
-
 
       try {
 
         const support =
           await env.DB
-
             .prepare(`
               SELECT *
               FROM supports
               WHERE id = ?
               LIMIT 1
             `)
-
-            .bind(
-              supportId
-            )
-
+            .bind(supportId)
             .first();
 
-
         if (!support) {
-
           return json(
             {
               success: false,
@@ -4112,32 +3172,21 @@ export default {
             },
             404
           );
-
         }
 
-
         await env.DB
-
           .prepare(`
             UPDATE supports
-
             SET
               service_id = NULL,
               status = 'available',
               activated_at = NULL
-
             WHERE id = ?
           `)
-
-          .bind(
-            supportId
-          )
-
+          .bind(supportId)
           .run();
 
-
         return json({
-
           success: true,
 
           message:
@@ -4153,32 +3202,23 @@ export default {
             supportPublicUrl(
               support.support_code
             )
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // CHANGE SUPPORT STATUS
-    //
-    // available / active / inactive
-    //
-    // =====================================================
+// =====================================================
+// CHANGE SUPPORT STATUS
+// =====================================================
 
     if (
       supportId !== null &&
@@ -4188,7 +3228,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -4196,30 +3235,19 @@ export default {
           },
           401
         );
-
       }
-
 
       try {
 
         const data =
           await request.json();
 
-
         const status =
-          String(
-            data.status || ""
-          ).trim();
-
+          String(data.status || "").trim();
 
         if (
-          ![
-            "available",
-            "active",
-            "inactive"
-          ].includes(status)
+          !SUPPORT_STATUSES.includes(status)
         ) {
-
           return json(
             {
               success: false,
@@ -4228,29 +3256,20 @@ export default {
             },
             400
           );
-
         }
-
 
         const support =
           await env.DB
-
             .prepare(`
               SELECT *
               FROM supports
               WHERE id = ?
               LIMIT 1
             `)
-
-            .bind(
-              supportId
-            )
-
+            .bind(supportId)
             .first();
 
-
         if (!support) {
-
           return json(
             {
               success: false,
@@ -4259,18 +3278,12 @@ export default {
             },
             404
           );
-
         }
-
-
-        // Support available خاصو ما يكونش مربوط
-        // بخدمة.
 
         if (
           status === "available" &&
           support.service_id !== null
         ) {
-
           return json(
             {
               success: false,
@@ -4279,63 +3292,44 @@ export default {
             },
             409
           );
-
         }
 
-
         await env.DB
-
           .prepare(`
             UPDATE supports
-
-            SET
-              status = ?
-
+            SET status = ?
             WHERE id = ?
           `)
-
           .bind(
             status,
             supportId
           )
-
           .run();
 
-
         return json({
-
           success: true,
 
           message:
             "Statut du Support modifié.",
 
           status
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // DELETE SUPPORT
-    //
-    // مسموح غير إلا كان available
-    // باش ما نحيدوش Support خدام.
-    // =====================================================
+// =====================================================
+// DELETE SUPPORT
+// =====================================================
 
     if (
       supportId !== null &&
@@ -4345,7 +3339,6 @@ export default {
     ) {
 
       if (!(await isAdmin())) {
-
         return json(
           {
             success: false,
@@ -4353,31 +3346,22 @@ export default {
           },
           401
         );
-
       }
-
 
       try {
 
         const support =
           await env.DB
-
             .prepare(`
               SELECT *
               FROM supports
               WHERE id = ?
               LIMIT 1
             `)
-
-            .bind(
-              supportId
-            )
-
+            .bind(supportId)
             .first();
 
-
         if (!support) {
-
           return json(
             {
               success: false,
@@ -4386,15 +3370,12 @@ export default {
             },
             404
           );
-
         }
-
 
         if (
           support.service_id !== null ||
           support.status === "active"
         ) {
-
           return json(
             {
               success: false,
@@ -4403,75 +3384,45 @@ export default {
             },
             409
           );
-
         }
 
-
         await env.DB
-
           .prepare(`
             DELETE FROM supports
             WHERE id = ?
           `)
-
-          .bind(
-            supportId
-          )
-
+          .bind(supportId)
           .run();
 
-
         return json({
-
           success: true,
-
           message:
             "Support supprimé avec succès."
-
         });
-
 
       } catch (error) {
 
         return json(
           {
             success: false,
-            error:
-              error.message
+            error: error.message
           },
           500
         );
-
       }
-
     }
 
+// =====================================================
+// END PART 3
+// =====================================================
+  // =====================================================
+// PART 4 / 4 — PUBLIC ROUTES + STATIC
+// =====================================================
 
-    // =====================================================
-    // END PART 3
-    // =====================================================
-      // =====================================================
-    // PART 4 — PUBLIC ROUTES
-    //
-    // /r/SUPPORTCODE
-    // /s/SERVICECODE
-    // /client/SLUG
-    // /contact/...
-    //
-    // =====================================================
-
-
-    // =====================================================
-    // PUBLIC SUPPORT ROUTE
-    //
-    // /r/SUPPORTCODE
-    //
-    // QR / NFC ديال Support
-    // كيبقى ثابت.
-    //
-    // Support -> Service -> Destination
-    //
-    // =====================================================
+// =====================================================
+// PUBLIC SUPPORT ROUTE
+// /r/SUPPORTCODE
+// =====================================================
 
     if (
       url.pathname.startsWith("/r/")
@@ -4483,22 +3434,17 @@ export default {
           .replace(/\/$/, "")
           .trim();
 
-
       if (!supportCode) {
-
         return html(
           "Support introuvable",
           404
         );
-
       }
-
 
       try {
 
         const support =
           await env.DB
-
             .prepare(`
               SELECT
 
@@ -4530,39 +3476,19 @@ export default {
 
               LIMIT 1
             `)
-
-            .bind(
-              supportCode
-            )
-
+            .bind(supportCode)
             .first();
 
-
-        // -------------------------------------------------
-        // SUPPORT NOT FOUND
-        // -------------------------------------------------
-
         if (!support) {
-
           return html(
             `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 <style>
-
 body{
 margin:0;
 min-height:100vh;
@@ -4574,7 +3500,6 @@ background:#f5f7fb;
 text-align:center;
 padding:20px;
 }
-
 .box{
 background:white;
 max-width:430px;
@@ -4583,291 +3508,124 @@ padding:35px 25px;
 border-radius:24px;
 box-shadow:0 18px 45px rgba(0,0,0,.08);
 }
-
 .logo{
 font-size:24px;
 font-weight:800;
 margin-bottom:25px;
 }
-
-.logo span{
-color:#4f46e5;
-}
-
-.icon{
-font-size:55px;
-margin-bottom:15px;
-}
-
-p{
-color:#6b7280;
-line-height:1.6;
-}
-
+.logo span{color:#4f46e5;}
+.icon{font-size:55px;margin-bottom:15px;}
+p{color:#6b7280;line-height:1.6;}
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
-<div class="logo">
-TAP<span>NIVO</span>
+<div class="logo">TAP<span>NIVO</span></div>
+<div class="icon">📲</div>
+<h2>Support introuvable</h2>
+<p>Ce QR Code ou NFC n'est pas reconnu.</p>
 </div>
-
-<div class="icon">
-📲
-</div>
-
-<h2>
-Support introuvable
-</h2>
-
-<p>
-Ce QR Code ou NFC n'est pas reconnu.
-</p>
-
-</div>
-
 </body>
-
 </html>
 `,
             404
           );
-
         }
-
-
-        // -------------------------------------------------
-        // SUPPORT NOT ACTIVE
-        // -------------------------------------------------
 
         if (
           support.status !== "active" ||
           !support.service_id ||
-          !support.service_status ||
           support.service_status !== "active"
         ) {
 
           return html(
             `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 <style>
-
-*{
-box-sizing:border-box;
-}
-
+*{box-sizing:border-box;}
 body{
-
 margin:0;
-
 min-height:100vh;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
-font-family:
-Arial,
-Helvetica,
-sans-serif;
-
-background:
-linear-gradient(
-135deg,
-#f5f7fb,
-#eef2ff
-);
-
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(135deg,#f5f7fb,#eef2ff);
 padding:20px;
-
 text-align:center;
-
 }
-
 .box{
-
 width:100%;
-
 max-width:430px;
-
 background:white;
-
 padding:35px 25px;
-
 border-radius:25px;
-
-box-shadow:
-0 18px 45px
-rgba(0,0,0,.08);
-
+box-shadow:0 18px 45px rgba(0,0,0,.08);
 }
-
 .logo{
-
 font-size:24px;
-
 font-weight:800;
-
 margin-bottom:25px;
-
 }
-
-.logo span{
-
-color:#4f46e5;
-
-}
-
-.icon{
-
-font-size:55px;
-
-margin-bottom:15px;
-
-}
-
-h2{
-
-margin:0 0 10px;
-
-}
-
-p{
-
-color:#6b7280;
-
-line-height:1.6;
-
-}
-
+.logo span{color:#4f46e5;}
+.icon{font-size:55px;margin-bottom:15px;}
+h2{margin:0 0 10px;}
+p{color:#6b7280;line-height:1.6;}
 .code{
-
 display:inline-block;
-
 margin-top:15px;
-
 padding:9px 13px;
-
 border-radius:9px;
-
 background:#eef2ff;
-
 color:#3730a3;
-
 font-size:13px;
-
 font-weight:bold;
-
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
-<div class="logo">
-TAP<span>NIVO</span>
+<div class="logo">TAP<span>NIVO</span></div>
+<div class="icon">📲</div>
+<h2>Support indisponible</h2>
+<p>Ce support n'est pas actuellement activé.</p>
+<div class="code">${escapeHTML(support.support_code)}</div>
 </div>
-
-<div class="icon">
-📲
-</div>
-
-<h2>
-Support indisponible
-</h2>
-
-<p>
-Ce support n'est pas actuellement activé.
-</p>
-
-<div class="code">
-${escapeHTML(
-  support.support_code
-)}
-</div>
-
-</div>
-
 </body>
-
 </html>
 `
           );
-
         }
 
-
-        // -------------------------------------------------
-        // REGISTER SUPPORT SCAN
-        // -------------------------------------------------
-
         await env.DB
-
           .prepare(`
             INSERT INTO support_scans (
               support_id
             )
-
             VALUES (?)
           `)
-
-          .bind(
-            support.id
-          )
-
+          .bind(support.id)
           .run();
-
-
-        // -------------------------------------------------
-        // SERVICE
-        // -------------------------------------------------
 
         const serviceCode =
           support.service_code;
 
-
         const serviceType =
           support.service_type;
-
 
         const destinationUrl =
           support.destination_url;
 
-
         const config =
-          parseConfig(
-            support.config
-          );
-
+          parseConfig(support.config);
 
         // =================================================
         // DIGITAL CARD
-        //
-        // Support -> Digital Card
         // =================================================
 
         if (
@@ -4880,14 +3638,10 @@ ${escapeHTML(
             )}`,
             302
           );
-
         }
-
 
         // =================================================
         // WIFI
-        //
-        // Support -> WiFi Service
         // =================================================
 
         if (
@@ -4897,676 +3651,217 @@ ${escapeHTML(
           const ssid =
             config &&
             typeof config === "object"
-
               ? (
                   config.wifi_name ||
                   config.ssid ||
                   ""
                 )
-
               : "";
-
 
           const password =
             config &&
             typeof config === "object"
-
               ? (
                   config.password ||
                   ""
                 )
-
               : "";
-
 
           const security =
             config &&
             typeof config === "object"
-
               ? (
                   config.security ||
                   "WPA"
                 )
-
               : "WPA";
-
 
           return html(`
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<title>
-${escapeHTML(
-  support.service_name
-)}
-</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHTML(support.service_name)}</title>
 <style>
-
-*{
-box-sizing:border-box;
-}
-
+*{box-sizing:border-box;}
 body{
-
 margin:0;
-
 min-height:100vh;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
-font-family:
-Arial,
-Helvetica,
-sans-serif;
-
-background:
-linear-gradient(
-135deg,
-#f5f7fb,
-#eef2ff
-);
-
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(135deg,#f5f7fb,#eef2ff);
 padding:20px;
-
 }
-
 .box{
-
 width:100%;
-
 max-width:430px;
-
 background:white;
-
 border-radius:25px;
-
 padding:30px;
-
 text-align:center;
-
-box-shadow:
-0 15px 45px
-rgba(0,0,0,.09);
-
+box-shadow:0 15px 45px rgba(0,0,0,.09);
 }
-
 .logo{
-
 font-size:21px;
-
 font-weight:800;
-
 margin-bottom:25px;
-
 }
-
-.logo span{
-color:#4f46e5;
-}
-
-.icon{
-
-font-size:50px;
-
-margin-bottom:10px;
-
-}
-
-h1{
-
-font-size:25px;
-
-margin:0;
-
-}
-
-.client{
-
-color:#6b7280;
-
-margin-top:8px;
-
-}
-
+.logo span{color:#4f46e5;}
+.icon{font-size:50px;margin-bottom:10px;}
+h1{font-size:25px;margin:0;}
+.client{color:#6b7280;margin-top:8px;}
 .wifi{
-
 margin-top:25px;
-
 background:#f9fafb;
-
 border-radius:15px;
-
 padding:20px;
-
 text-align:left;
-
 }
-
 .row{
-
 padding:12px 0;
-
-border-bottom:
-1px solid #e5e7eb;
-
+border-bottom:1px solid #e5e7eb;
 }
-
-.row:last-child{
-border-bottom:0;
-}
-
-.label{
-
-font-size:11px;
-
-color:#9ca3af;
-
-}
-
+.row:last-child{border-bottom:0;}
+.label{font-size:11px;color:#9ca3af;}
 .value{
-
 font-weight:800;
-
 margin-top:5px;
-
 word-break:break-word;
-
 }
-
 .password{
-
 background:#eef2ff;
-
 color:#3730a3;
-
 padding:12px;
-
 border-radius:10px;
-
 margin-top:7px;
-
 font-size:18px;
-
 letter-spacing:1px;
-
 }
-
 .footer{
-
 margin-top:25px;
-
 font-size:11px;
-
 color:#9ca3af;
-
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
-<div class="logo">
-TAP<span>NIVO</span>
-</div>
-
-<div class="icon">
-📶
-</div>
-
-<h1>
-${escapeHTML(
-  support.service_name
-)}
-</h1>
-
-<div class="client">
-${escapeHTML(
-  support.client_name || ""
-)}
-</div>
-
+<div class="logo">TAP<span>NIVO</span></div>
+<div class="icon">📶</div>
+<h1>${escapeHTML(support.service_name)}</h1>
+<div class="client">${escapeHTML(support.client_name || "")}</div>
 <div class="wifi">
-
 <div class="row">
-
-<div class="label">
-NOM DU WI-FI
+<div class="label">NOM DU WI-FI</div>
+<div class="value">${escapeHTML(ssid || "—")}</div>
 </div>
-
-<div class="value">
-${escapeHTML(
-  ssid || "—"
-)}
-</div>
-
-</div>
-
 <div class="row">
-
-<div class="label">
-MOT DE PASSE
+<div class="label">MOT DE PASSE</div>
+<div class="password">${escapeHTML(password || "—")}</div>
 </div>
-
-<div class="password">
-${escapeHTML(
-  password || "—"
-)}
-</div>
-
-</div>
-
 <div class="row">
-
-<div class="label">
-SÉCURITÉ
+<div class="label">SÉCURITÉ</div>
+<div class="value">${escapeHTML(security)}</div>
 </div>
-
-<div class="value">
-${escapeHTML(
-  security
-)}
 </div>
-
+<div class="footer">Service Wi-Fi créé avec TAPNIVO</div>
 </div>
-
-</div>
-
-<div class="footer">
-Service Wi-Fi créé avec TAPNIVO
-</div>
-
-</div>
-
 </body>
-
 </html>
 `);
-
         }
 
-
         // =================================================
-        // MENU / GOOGLE REVIEW / CUSTOM LINK
+        // REDIRECT SERVICES
         // =================================================
 
         if (
           [
             "google_review",
+            "instagram",
+            "whatsapp",
+            "tiktok",
             "menu",
             "custom_link"
-          ].includes(
-            serviceType
-          )
+          ].includes(serviceType)
         ) {
 
-          if (
-            destinationUrl
-          ) {
-
+          if (destinationUrl) {
             return Response.redirect(
               destinationUrl,
               302
             );
-
           }
-
 
           return html(
             `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 </head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-TAPNIVO
-</h2>
-
-<p>
-Aucune destination configurée.
-</p>
-
+<body style="font-family:Arial;text-align:center;padding:50px;">
+<h2>TAPNIVO</h2>
+<p>Aucune destination configurée.</p>
 </body>
-
 </html>
 `
           );
-
         }
 
-
-        // =================================================
-        // INSTAGRAM
-        // =================================================
-
-        if (
-          serviceType === "instagram"
-        ) {
-
-          if (
-            destinationUrl
-          ) {
-
-            return Response.redirect(
-              destinationUrl,
-              302
-            );
-
-          }
-
-
-          return html(
-            `
-<!DOCTYPE html>
-
-<html lang="fr">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<title>TAPNIVO</title>
-
-</head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-📸 Instagram
-</h2>
-
-<p>
-Lien Instagram non configuré.
-</p>
-
-</body>
-
-</html>
-`,
-            404
-          );
-
-        }
-
-
-        // =================================================
-        // WHATSAPP
-        // =================================================
-
-        if (
-          serviceType === "whatsapp"
-        ) {
-
-          if (
-            destinationUrl
-          ) {
-
-            return Response.redirect(
-              destinationUrl,
-              302
-            );
-
-          }
-
-
-          return html(
-            `
-<!DOCTYPE html>
-
-<html lang="fr">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<title>TAPNIVO</title>
-
-</head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-💬 WhatsApp
-</h2>
-
-<p>
-Lien WhatsApp non configuré.
-</p>
-
-</body>
-
-</html>
-`,
-            404
-          );
-
-        }
-
-
-        // =================================================
-        // TIKTOK
-        // =================================================
-
-        if (
-          serviceType === "tiktok"
-        ) {
-
-          if (
-            destinationUrl
-          ) {
-
-            return Response.redirect(
-              destinationUrl,
-              302
-            );
-
-          }
-
-
-          return html(
-            `
-<!DOCTYPE html>
-
-<html lang="fr">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<title>TAPNIVO</title>
-
-</head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-🎵 TikTok
-</h2>
-
-<p>
-Lien TikTok non configuré.
-</p>
-
-</body>
-
-</html>
-`,
-            404
-          );
-
-        }
-
-
-        // =================================================
-        // FALLBACK DESTINATION
-        // =================================================
-
-        if (
-          destinationUrl
-        ) {
-
+        if (destinationUrl) {
           return Response.redirect(
             destinationUrl,
             302
           );
-
         }
-
 
         return html(
           `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
 <title>TAPNIVO</title>
-
 </head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-TAPNIVO
-</h2>
-
-<p>
-Ce service n'a pas encore été configuré.
-</p>
-
+<body style="font-family:Arial;text-align:center;padding:50px;">
+<h2>TAPNIVO</h2>
+<p>Ce service n'a pas encore été configuré.</p>
 </body>
-
 </html>
 `
         );
-
 
       } catch (error) {
 
         return html(
           `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
 <title>TAPNIVO</title>
-
 </head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-Erreur serveur
-</h2>
-
-<p>
-${escapeHTML(
-  error.message
-)}
-</p>
-
+<body style="font-family:Arial;text-align:center;padding:50px;">
+<h2>Erreur serveur</h2>
+<p>${escapeHTML(error.message)}</p>
 </body>
-
 </html>
 `,
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // PUBLIC SERVICE ROUTE
-    //
-    // /s/SERVICECODE
-    //
-    // =====================================================
+// =====================================================
+// PUBLIC SERVICE ROUTE
+// /s/SERVICECODE
+// =====================================================
 
     if (
       url.pathname.startsWith("/s/")
@@ -5578,22 +3873,17 @@ ${escapeHTML(
           .replace(/\/$/, "")
           .trim();
 
-
       if (!serviceCode) {
-
         return html(
           "Service introuvable",
           404
         );
-
       }
-
 
       try {
 
         const service =
           await env.DB
-
             .prepare(`
               SELECT
 
@@ -5612,62 +3902,29 @@ ${escapeHTML(
 
               LIMIT 1
             `)
-
-            .bind(
-              serviceCode
-            )
-
+            .bind(serviceCode)
             .first();
 
-
         if (!service) {
-
           return html(
             `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 </head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-TAPNIVO
-</h2>
-
-<h3>
-Service introuvable
-</h3>
-
-<p>
-Ce service n'existe pas.
-</p>
-
+<body style="font-family:Arial;text-align:center;padding:50px;">
+<h2>TAPNIVO</h2>
+<h3>Service introuvable</h3>
+<p>Ce service n'existe pas.</p>
 </body>
-
 </html>
 `,
             404
           );
-
         }
-
 
         if (
           service.status !== "active"
@@ -5676,139 +3933,65 @@ Ce service n'existe pas.
           return html(
             `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 <style>
-
 body{
-
 margin:0;
-
 min-height:100vh;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
 font-family:Arial;
-
 background:#f5f7fb;
-
 text-align:center;
-
 padding:20px;
-
 }
-
 .box{
-
 max-width:430px;
-
 background:white;
-
 padding:35px;
-
 border-radius:22px;
-
-box-shadow:
-0 15px 40px
-rgba(0,0,0,.08);
-
+box-shadow:0 15px 40px rgba(0,0,0,.08);
 }
-
 .logo{
-
 font-size:24px;
-
 font-weight:800;
-
 }
-
-.logo span{
-
-color:#4f46e5;
-
-}
-
+.logo span{color:#4f46e5;}
 p{
-
 color:#6b7280;
-
 line-height:1.6;
-
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
-<div class="logo">
-TAP<span>NIVO</span>
+<div class="logo">TAP<span>NIVO</span></div>
+<h2>Service indisponible</h2>
+<p>Ce service n'est pas actuellement disponible.</p>
 </div>
-
-<h2>
-Service indisponible
-</h2>
-
-<p>
-Ce service n'est pas actuellement disponible.
-</p>
-
-</div>
-
 </body>
-
 </html>
 `
           );
-
         }
 
-
-        // -------------------------------------------------
-        // REGISTER SERVICE SCAN
-        // -------------------------------------------------
-
         await env.DB
-
           .prepare(`
             INSERT INTO service_scans (
               service_id
             )
-
             VALUES (?)
           `)
-
-          .bind(
-            service.id
-          )
-
+          .bind(service.id)
           .run();
 
-
         const config =
-          parseConfig(
-            service.config
-          );
-
+          parseConfig(service.config);
 
         // =================================================
         // WIFI
@@ -5821,309 +4004,128 @@ Ce service n'est pas actuellement disponible.
           const ssid =
             config &&
             typeof config === "object"
-
               ? (
                   config.wifi_name ||
                   config.ssid ||
                   ""
                 )
-
               : "";
-
 
           const password =
             config &&
             typeof config === "object"
-
               ? (
                   config.password ||
                   ""
                 )
-
               : "";
-
 
           const security =
             config &&
             typeof config === "object"
-
               ? (
                   config.security ||
                   "WPA"
                 )
-
               : "WPA";
-
 
           return html(`
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<title>
-${escapeHTML(
-  service.service_name
-)}
-</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHTML(service.service_name)}</title>
 <style>
-
-*{
-box-sizing:border-box;
-}
-
+*{box-sizing:border-box;}
 body{
-
 margin:0;
-
 min-height:100vh;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
 font-family:Arial,Helvetica,sans-serif;
-
-background:
-linear-gradient(
-135deg,
-#f5f7fb,
-#eef2ff
-);
-
+background:linear-gradient(135deg,#f5f7fb,#eef2ff);
 padding:20px;
-
 }
-
 .box{
-
 width:100%;
-
 max-width:430px;
-
 background:white;
-
 border-radius:25px;
-
 padding:30px;
-
 text-align:center;
-
-box-shadow:
-0 15px 45px
-rgba(0,0,0,.09);
-
+box-shadow:0 15px 45px rgba(0,0,0,.09);
 }
-
 .logo{
-
 font-size:21px;
-
 font-weight:800;
-
 margin-bottom:25px;
-
 }
-
-.logo span{
-color:#4f46e5;
-}
-
-.icon{
-
-font-size:50px;
-
-margin-bottom:10px;
-
-}
-
-h1{
-
-font-size:25px;
-
-margin:0;
-
-}
-
-.client{
-
-color:#6b7280;
-
-margin-top:8px;
-
-}
-
+.logo span{color:#4f46e5;}
+.icon{font-size:50px;margin-bottom:10px;}
+h1{font-size:25px;margin:0;}
+.client{color:#6b7280;margin-top:8px;}
 .wifi{
-
 margin-top:25px;
-
 background:#f9fafb;
-
 border-radius:15px;
-
 padding:20px;
-
 text-align:left;
-
 }
-
 .row{
-
 padding:12px 0;
-
-border-bottom:
-1px solid #e5e7eb;
-
+border-bottom:1px solid #e5e7eb;
 }
-
-.row:last-child{
-border-bottom:0;
-}
-
-.label{
-
-font-size:11px;
-
-color:#9ca3af;
-
-}
-
+.row:last-child{border-bottom:0;}
+.label{font-size:11px;color:#9ca3af;}
 .value{
-
 font-weight:800;
-
 margin-top:5px;
-
 word-break:break-word;
-
 }
-
 .password{
-
 background:#eef2ff;
-
 color:#3730a3;
-
 padding:12px;
-
 border-radius:10px;
-
 margin-top:7px;
-
 font-size:18px;
-
 letter-spacing:1px;
-
 }
-
 .footer{
-
 margin-top:25px;
-
 font-size:11px;
-
 color:#9ca3af;
-
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
-<div class="logo">
-TAP<span>NIVO</span>
-</div>
-
-<div class="icon">
-📶
-</div>
-
-<h1>
-${escapeHTML(
-  service.service_name
-)}
-</h1>
-
-<div class="client">
-${escapeHTML(
-  service.client_name || ""
-)}
-</div>
-
+<div class="logo">TAP<span>NIVO</span></div>
+<div class="icon">📶</div>
+<h1>${escapeHTML(service.service_name)}</h1>
+<div class="client">${escapeHTML(service.client_name || "")}</div>
 <div class="wifi">
-
 <div class="row">
-
-<div class="label">
-NOM DU WI-FI
+<div class="label">NOM DU WI-FI</div>
+<div class="value">${escapeHTML(ssid || "—")}</div>
 </div>
-
-<div class="value">
-${escapeHTML(
-  ssid || "—"
-)}
-</div>
-
-</div>
-
 <div class="row">
-
-<div class="label">
-MOT DE PASSE
+<div class="label">MOT DE PASSE</div>
+<div class="password">${escapeHTML(password || "—")}</div>
 </div>
-
-<div class="password">
-${escapeHTML(
-  password || "—"
-)}
-</div>
-
-</div>
-
 <div class="row">
-
-<div class="label">
-SÉCURITÉ
+<div class="label">SÉCURITÉ</div>
+<div class="value">${escapeHTML(security)}</div>
 </div>
-
-<div class="value">
-${escapeHTML(
-  security
-)}
 </div>
-
+<div class="footer">Service Wi-Fi créé avec TAPNIVO</div>
 </div>
-
-</div>
-
-<div class="footer">
-Service Wi-Fi créé avec TAPNIVO
-</div>
-
-</div>
-
 </body>
-
 </html>
 `);
-
         }
-
 
         // =================================================
         // DIGITAL CARD
@@ -6136,642 +4138,340 @@ Service Wi-Fi créé avec TAPNIVO
 
           const client =
             await env.DB
-
               .prepare(`
                 SELECT *
                 FROM clients
                 WHERE id = ?
                 LIMIT 1
               `)
-
-              .bind(
-                service.client_id
-              )
-
+              .bind(service.client_id)
               .first();
 
-
           if (!client) {
-
             return html(
               "Client introuvable",
               404
             );
-
           }
 
-
-          const name =
-            client.name || "";
-
-          const profession =
-            client.profession || "";
-
-          const bio =
-            client.bio || "";
-
-          const phone =
-            client.phone || "";
-
-          const whatsapp =
-            client.whatsapp || "";
-
-          const email =
-            client.email || "";
-
-          const instagram =
-            client.instagram || "";
-
-          const facebook =
-            client.facebook || "";
-
-          const tiktok =
-            client.tiktok || "";
-
-          const linkedin =
-            client.linkedin || "";
-
-          const address =
-            client.address || "";
-
-          const maps =
-            client.maps || "";
-
-          const website =
-            client.website || "";
-
-          const reviews =
-            client.reviews || "";
-
-          const photo =
-            client.photo_url || "";
-
-
           const whatsappNumber =
-            whatsapp.replace(
+            String(
+              client.whatsapp || ""
+            ).replace(
               /[^0-9]/g,
               ""
             );
-
 
           const contactUrl =
             `${url.origin}/contact/${encodeURIComponent(
               service.service_code
             )}.vcf`;
 
-
           const buttons = [];
 
-
-          if (phone) {
-
+          if (client.phone) {
             buttons.push(`
-<a
-class="button"
-href="tel:${escapeHTML(phone)}"
->
+<a class="button" href="tel:${escapeHTML(client.phone)}">
 📞 Appeler
 </a>
 `);
-
           }
 
-
-          if (
-            whatsappNumber
-          ) {
-
+          if (whatsappNumber) {
             buttons.push(`
-<a
-class="button"
-href="https://wa.me/${escapeHTML(
-  whatsappNumber
-)}"
+<a class="button"
+href="https://wa.me/${escapeHTML(whatsappNumber)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 💬 WhatsApp
 </a>
 `);
-
           }
 
-
           buttons.push(`
-<a
-class="button contact"
-href="${escapeHTML(
-  contactUrl
-)}"
->
+<a class="button contact"
+href="${escapeHTML(contactUrl)}">
 👤 Ajouter aux contacts
 </a>
 `);
 
-
-          if (email) {
-
+          if (client.email) {
             buttons.push(`
-<a
-class="button secondary"
-href="mailto:${escapeHTML(email)}"
->
+<a class="button secondary"
+href="mailto:${escapeHTML(client.email)}">
 ✉️ Email
 </a>
 `);
-
           }
 
-
-          if (instagram) {
-
+          if (client.instagram) {
             buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(instagram)}"
+<a class="button secondary"
+href="${escapeHTML(client.instagram)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 📸 Instagram
 </a>
 `);
-
           }
 
-
-          if (facebook) {
-
+          if (client.facebook) {
             buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(facebook)}"
+<a class="button secondary"
+href="${escapeHTML(client.facebook)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 📘 Facebook
 </a>
 `);
-
           }
 
-
-          if (tiktok) {
-
+          if (client.tiktok) {
             buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(tiktok)}"
+<a class="button secondary"
+href="${escapeHTML(client.tiktok)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 🎵 TikTok
 </a>
 `);
-
           }
 
-
-          if (linkedin) {
-
+          if (client.linkedin) {
             buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(linkedin)}"
+<a class="button secondary"
+href="${escapeHTML(client.linkedin)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 💼 LinkedIn
 </a>
 `);
-
           }
 
-
-          if (maps) {
-
+          if (client.maps) {
             buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(maps)}"
+<a class="button secondary"
+href="${escapeHTML(client.maps)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 📍 Google Maps
 </a>
 `);
-
           }
 
-
-          if (website) {
-
+          if (client.website) {
             buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(website)}"
+<a class="button secondary"
+href="${escapeHTML(client.website)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 🌐 Site web
 </a>
 `);
-
           }
 
-
-          if (reviews) {
-
+          if (client.reviews) {
             buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(reviews)}"
+<a class="button secondary"
+href="${escapeHTML(client.reviews)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 ⭐ Google Reviews
 </a>
 `);
-
           }
 
-
           const photoHTML =
-            photo
-
+            client.photo_url
               ? `
 <img
 class="profile-photo"
-src="${escapeHTML(photo)}"
-alt="${escapeHTML(name)}"
-loading="lazy"
->
+src="${escapeHTML(client.photo_url)}"
+alt="${escapeHTML(client.name)}"
+loading="lazy">
 `
-
               : `
-<div class="avatar">
-👤
-</div>
+<div class="avatar">👤</div>
 `;
-
 
           return html(`
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<meta
-name="theme-color"
-content="#4f46e5"
->
-
-<title>
-${escapeHTML(name)} | TAPNIVO
-</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#4f46e5">
+<title>${escapeHTML(client.name)} | TAPNIVO</title>
 <style>
-
-*{
-box-sizing:border-box;
-}
-
+*{box-sizing:border-box;}
 body{
-
 margin:0;
-
-font-family:
-Arial,
-Helvetica,
-sans-serif;
-
-background:
-linear-gradient(
-135deg,
-#f5f7fb,
-#eef2ff
-);
-
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(135deg,#f5f7fb,#eef2ff);
 color:#111827;
-
 min-height:100vh;
-
 }
-
 .container{
-
 max-width:560px;
-
 margin:auto;
-
 padding:30px 18px 45px;
-
 }
-
 .card{
-
 background:white;
-
 border-radius:28px;
-
 padding:30px 22px;
-
 text-align:center;
-
-box-shadow:
-0 18px 50px
-rgba(0,0,0,.09);
-
+box-shadow:0 18px 50px rgba(0,0,0,.09);
 }
-
 .logo{
-
 font-size:21px;
-
 font-weight:800;
-
 margin-bottom:25px;
-
-letter-spacing:.5px;
-
 }
-
-.logo span{
-
-color:#4f46e5;
-
-}
-
+.logo span{color:#4f46e5;}
 .profile-photo{
-
 width:115px;
-
 height:115px;
-
 border-radius:50%;
-
 object-fit:cover;
-
 display:block;
-
 margin:0 auto 18px;
-
-border:
-4px solid #eef2ff;
-
+border:4px solid #eef2ff;
 }
-
 .avatar{
-
 width:115px;
-
 height:115px;
-
 border-radius:50%;
-
 margin:0 auto 18px;
-
 background:#eef2ff;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
 font-size:45px;
-
 }
-
 h1{
-
 margin:0;
-
 font-size:28px;
-
 line-height:1.2;
-
 }
-
 .profession{
-
 color:#4f46e5;
-
 font-weight:700;
-
 margin-top:8px;
-
 }
-
 .bio{
-
 color:#6b7280;
-
 line-height:1.65;
-
 margin:18px 0;
-
 }
-
 .buttons{
-
 display:grid;
-
 gap:10px;
-
 margin-top:24px;
-
 }
-
 .button{
-
 display:block;
-
 width:100%;
-
 padding:14px;
-
 border-radius:13px;
-
 text-decoration:none;
-
 font-weight:700;
-
 background:#4f46e5;
-
 color:white;
-
 }
-
-.button.contact{
-
-background:#111827;
-
-}
-
+.button.contact{background:#111827;}
 .button.secondary{
-
 background:#f3f4f6;
-
 color:#374151;
-
 }
-
 .info{
-
 margin-top:25px;
-
 text-align:left;
-
 }
-
 .info-row{
-
 padding:13px 0;
-
-border-bottom:
-1px solid #eeeeee;
-
+border-bottom:1px solid #eeeeee;
 }
-
-.info-row:last-child{
-
-border-bottom:0;
-
-}
-
+.info-row:last-child{border-bottom:0;}
 .label{
-
 font-size:11px;
-
 color:#9ca3af;
-
 margin-bottom:4px;
-
 }
-
 .value{
-
 font-weight:600;
-
 word-break:break-word;
-
 }
-
 .footer{
-
 margin-top:25px;
-
 color:#9ca3af;
-
 font-size:11px;
-
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div class="container">
-
 <div class="card">
-
-<div class="logo">
-TAP<span>NIVO</span>
-</div>
+<div class="logo">TAP<span>NIVO</span></div>
 
 ${photoHTML}
 
-<h1>
-${escapeHTML(name)}
-</h1>
+<h1>${escapeHTML(client.name)}</h1>
 
 ${
-  profession
+  client.profession
     ? `
 <div class="profession">
-${escapeHTML(profession)}
+${escapeHTML(client.profession)}
 </div>
 `
     : ""
 }
 
 ${
-  bio
+  client.bio
     ? `
 <div class="bio">
-${escapeHTML(bio)}
+${escapeHTML(client.bio)}
 </div>
 `
     : ""
 }
 
 <div class="buttons">
-
 ${buttons.join("")}
-
 </div>
 
 <div class="info">
 
 ${
-  address
+  client.address
     ? `
 <div class="info-row">
-
-<div class="label">
-Adresse
-</div>
-
-<div class="value">
-${escapeHTML(address)}
-</div>
-
+<div class="label">Adresse</div>
+<div class="value">${escapeHTML(client.address)}</div>
 </div>
 `
     : ""
 }
 
 ${
-  email
+  client.email
     ? `
 <div class="info-row">
-
-<div class="label">
-Email
-</div>
-
-<div class="value">
-${escapeHTML(email)}
-</div>
-
+<div class="label">Email</div>
+<div class="value">${escapeHTML(client.email)}</div>
 </div>
 `
     : ""
 }
 
 ${
-  phone
+  client.phone
     ? `
 <div class="info-row">
-
-<div class="label">
-Téléphone
-</div>
-
-<div class="value">
-${escapeHTML(phone)}
-</div>
-
+<div class="label">Téléphone</div>
+<div class="value">${escapeHTML(client.phone)}</div>
 </div>
 `
     : ""
@@ -6784,20 +4484,14 @@ Profil digital créé avec TAPNIVO
 </div>
 
 </div>
-
 </div>
-
 </body>
-
 </html>
 `);
-
         }
 
-
         // =================================================
-        // GOOGLE / INSTAGRAM / WHATSAPP / TIKTOK
-        // MENU / CUSTOM LINK
+        // OTHER SERVICES
         // =================================================
 
         if (
@@ -6813,155 +4507,275 @@ Profil digital créé avec TAPNIVO
           )
         ) {
 
-          if (
-            service.destination_url
-          ) {
-
+          if (service.destination_url) {
             return Response.redirect(
               service.destination_url,
               302
             );
-
           }
-
 
           return html(
             `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 </head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-TAPNIVO
-</h2>
-
-<p>
-Aucune destination configurée.
-</p>
-
+<body style="font-family:Arial;text-align:center;padding:50px;">
+<h2>TAPNIVO</h2>
+<p>Aucune destination configurée.</p>
 </body>
-
 </html>
 `
           );
-
         }
-
 
         return html(
           `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TAPNIVO</title>
-
 </head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-TAPNIVO
-</h2>
-
-<p>
-Service configuré mais aucune action disponible.
-</p>
-
+<body style="font-family:Arial;text-align:center;padding:50px;">
+<h2>TAPNIVO</h2>
+<p>Service configuré mais aucune action disponible.</p>
 </body>
-
 </html>
 `
         );
-
 
       } catch (error) {
 
         return html(
           `
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
 <title>TAPNIVO</title>
-
 </head>
-
-<body style="
-font-family:Arial;
-text-align:center;
-padding:50px;
-">
-
-<h2>
-Erreur serveur
-</h2>
-
-<p>
-${escapeHTML(
-  error.message
-)}
-</p>
-
+<body style="font-family:Arial;text-align:center;padding:50px;">
+<h2>Erreur serveur</h2>
+<p>${escapeHTML(error.message)}</p>
 </body>
-
 </html>
 `,
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // SERVICE CONTACT / VCF
-    //
-    // /contact/SERVICECODE.vcf
-    //
-    // =====================================================
+// =====================================================
+// CLIENT CONTACT VCF
+// IMPORTANT: قبل /contact/:service
+// =====================================================
 
     if (
-      url.pathname.startsWith(
-        "/contact/"
-      ) &&
+      url.pathname.startsWith("/contact/client/") &&
+      url.pathname.endsWith(".vcf")
+    ) {
+
+      const slug =
+        url.pathname
+          .replace(
+            "/contact/client/",
+            ""
+          )
+          .replace(
+            /\.vcf$/,
+            ""
+          )
+          .trim();
+
+      if (!slug) {
+        return new Response(
+          "Contact introuvable.",
+          {
+            status: 404,
+            headers: {
+              "Content-Type":
+                "text/plain; charset=UTF-8"
+            }
+          }
+        );
+      }
+
+      try {
+
+        const client =
+          await env.DB
+            .prepare(`
+              SELECT *
+              FROM clients
+              WHERE slug = ?
+              LIMIT 1
+            `)
+            .bind(slug)
+            .first();
+
+        if (!client) {
+          return new Response(
+            "Client introuvable.",
+            {
+              status: 404,
+              headers: {
+                "Content-Type":
+                  "text/plain; charset=UTF-8"
+              }
+            }
+          );
+        }
+
+        const vcfEscape = (value) => {
+
+          if (
+            value === null ||
+            value === undefined
+          ) {
+            return "";
+          }
+
+          return String(value)
+            .replace(/\\/g, "\\\\")
+            .replace(/\r?\n/g, "\\n")
+            .replace(/;/g, "\\;")
+            .replace(/,/g, "\\,");
+        };
+
+        const name =
+          vcfEscape(client.name || "");
+
+        const phone =
+          vcfEscape(client.phone || "");
+
+        const whatsapp =
+          vcfEscape(client.whatsapp || "");
+
+        const email =
+          vcfEscape(client.email || "");
+
+        const website =
+          vcfEscape(client.website || "");
+
+        const address =
+          vcfEscape(client.address || "");
+
+        const profession =
+          vcfEscape(client.profession || "");
+
+        const photo =
+          client.photo_url
+            ? String(client.photo_url).trim()
+            : "";
+
+        const lines = [
+          "BEGIN:VCARD",
+          "VERSION:3.0",
+          `FN:${name}`,
+          `N:${name};;;;`
+        ];
+
+        if (phone) {
+          lines.push(
+            `TEL;TYPE=CELL:${phone}`
+          );
+        }
+
+        if (email) {
+          lines.push(
+            `EMAIL;TYPE=INTERNET:${email}`
+          );
+        }
+
+        if (profession) {
+          lines.push(
+            `TITLE:${profession}`
+          );
+        }
+
+        if (website) {
+          lines.push(
+            `URL:${website}`
+          );
+        }
+
+        if (address) {
+          lines.push(
+            `ADR;TYPE=WORK:;;${address};;;;`
+          );
+        }
+
+        if (whatsapp) {
+          lines.push(
+            `item1.X-ABLABEL:WhatsApp`
+          );
+
+          lines.push(
+            `item1.X-ABRELATEDNAMES:${whatsapp}`
+          );
+        }
+
+        if (photo) {
+          lines.push(
+            `PHOTO;VALUE=URI:${photo}`
+          );
+        }
+
+        lines.push(
+          "END:VCARD"
+        );
+
+        const vcard =
+          lines.join("\r\n");
+
+        return new Response(
+          vcard,
+          {
+            status: 200,
+            headers: {
+              "Content-Type":
+                "text/vcard; charset=UTF-8",
+
+              "Content-Disposition":
+                `attachment; filename="${encodeURIComponent(
+                  client.name || "contact"
+                )}.vcf"`,
+
+              "Cache-Control":
+                "no-store"
+            }
+          }
+        );
+
+      } catch (error) {
+
+        return new Response(
+          "Erreur serveur : " +
+          error.message,
+          {
+            status: 500,
+            headers: {
+              "Content-Type":
+                "text/plain; charset=UTF-8"
+            }
+          }
+        );
+      }
+    }
+
+// =====================================================
+// SERVICE CONTACT VCF
+// /contact/SERVICECODE.vcf
+// =====================================================
+
+    if (
+      url.pathname.startsWith("/contact/") &&
+      !url.pathname.startsWith("/contact/client/") &&
       url.pathname.endsWith(".vcf")
     ) {
 
@@ -6977,265 +4791,169 @@ ${escapeHTML(
           )
           .trim();
 
-
       if (!serviceCode) {
-
         return new Response(
           "Contact introuvable.",
           {
-            status:404,
-
-            headers:{
+            status: 404,
+            headers: {
               "Content-Type":
                 "text/plain; charset=UTF-8"
             }
           }
         );
-
       }
-
 
       try {
 
         const service =
           await env.DB
-
             .prepare(`
               SELECT
-
                 service_code,
                 service_type,
                 status,
                 client_id
-
               FROM services
-
               WHERE service_code = ?
-
               LIMIT 1
             `)
-
-            .bind(
-              serviceCode
-            )
-
+            .bind(serviceCode)
             .first();
 
-
         if (!service) {
-
           return new Response(
             "Service introuvable.",
             {
-              status:404,
-
-              headers:{
+              status: 404,
+              headers: {
                 "Content-Type":
                   "text/plain; charset=UTF-8"
               }
             }
           );
-
         }
-
 
         if (
           service.status !== "active" ||
           service.service_type !== "digital_card"
         ) {
-
           return new Response(
             "Service indisponible.",
             {
-              status:404,
-
-              headers:{
+              status: 404,
+              headers: {
                 "Content-Type":
                   "text/plain; charset=UTF-8"
               }
             }
           );
-
         }
-
 
         const client =
           await env.DB
-
             .prepare(`
               SELECT *
-
               FROM clients
-
               WHERE id = ?
-
               LIMIT 1
             `)
-
-            .bind(
-              service.client_id
-            )
-
+            .bind(service.client_id)
             .first();
 
-
         if (!client) {
-
           return new Response(
             "Client introuvable.",
             {
-              status:404,
-
-              headers:{
+              status: 404,
+              headers: {
                 "Content-Type":
                   "text/plain; charset=UTF-8"
               }
             }
           );
-
         }
 
+        const vcfEscape = (value) => {
 
-        const vcfEscape =
-          (value) => {
+          if (
+            value === null ||
+            value === undefined
+          ) {
+            return "";
+          }
 
-            if (
-              value === null ||
-              value === undefined
-            ) {
-
-              return "";
-
-            }
-
-            return String(value)
-
-              .replace(
-                /\\/g,
-                "\\\\"
-              )
-
-              .replace(
-                /\r?\n/g,
-                "\\n"
-              )
-
-              .replace(
-                /;/g,
-                "\\;"
-              )
-
-              .replace(
-                /,/g,
-                "\\,"
-              );
-
-          };
-
+          return String(value)
+            .replace(/\\/g, "\\\\")
+            .replace(/\r?\n/g, "\\n")
+            .replace(/;/g, "\\;")
+            .replace(/,/g, "\\,");
+        };
 
         const name =
-          vcfEscape(
-            client.name || ""
-          );
+          vcfEscape(client.name || "");
 
         const phone =
-          vcfEscape(
-            client.phone || ""
-          );
+          vcfEscape(client.phone || "");
 
         const whatsapp =
-          vcfEscape(
-            client.whatsapp || ""
-          );
+          vcfEscape(client.whatsapp || "");
 
         const email =
-          vcfEscape(
-            client.email || ""
-          );
+          vcfEscape(client.email || "");
 
         const website =
-          vcfEscape(
-            client.website || ""
-          );
+          vcfEscape(client.website || "");
 
         const address =
-          vcfEscape(
-            client.address || ""
-          );
+          vcfEscape(client.address || "");
 
         const profession =
-          vcfEscape(
-            client.profession || ""
-          );
+          vcfEscape(client.profession || "");
 
         const photo =
           client.photo_url
-            ? String(
-                client.photo_url
-              ).trim()
+            ? String(client.photo_url).trim()
             : "";
 
-
         const lines = [
-
           "BEGIN:VCARD",
-
           "VERSION:3.0",
-
           `FN:${name}`,
-
           `N:${name};;;;`
-
         ];
 
-
         if (phone) {
-
           lines.push(
             `TEL;TYPE=CELL:${phone}`
           );
-
         }
 
-
         if (email) {
-
           lines.push(
             `EMAIL;TYPE=INTERNET:${email}`
           );
-
         }
 
-
         if (profession) {
-
           lines.push(
             `TITLE:${profession}`
           );
-
         }
 
-
         if (website) {
-
           lines.push(
             `URL:${website}`
           );
-
         }
 
-
         if (address) {
-
           lines.push(
             `ADR;TYPE=WORK:;;${address};;;;`
           );
-
         }
 
-
         if (whatsapp) {
-
           lines.push(
             `item1.X-ABLABEL:WhatsApp`
           );
@@ -7243,55 +4961,39 @@ ${escapeHTML(
           lines.push(
             `item1.X-ABRELATEDNAMES:${whatsapp}`
           );
-
         }
 
-
         if (photo) {
-
           lines.push(
             `PHOTO;VALUE=URI:${photo}`
           );
-
         }
-
 
         lines.push(
           "END:VCARD"
         );
 
-
         const vcard =
-          lines.join(
-            "\r\n"
-          );
-
+          lines.join("\r\n");
 
         return new Response(
           vcard,
           {
-
-            status:200,
-
-            headers:{
-
+            status: 200,
+            headers: {
               "Content-Type":
                 "text/vcard; charset=UTF-8",
 
               "Content-Disposition":
                 `attachment; filename="${encodeURIComponent(
-                  client.name ||
-                  "contact"
+                  client.name || "contact"
                 )}.vcf"`,
 
               "Cache-Control":
                 "no-store"
-
             }
-
           }
         );
-
 
       } catch (error) {
 
@@ -7299,33 +5001,23 @@ ${escapeHTML(
           "Erreur serveur : " +
           error.message,
           {
-
-            status:500,
-
-            headers:{
+            status: 500,
+            headers: {
               "Content-Type":
                 "text/plain; charset=UTF-8"
             }
-
           }
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // PUBLIC CLIENT PROFILE
-    //
-    // /client/SLUG
-    //
-    // =====================================================
+// =====================================================
+// PUBLIC CLIENT PROFILE
+// /client/SLUG
+// =====================================================
 
     if (
-      url.pathname.startsWith(
-        "/client/"
-      )
+      url.pathname.startsWith("/client/")
     ) {
 
       const slug =
@@ -7340,545 +5032,287 @@ ${escapeHTML(
           )
           .trim();
 
-
       if (!slug) {
-
         return html(
           "Profil introuvable",
           404
         );
-
       }
-
 
       try {
 
         const client =
           await env.DB
-
             .prepare(`
               SELECT *
-
               FROM clients
-
               WHERE slug = ?
-
               LIMIT 1
             `)
-
-            .bind(
-              slug
-            )
-
+            .bind(slug)
             .first();
 
-
         if (!client) {
-
           return html(
             "Client introuvable",
             404
           );
-
         }
-
 
         const photoHTML =
           client.photo_url
-
             ? `
 <img
 class="profile-photo"
-src="${escapeHTML(
-  client.photo_url
-)}"
-alt="${escapeHTML(
-  client.name
-)}"
-loading="lazy"
->
+src="${escapeHTML(client.photo_url)}"
+alt="${escapeHTML(client.name)}"
+loading="lazy">
 `
-
             : `
-<div class="avatar">
-👤
-</div>
+<div class="avatar">👤</div>
 `;
-
 
         const buttons = [];
 
-
         if (client.phone) {
-
           buttons.push(`
-<a
-class="button"
-href="tel:${escapeHTML(
-  client.phone
-)}"
->
+<a class="button"
+href="tel:${escapeHTML(client.phone)}">
 📞 Appeler
 </a>
 `);
-
         }
-
 
         if (client.whatsapp) {
 
           const whatsapp =
-            String(
-              client.whatsapp
-            ).replace(
-              /[^0-9]/g,
-              ""
-            );
-
+            String(client.whatsapp)
+              .replace(/[^0-9]/g, "");
 
           if (whatsapp) {
-
             buttons.push(`
-<a
-class="button"
-href="https://wa.me/${escapeHTML(
-  whatsapp
-)}"
+<a class="button"
+href="https://wa.me/${escapeHTML(whatsapp)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 💬 WhatsApp
 </a>
 `);
-
           }
-
         }
-
 
         const contactUrl =
           `${url.origin}/contact/client/${encodeURIComponent(
             client.slug
           )}.vcf`;
 
-
         buttons.push(`
-<a
-class="button contact"
-href="${escapeHTML(
-  contactUrl
-)}"
->
+<a class="button contact"
+href="${escapeHTML(contactUrl)}">
 👤 Ajouter aux contacts
 </a>
 `);
 
-
         if (client.email) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="mailto:${escapeHTML(
-  client.email
-)}"
->
+<a class="button secondary"
+href="mailto:${escapeHTML(client.email)}">
 ✉️ Email
 </a>
 `);
-
         }
 
-
         if (client.instagram) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(
-  client.instagram
-)}"
+<a class="button secondary"
+href="${escapeHTML(client.instagram)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 📸 Instagram
 </a>
 `);
-
         }
 
-
         if (client.facebook) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(
-  client.facebook
-)}"
+<a class="button secondary"
+href="${escapeHTML(client.facebook)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 📘 Facebook
 </a>
 `);
-
         }
 
-
         if (client.tiktok) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(
-  client.tiktok
-)}"
+<a class="button secondary"
+href="${escapeHTML(client.tiktok)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 🎵 TikTok
 </a>
 `);
-
         }
 
-
         if (client.linkedin) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(
-  client.linkedin
-)}"
+<a class="button secondary"
+href="${escapeHTML(client.linkedin)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 💼 LinkedIn
 </a>
 `);
-
         }
 
-
         if (client.maps) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(
-  client.maps
-)}"
+<a class="button secondary"
+href="${escapeHTML(client.maps)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 📍 Google Maps
 </a>
 `);
-
         }
 
-
         if (client.website) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(
-  client.website
-)}"
+<a class="button secondary"
+href="${escapeHTML(client.website)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 🌐 Site web
 </a>
 `);
-
         }
 
-
         if (client.reviews) {
-
           buttons.push(`
-<a
-class="button secondary"
-href="${escapeHTML(
-  client.reviews
-)}"
+<a class="button secondary"
+href="${escapeHTML(client.reviews)}"
 target="_blank"
-rel="noopener"
->
+rel="noopener">
 ⭐ Google Reviews
 </a>
 `);
-
         }
-
 
         return html(`
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<meta
-name="theme-color"
-content="#4f46e5"
->
-
-<title>
-${escapeHTML(
-  client.name
-)} | TAPNIVO
-</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#4f46e5">
+<title>${escapeHTML(client.name)} | TAPNIVO</title>
 <style>
-
-*{
-box-sizing:border-box;
-}
-
+*{box-sizing:border-box;}
 body{
-
 margin:0;
-
-font-family:
-Arial,
-Helvetica,
-sans-serif;
-
-background:
-linear-gradient(
-135deg,
-#f5f7fb,
-#eef2ff
-);
-
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(135deg,#f5f7fb,#eef2ff);
 color:#111827;
-
 }
-
 .container{
-
 max-width:600px;
-
 margin:auto;
-
 padding:35px 18px 45px;
-
 }
-
 .profile{
-
 background:white;
-
 border-radius:28px;
-
 padding:30px 22px;
-
 text-align:center;
-
-box-shadow:
-0 18px 50px
-rgba(0,0,0,.09);
-
+box-shadow:0 18px 50px rgba(0,0,0,.09);
 }
-
 .logo{
-
 font-size:21px;
-
 font-weight:800;
-
 margin-bottom:28px;
-
 }
-
-.logo span{
-
-color:#4f46e5;
-
-}
-
+.logo span{color:#4f46e5;}
 .profile-photo{
-
 width:120px;
-
 height:120px;
-
 border-radius:50%;
-
 object-fit:cover;
-
 display:block;
-
 margin:0 auto 20px;
-
-border:
-4px solid #eef2ff;
-
+border:4px solid #eef2ff;
 }
-
 .avatar{
-
 width:120px;
-
 height:120px;
-
 border-radius:50%;
-
 margin:0 auto 20px;
-
 background:#eef2ff;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
 font-size:48px;
-
 }
-
 h1{
-
 margin:0;
-
 font-size:29px;
-
 }
-
 .profession{
-
 color:#4f46e5;
-
 font-weight:bold;
-
 margin-top:8px;
-
 }
-
 .bio{
-
 color:#6b7280;
-
 line-height:1.65;
-
 margin:20px 0;
-
 }
-
 .buttons{
-
 display:grid;
-
 gap:10px;
-
 margin-top:25px;
-
 }
-
 .button{
-
 display:block;
-
 padding:14px;
-
 border-radius:13px;
-
 text-decoration:none;
-
 font-weight:bold;
-
 background:#4f46e5;
-
 color:white;
-
 }
-
-.button.contact{
-
-background:#111827;
-
-}
-
+.button.contact{background:#111827;}
 .button.secondary{
-
 background:#f3f4f6;
-
 color:#374151;
-
 }
-
 .info{
-
 margin-top:25px;
-
 text-align:left;
-
 }
-
 .info-row{
-
 padding:13px 0;
-
-border-bottom:
-1px solid #eeeeee;
-
+border-bottom:1px solid #eeeeee;
 }
-
-.info-row:last-child{
-
-border-bottom:0;
-
-}
-
+.info-row:last-child{border-bottom:0;}
 .label{
-
 font-size:11px;
-
 color:#9ca3af;
-
 }
-
 .value{
-
 margin-top:5px;
-
 font-weight:600;
-
 word-break:break-word;
-
 }
-
 .footer{
-
 margin-top:25px;
-
 font-size:11px;
-
 color:#9ca3af;
-
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div class="container">
-
 <div class="profile">
 
 <div class="logo">
@@ -7888,18 +5322,14 @@ TAP<span>NIVO</span>
 ${photoHTML}
 
 <h1>
-${escapeHTML(
-  client.name
-)}
+${escapeHTML(client.name)}
 </h1>
 
 ${
   client.profession
     ? `
 <div class="profession">
-${escapeHTML(
-  client.profession
-)}
+${escapeHTML(client.profession)}
 </div>
 `
     : ""
@@ -7909,18 +5339,14 @@ ${
   client.bio
     ? `
 <div class="bio">
-${escapeHTML(
-  client.bio
-)}
+${escapeHTML(client.bio)}
 </div>
 `
     : ""
 }
 
 <div class="buttons">
-
 ${buttons.join("")}
-
 </div>
 
 <div class="info">
@@ -7929,17 +5355,10 @@ ${
   client.email
     ? `
 <div class="info-row">
-
-<div class="label">
-Email
-</div>
-
+<div class="label">Email</div>
 <div class="value">
-${escapeHTML(
-  client.email
-)}
+${escapeHTML(client.email)}
 </div>
-
 </div>
 `
     : ""
@@ -7949,17 +5368,10 @@ ${
   client.phone
     ? `
 <div class="info-row">
-
-<div class="label">
-Téléphone
-</div>
-
+<div class="label">Téléphone</div>
 <div class="value">
-${escapeHTML(
-  client.phone
-)}
+${escapeHTML(client.phone)}
 </div>
-
 </div>
 `
     : ""
@@ -7969,17 +5381,10 @@ ${
   client.address
     ? `
 <div class="info-row">
-
-<div class="label">
-Adresse
-</div>
-
+<div class="label">Adresse</div>
 <div class="value">
-${escapeHTML(
-  client.address
-)}
+${escapeHTML(client.address)}
 </div>
-
 </div>
 `
     : ""
@@ -7992,11 +5397,8 @@ Profil digital créé avec TAPNIVO
 </div>
 
 </div>
-
 </div>
-
 </body>
-
 </html>
 `);
 
@@ -8004,329 +5406,17 @@ Profil digital créé avec TAPNIVO
 
         return html(
           "Erreur serveur : " +
-          escapeHTML(
-            error.message
-          ),
+          escapeHTML(error.message),
           500
         );
-
       }
-
     }
 
-
-    // =====================================================
-    // CLIENT CONTACT / VCF
-    //
-    // /contact/client/SLUG.vcf
-    //
-    // =====================================================
-
-    if (
-      url.pathname.startsWith(
-        "/contact/client/"
-      ) &&
-      url.pathname.endsWith(
-        ".vcf"
-      )
-    ) {
-
-      const slug =
-        url.pathname
-          .replace(
-            "/contact/client/",
-            ""
-          )
-          .replace(
-            /\.vcf$/,
-            ""
-          )
-          .trim();
-
-
-      if (!slug) {
-
-        return new Response(
-          "Contact introuvable.",
-          {
-            status:404,
-
-            headers:{
-              "Content-Type":
-                "text/plain; charset=UTF-8"
-            }
-          }
-        );
-
-      }
-
-
-      try {
-
-        const client =
-          await env.DB
-
-            .prepare(`
-              SELECT *
-
-              FROM clients
-
-              WHERE slug = ?
-
-              LIMIT 1
-            `)
-
-            .bind(
-              slug
-            )
-
-            .first();
-
-
-        if (!client) {
-
-          return new Response(
-            "Client introuvable.",
-            {
-              status:404,
-
-              headers:{
-                "Content-Type":
-                  "text/plain; charset=UTF-8"
-            }
-            }
-          );
-
-        }
-
-
-        const vcfEscape =
-          (value) => {
-
-            if (
-              value === null ||
-              value === undefined
-            ) {
-
-              return "";
-
-            }
-
-            return String(value)
-
-              .replace(
-                /\\/g,
-                "\\\\"
-              )
-
-              .replace(
-                /\r?\n/g,
-                "\\n"
-              )
-
-              .replace(
-                /;/g,
-                "\\;"
-              )
-
-              .replace(
-                /,/g,
-                "\\,"
-              );
-
-          };
-
-
-        const name =
-          vcfEscape(
-            client.name || ""
-          );
-
-        const phone =
-          vcfEscape(
-            client.phone || ""
-          );
-
-        const whatsapp =
-          vcfEscape(
-            client.whatsapp || ""
-          );
-
-        const email =
-          vcfEscape(
-            client.email || ""
-          );
-
-        const website =
-          vcfEscape(
-            client.website || ""
-          );
-
-        const address =
-          vcfEscape(
-            client.address || ""
-          );
-
-        const profession =
-          vcfEscape(
-            client.profession || ""
-          );
-
-        const photo =
-          client.photo_url
-            ? String(
-                client.photo_url
-              ).trim()
-            : "";
-
-
-        const lines = [
-
-          "BEGIN:VCARD",
-
-          "VERSION:3.0",
-
-          `FN:${name}`,
-
-          `N:${name};;;;`
-
-        ];
-
-
-        if (phone) {
-
-          lines.push(
-            `TEL;TYPE=CELL:${phone}`
-          );
-
-        }
-
-
-        if (email) {
-
-          lines.push(
-            `EMAIL;TYPE=INTERNET:${email}`
-          );
-
-        }
-
-
-        if (profession) {
-
-          lines.push(
-            `TITLE:${profession}`
-          );
-
-        }
-
-
-        if (website) {
-
-          lines.push(
-            `URL:${website}`
-          );
-
-        }
-
-
-        if (address) {
-
-          lines.push(
-            `ADR;TYPE=WORK:;;${address};;;;`
-          );
-
-        }
-
-
-        if (whatsapp) {
-
-          lines.push(
-            `item1.X-ABLABEL:WhatsApp`
-          );
-
-          lines.push(
-            `item1.X-ABRELATEDNAMES:${whatsapp}`
-          );
-
-        }
-
-
-        if (photo) {
-
-          lines.push(
-            `PHOTO;VALUE=URI:${photo}`
-          );
-
-        }
-
-
-        lines.push(
-          "END:VCARD"
-        );
-
-
-        const vcard =
-          lines.join(
-            "\r\n"
-          );
-
-
-        return new Response(
-          vcard,
-          {
-
-            status:200,
-
-            headers:{
-
-              "Content-Type":
-                "text/vcard; charset=UTF-8",
-
-              "Content-Disposition":
-                `attachment; filename="${encodeURIComponent(
-                  client.name ||
-                  "contact"
-                )}.vcf"`,
-
-              "Cache-Control":
-                "no-store"
-
-            }
-
-          }
-        );
-
-
-      } catch (error) {
-
-        return new Response(
-          "Erreur serveur : " +
-          error.message,
-          {
-
-            status:500,
-
-            headers:{
-              "Content-Type":
-                "text/plain; charset=UTF-8"
-            }
-
-          }
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // STATIC FILES
-    // =====================================================
-
-    return env.ASSETS.fetch(
-      request
-    );
+// =====================================================
+// STATIC FILES
+// =====================================================
+
+    return env.ASSETS.fetch(request);
 
   }
-
 };
