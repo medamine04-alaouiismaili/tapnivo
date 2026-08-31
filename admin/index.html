@@ -270,6 +270,39 @@ textarea{
 
 
 /* =====================================================
+   CHECKBOX
+===================================================== */
+
+.checkbox-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:13px;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+.checkbox-row input{
+  width:auto;
+  margin-top:3px;
+  accent-color:#4f46e5;
+}
+
+.checkbox-row label{
+  line-height:1.45;
+  cursor:pointer;
+}
+
+.help{
+  color:#6b7280;
+  font-size:11px;
+  font-weight:normal;
+}
+
+
+/* =====================================================
    LOGIN
 ===================================================== */
 
@@ -327,7 +360,7 @@ textarea{
 
 
 /* =====================================================
-   STATS
+   GLOBAL STATS
 ===================================================== */
 
 .stats-grid{
@@ -436,15 +469,14 @@ textarea{
 }
 
 .contact-badge{
-  background:#dbeafe;
-  color:#1e40af;
-  margin-top:5px;
+  background:#e0e7ff;
+  color:#3730a3;
 }
 
 .service-info{
   color:#6b7280;
   font-size:12px;
-  line-height:1.8;
+  line-height:1.7;
   margin-bottom:12px;
 }
 
@@ -523,42 +555,7 @@ textarea{
 
 
 /* =====================================================
-   CONTACT OPTION
-===================================================== */
-
-.contact-option{
-  display:flex;
-  flex-direction:row;
-  align-items:flex-start;
-  gap:12px;
-  padding:15px;
-  border:1px solid #dbeafe;
-  background:#eff6ff;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-
-.contact-option input{
-  width:18px;
-  height:18px;
-  margin-top:2px;
-}
-
-.contact-option-text strong{
-  display:block;
-  color:#1e3a8a;
-  margin-bottom:4px;
-}
-
-.contact-option-text span{
-  display:block;
-  color:#475569;
-  font-size:12px;
-}
-
-
-/* =====================================================
-   STANDS
+   STANDS / SUPPORTS
 ===================================================== */
 
 .stands-grid{
@@ -623,7 +620,7 @@ textarea{
 
 
 /* =====================================================
-   CLIENT
+   CLIENT FORM
 ===================================================== */
 
 .grid{
@@ -826,7 +823,7 @@ footer{
   </h1>
 
   <p>
-    Gérez vos Clients, Services et Stands NFC / QR.
+    Gérez vos Clients, Services et Supports NFC / QR.
   </p>
 
 </div>
@@ -895,7 +892,7 @@ footer{
   <div class="stat">
 
     <div class="stat-label">
-      Stands
+      Supports
     </div>
 
     <div
@@ -908,8 +905,6 @@ footer{
   </div>
 
 </div>
-
-
 <!-- =====================================================
      SERVICES
 ===================================================== -->
@@ -1386,10 +1381,6 @@ footer{
       </div>
 
 
-      <!-- =================================================
-           CONTACT SAVE OPTION
-      ================================================= -->
-
       <div
         class="contact-option"
         id="contactOptionBox"
@@ -1493,105 +1484,92 @@ footer{
 
 
 <script>
-  /* =====================================================
+/* =====================================================
    ELEMENTS
 ===================================================== */
 
-const loginScreen =
-document.getElementById("loginScreen");
-
-const dashboard =
-document.getElementById("dashboard");
-
-const loginForm =
-document.getElementById("loginForm");
-
-const loginMessage =
-document.getElementById("loginMessage");
-
-const loginButton =
-document.getElementById("loginButton");
-
-const logoutButton =
-document.getElementById("logoutButton");
-
-const globalMessage =
-document.getElementById("globalMessage");
+const loginScreen = document.getElementById("loginScreen");
+const dashboard = document.getElementById("dashboard");
+const loginForm = document.getElementById("loginForm");
+const loginMessage = document.getElementById("loginMessage");
+const loginButton = document.getElementById("loginButton");
+const logoutButton = document.getElementById("logoutButton");
+const globalMessage = document.getElementById("globalMessage");
 
 const servicesContainer =
-document.getElementById("servicesContainer");
+  document.getElementById("servicesContainer");
 
 const standsContainer =
-document.getElementById("standsContainer");
+  document.getElementById("standsContainer");
 
 const clientForm =
-document.getElementById("clientForm");
+  document.getElementById("clientForm");
 
 const clientButton =
-document.getElementById("clientButton");
+  document.getElementById("clientButton");
 
 const totalClients =
-document.getElementById("totalClients");
+  document.getElementById("totalClients");
 
 const totalServices =
-document.getElementById("totalServices");
+  document.getElementById("totalServices");
 
 const activeServices =
-document.getElementById("activeServices");
+  document.getElementById("activeServices");
 
 const totalStands =
-document.getElementById("totalStands");
+  document.getElementById("totalStands");
 
 const serviceModal =
-document.getElementById("serviceModal");
+  document.getElementById("serviceModal");
 
 const serviceModalTitle =
-document.getElementById("serviceModalTitle");
+  document.getElementById("serviceModalTitle");
 
 const serviceForm =
-document.getElementById("serviceForm");
+  document.getElementById("serviceForm");
 
 const serviceClient =
-document.getElementById("serviceClient");
+  document.getElementById("serviceClient");
 
 const serviceType =
-document.getElementById("serviceType");
+  document.getElementById("serviceType");
 
 const serviceName =
-document.getElementById("serviceName");
+  document.getElementById("serviceName");
 
 const serviceDestination =
-document.getElementById("serviceDestination");
+  document.getElementById("serviceDestination");
 
 const serviceStand =
-document.getElementById("serviceStand");
+  document.getElementById("serviceStand");
 
 const serviceStatus =
-document.getElementById("serviceStatus");
+  document.getElementById("serviceStatus");
 
 const serviceConfig =
-document.getElementById("serviceConfig");
+  document.getElementById("serviceConfig");
 
 const saveServiceButton =
-document.getElementById("saveServiceButton");
+  document.getElementById("saveServiceButton");
 
 const addServiceButton =
-document.getElementById("addServiceButton");
+  document.getElementById("addServiceButton");
 
 const closeServiceModal =
-document.getElementById("closeServiceModal");
+  document.getElementById("closeServiceModal");
 
 const cancelServiceButton =
-document.getElementById("cancelServiceButton");
+  document.getElementById("cancelServiceButton");
 
 const contactOptionBox =
-document.getElementById("contactOptionBox");
+  document.getElementById("contactOptionBox");
 
 const contactSaveEnabled =
-document.getElementById("contactSaveEnabled");
+  document.getElementById("contactSaveEnabled");
 
 const destinationHelp =
-document.getElementById("destinationHelp");
+  document.getElementById("destinationHelp");
 
 
 /* =====================================================
@@ -1599,11 +1577,8 @@ document.getElementById("destinationHelp");
 ===================================================== */
 
 let clients = [];
-
 let stands = [];
-
 let services = [];
-
 let editingServiceId = null;
 
 
@@ -1611,37 +1586,23 @@ let editingServiceId = null;
    HELPERS
 ===================================================== */
 
-function showMessage(
-  element,
-  text,
-  type
-){
+function showMessage(element,text,type){
 
-  element.className =
-    "message " + type;
-
-  element.textContent =
-    text;
+  element.className = "message " + type;
+  element.textContent = text;
 
 }
 
 
-function clearMessage(
-  element
-){
+function clearMessage(element){
 
-  element.className =
-    "message";
-
-  element.textContent =
-    "";
+  element.className = "message";
+  element.textContent = "";
 
 }
 
 
-function escapeHtml(
-  value
-){
+function escapeHtml(value){
 
   if(
     value === null ||
@@ -1670,6 +1631,55 @@ function isTrue(value){
     value === "1" ||
     value === "true"
   );
+
+}
+
+
+/* =====================================================
+   SAFE API RESPONSE
+   IMPORTANT:
+   Prevents "Unexpected token '<'" when the server
+   returns HTML instead of JSON.
+===================================================== */
+
+async function readApiResponse(response){
+
+  const text =
+    await response.text();
+
+  if(!text){
+
+    return {};
+
+  }
+
+  const contentType =
+    response.headers.get("content-type") || "";
+
+  try{
+
+    return JSON.parse(text);
+
+  }catch(error){
+
+    console.error(
+      "API returned non-JSON:",
+      {
+        status:response.status,
+        contentType,
+        preview:text.slice(0,500)
+      }
+    );
+
+    throw new Error(
+      response.status === 404
+        ? "Route API introuvable (404). Vérifiez le backend."
+        : response.status >= 500
+          ? "Erreur serveur API. Vérifiez les logs Cloudflare."
+          : "Le serveur a retourné une réponse invalide au lieu de JSON."
+    );
+
+  }
 
 }
 
@@ -1742,16 +1752,15 @@ function buildServiceConfig(){
 
       if(
         parsed &&
-        typeof parsed === "object"
+        typeof parsed === "object" &&
+        !Array.isArray(parsed)
       ){
 
         config = parsed;
 
       }else{
 
-        throw new Error(
-          "Configuration JSON invalide."
-        );
+        throw new Error();
 
       }
 
@@ -1765,12 +1774,6 @@ function buildServiceConfig(){
 
   }
 
-
-  /*
-   * Cette valeur permet de conserver l'option
-   * « Ajouter aux contacts » sans modifier le
-   * schéma D1.
-   */
 
   if(
     serviceType.value ===
@@ -1805,16 +1808,20 @@ async function checkAdmin(){
         "/api/admin/me",
         {
           method:"GET",
-          credentials:"same-origin"
+          credentials:"same-origin",
+          headers:{
+            "Accept":"application/json"
+          }
         }
       );
 
 
     const result =
-      await response.json();
+      await readApiResponse(response);
 
 
     if(
+      response.ok &&
       result.success &&
       result.authenticated
     ){
@@ -1843,29 +1850,21 @@ async function checkAdmin(){
 
 function showLogin(){
 
-  loginScreen.style.display =
-    "flex";
-
-  dashboard.style.display =
-    "none";
+  loginScreen.style.display = "flex";
+  dashboard.style.display = "none";
 
 }
 
 
 function showDashboard(){
 
-  loginScreen.style.display =
-    "none";
-
-  dashboard.style.display =
-    "block";
+  loginScreen.style.display = "none";
+  dashboard.style.display = "block";
 
   loadDashboard();
 
 }
-
-
-/* =====================================================
+  /* =====================================================
    LOGIN
 ===================================================== */
 
@@ -1875,21 +1874,14 @@ loginForm.addEventListener(
 
     event.preventDefault();
 
-    clearMessage(
-      loginMessage
-    );
+    clearMessage(loginMessage);
 
-    loginButton.disabled =
-      true;
-
-    loginButton.textContent =
-      "Connexion...";
+    loginButton.disabled = true;
+    loginButton.textContent = "Connexion...";
 
 
     const password =
-      document.getElementById(
-        "password"
-      ).value;
+      document.getElementById("password").value;
 
 
     try{
@@ -1901,19 +1893,18 @@ loginForm.addEventListener(
             method:"POST",
             credentials:"same-origin",
             headers:{
-              "Content-Type":
-                "application/json"
+              "Content-Type":"application/json",
+              "Accept":"application/json"
             },
-            body:
-              JSON.stringify({
-                password
-              })
+            body:JSON.stringify({
+              password
+            })
           }
         );
 
 
       const result =
-        await response.json();
+        await readApiResponse(response);
 
 
       if(
@@ -1941,18 +1932,14 @@ loginForm.addEventListener(
 
       showMessage(
         loginMessage,
-        "❌ " +
-        error.message,
+        "❌ " + error.message,
         "error"
       );
 
     }finally{
 
-      loginButton.disabled =
-        false;
-
-      loginButton.textContent =
-        "Se connecter";
+      loginButton.disabled = false;
+      loginButton.textContent = "Se connecter";
 
     }
 
@@ -1974,7 +1961,10 @@ logoutButton.addEventListener(
         "/api/admin/logout",
         {
           method:"POST",
-          credentials:"same-origin"
+          credentials:"same-origin",
+          headers:{
+            "Accept":"application/json"
+          }
         }
       );
 
@@ -2025,7 +2015,10 @@ async function loadClients(){
         "/api/clients",
         {
           method:"GET",
-          credentials:"same-origin"
+          credentials:"same-origin",
+          headers:{
+            "Accept":"application/json"
+          }
         }
       );
 
@@ -2035,14 +2028,13 @@ async function loadClients(){
     ){
 
       showLogin();
-
       return;
 
     }
 
 
     const result =
-      await response.json();
+      await readApiResponse(response);
 
 
     if(
@@ -2059,9 +2051,7 @@ async function loadClients(){
 
 
     clients =
-      Array.isArray(
-        result.clients
-      )
+      Array.isArray(result.clients)
         ? result.clients
         : [];
 
@@ -2079,6 +2069,12 @@ async function loadClients(){
     clients = [];
 
     populateClientSelect();
+
+    showMessage(
+      globalMessage,
+      "❌ Clients : " + error.message,
+      "error"
+    );
 
   }
 
@@ -2103,19 +2099,16 @@ function populateClientSelect(){
     client => {
 
       const option =
-        document.createElement(
-          "option"
-        );
+        document.createElement("option");
 
 
       option.value =
-        client.id;
+        String(client.id);
 
 
       option.textContent =
         client.name ||
-        "Client #" +
-        client.id;
+        "Client #" + client.id;
 
 
       serviceClient.appendChild(
@@ -2130,6 +2123,7 @@ function populateClientSelect(){
 
 /* =====================================================
    LOAD STANDS
+   FIXED VERSION
 ===================================================== */
 
 async function loadStands(){
@@ -2149,7 +2143,10 @@ Chargement des Stands...
         "/api/stands",
         {
           method:"GET",
-          credentials:"same-origin"
+          credentials:"same-origin",
+          headers:{
+            "Accept":"application/json"
+          }
         }
       );
 
@@ -2159,14 +2156,24 @@ Chargement des Stands...
     ){
 
       showLogin();
-
       return;
 
     }
 
 
+    /*
+     * IMPORTANT:
+     * Never call response.json() directly here.
+     * If Cloudflare returns an HTML error page,
+     * response.json() causes:
+     *
+     * Unexpected token '<'
+     *
+     * readApiResponse() handles that safely.
+     */
+
     const result =
-      await response.json();
+      await readApiResponse(response);
 
 
     if(
@@ -2183,15 +2190,12 @@ Chargement des Stands...
 
 
     stands =
-      Array.isArray(
-        result.stands
-      )
+      Array.isArray(result.stands)
         ? result.stands
         : [];
 
 
     renderStands();
-
     populateStandSelect();
 
 
@@ -2209,11 +2213,15 @@ Chargement des Stands...
     standsContainer.innerHTML =
       `
 <div class="message error">
-❌ ${escapeHtml(
-  error.message
-)}
+❌ ${escapeHtml(error.message)}
 </div>
 `;
+
+
+    /*
+     * Keep the rest of the dashboard working.
+     */
+    populateStandSelect();
 
   }
 
@@ -2238,20 +2246,17 @@ Aucun Stand
     stand => {
 
       const option =
-        document.createElement(
-          "option"
-        );
+        document.createElement("option");
 
 
       option.value =
-        stand.id;
+        String(stand.id);
 
 
       option.textContent =
         (
           stand.stand_code ||
-          "STAND #" +
-          stand.id
+          "STAND #" + stand.id
         ) +
         " — " +
         (
@@ -2292,7 +2297,10 @@ Chargement des Services...
         "/api/services",
         {
           method:"GET",
-          credentials:"same-origin"
+          credentials:"same-origin",
+          headers:{
+            "Accept":"application/json"
+          }
         }
       );
 
@@ -2302,14 +2310,13 @@ Chargement des Services...
     ){
 
       showLogin();
-
       return;
 
     }
 
 
     const result =
-      await response.json();
+      await readApiResponse(response);
 
 
     if(
@@ -2326,9 +2333,7 @@ Chargement des Services...
 
 
     services =
-      Array.isArray(
-        result.services
-      )
+      Array.isArray(result.services)
         ? result.services
         : [];
 
@@ -2350,9 +2355,7 @@ Chargement des Services...
     servicesContainer.innerHTML =
       `
 <div class="message error">
-❌ ${escapeHtml(
-  error.message
-)}
+❌ ${escapeHtml(error.message)}
 </div>
 `;
 
@@ -2396,8 +2399,7 @@ function updateServiceTypeUI(){
 
 
   if(
-    type ===
-    "digital_card"
+    type === "digital_card"
   ){
 
     contactOptionBox.style.display =
@@ -2405,7 +2407,7 @@ function updateServiceTypeUI(){
 
 
     destinationHelp.textContent =
-      "يمكنك ترك Destination URL فارغاً إذا كانت الوجهة هي صفحة بطاقة العميل.";
+      "Vous pouvez laisser Destination URL vide si la destination est la page de la carte du client.";
 
   }else{
 
@@ -2435,9 +2437,7 @@ serviceType.addEventListener(
    COPY HELPER
 ===================================================== */
 
-async function copyText(
-  text
-){
+async function copyText(text){
 
   try{
 
@@ -2456,20 +2456,13 @@ async function copyText(
 
 
     const textarea =
-      document.createElement(
-        "textarea"
-      );
+      document.createElement("textarea");
 
 
-    textarea.value =
-      text;
+    textarea.value = text;
 
-
-    textarea.style.position =
-      "fixed";
-
-    textarea.style.opacity =
-      "0";
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
 
 
     document.body.appendChild(
@@ -2478,14 +2471,11 @@ async function copyText(
 
 
     textarea.focus();
-
     textarea.select();
 
 
     const copied =
-      document.execCommand(
-        "copy"
-      );
+      document.execCommand("copy");
 
 
     textarea.remove();
@@ -2493,8 +2483,12 @@ async function copyText(
 
     return copied;
 
-
   }catch(error){
+
+    console.error(
+      "Copy:",
+      error
+    );
 
     return false;
 
@@ -2509,39 +2503,29 @@ async function copyText(
 
 function openCreateService(){
 
-  editingServiceId =
-    null;
-
+  editingServiceId = null;
 
   serviceModalTitle.textContent =
     "Ajouter un service";
 
-
   saveServiceButton.textContent =
     "Créer le service";
 
-
   serviceForm.reset();
-
 
   serviceStatus.value =
     "draft";
 
-
   serviceStand.value =
     "";
-
 
   contactSaveEnabled.checked =
     false;
 
-
   serviceConfig.value =
     "";
 
-
   updateServiceTypeUI();
-
 
   serviceModal.classList.add(
     "show"
@@ -2560,9 +2544,7 @@ function closeModal(){
     "show"
   );
 
-
-  editingServiceId =
-    null;
+  editingServiceId = null;
 
 }
 
@@ -2590,8 +2572,7 @@ serviceModal.addEventListener(
   function(event){
 
     if(
-      event.target ===
-      serviceModal
+      event.target === serviceModal
     ){
 
       closeModal();
@@ -2599,7 +2580,10 @@ serviceModal.addEventListener(
     }
 
   }
-);/* =====================================================
+);
+
+
+/* =====================================================
    RENDER SERVICES
 ===================================================== */
 
@@ -2630,10 +2614,7 @@ pour commencer.
 
 
   const wrapper =
-    document.createElement(
-      "div"
-    );
-
+    document.createElement("div");
 
   wrapper.className =
     "services-grid";
@@ -2643,23 +2624,18 @@ pour commencer.
     service => {
 
       const box =
-        document.createElement(
-          "div"
-        );
-
+        document.createElement("div");
 
       box.className =
         "service";
 
 
       const isActive =
-        service.status ===
-        "active";
+        service.status === "active";
 
 
       const isInactive =
-        service.status ===
-        "inactive";
+        service.status === "inactive";
 
 
       const statusClass =
@@ -2681,13 +2657,13 @@ pour commencer.
       const dynamicUrl =
         window.location.origin +
         "/s/" +
-        service.service_code;
+        encodeURIComponent(
+          service.service_code || ""
+        );
 
 
       const config =
-        parseConfig(
-          service.config
-        );
+        parseConfig(service.config);
 
 
       const contactEnabled =
@@ -2725,8 +2701,7 @@ pour commencer.
           service.service_type
         ] ||
         escapeHtml(
-          service.service_type ||
-          ""
+          service.service_type || ""
         )
       }
     </div>
@@ -2740,18 +2715,14 @@ pour commencer.
       ${statusLabel}
     </span>
 
-
     ${
-      service.service_type ===
-      "digital_card" &&
+      service.service_type === "digital_card" &&
       contactEnabled
 
       ? `
-
       <span class="badge contact-badge">
         📇 Contacts
       </span>
-
       `
 
       : ""
@@ -2768,7 +2739,7 @@ pour commencer.
     🔢 Code :
     <strong>
       ${escapeHtml(
-        service.service_code
+        service.service_code || ""
       )}
     </strong>
   </div>
@@ -2819,9 +2790,7 @@ pour commencer.
     <strong>
       ${
         service.stand_code
-          ? escapeHtml(
-              service.stand_code
-            )
+          ? escapeHtml(service.stand_code)
           : "QR / lien"
       }
     </strong>
@@ -2829,22 +2798,15 @@ pour commencer.
 
 
   ${
-    service.service_type ===
-    "digital_card"
+    service.service_type === "digital_card"
 
     ? `
-
     <div>
       📇 Ajouter aux contacts :
       <strong>
-        ${
-          contactEnabled
-            ? "OUI"
-            : "NON"
-        }
+        ${contactEnabled ? "OUI" : "NON"}
       </strong>
     </div>
-
     `
 
     : ""
@@ -2852,9 +2814,7 @@ pour commencer.
 
 
   <div class="dynamic-link">
-    ${escapeHtml(
-      dynamicUrl
-    )}
+    ${escapeHtml(dynamicUrl)}
   </div>
 
 </div>
@@ -2866,9 +2826,7 @@ pour commencer.
     type="button"
     class="small-btn copy"
     data-action="copy"
-    data-url="${escapeHtml(
-      dynamicUrl
-    )}"
+    data-url="${escapeHtml(dynamicUrl)}"
   >
     🔗 Copier lien
   </button>
@@ -2878,7 +2836,7 @@ pour commencer.
     type="button"
     class="small-btn edit"
     data-action="edit"
-    data-id="${service.id}"
+    data-id="${escapeHtml(service.id)}"
   >
     ✏️ Modifier
   </button>
@@ -2888,29 +2846,25 @@ pour commencer.
     isActive
 
     ? `
-
     <button
       type="button"
       class="small-btn disable"
       data-action="disable"
-      data-id="${service.id}"
+      data-id="${escapeHtml(service.id)}"
     >
       ⏸️ Désactiver
     </button>
-
     `
 
     : `
-
     <button
       type="button"
       class="small-btn activate"
       data-action="activate"
-      data-id="${service.id}"
+      data-id="${escapeHtml(service.id)}"
     >
       ▶️ Activer
     </button>
-
     `
   }
 
@@ -2919,7 +2873,7 @@ pour commencer.
     type="button"
     class="small-btn stats"
     data-action="stats"
-    data-id="${service.id}"
+    data-id="${escapeHtml(service.id)}"
   >
     📊 Stats
   </button>
@@ -2929,7 +2883,7 @@ pour commencer.
     type="button"
     class="small-btn danger"
     data-action="delete"
-    data-id="${service.id}"
+    data-id="${escapeHtml(service.id)}"
   >
     🗑️ Supprimer
   </button>
@@ -2938,18 +2892,13 @@ pour commencer.
 
 `;
 
-
-      wrapper.appendChild(
-        box
-      );
+      wrapper.appendChild(box);
 
     }
   );
 
 
-  servicesContainer.innerHTML =
-    "";
-
+  servicesContainer.innerHTML = "";
 
   servicesContainer.appendChild(
     wrapper
@@ -2957,9 +2906,7 @@ pour commencer.
 
 
   servicesContainer
-    .querySelectorAll(
-      "[data-action]"
-    )
+    .querySelectorAll("[data-action]")
     .forEach(
       button => {
 
@@ -2972,34 +2919,23 @@ pour commencer.
     );
 
 }
-
-
-/* =====================================================
+  /* =====================================================
    SERVICE ACTIONS
 ===================================================== */
 
-async function handleServiceAction(
-  event
-){
+async function handleServiceAction(event){
 
   const button =
     event.currentTarget;
 
-
   const action =
     button.dataset.action;
 
-
   const id =
-    Number(
-      button.dataset.id
-    );
+    Number(button.dataset.id);
 
 
-  if(
-    action ===
-    "copy"
-  ){
+  if(action === "copy"){
 
     const copied =
       await copyText(
@@ -3007,13 +2943,10 @@ async function handleServiceAction(
       );
 
 
-    if(
-      copied
-    ){
+    if(copied){
 
       const oldText =
         button.textContent;
-
 
       button.textContent =
         "Copié ✓";
@@ -3021,10 +2954,8 @@ async function handleServiceAction(
 
       setTimeout(
         () => {
-
           button.textContent =
             oldText;
-
         },
         1500
       );
@@ -3037,30 +2968,19 @@ async function handleServiceAction(
 
     }
 
+    return;
+  }
 
+
+  if(action === "edit"){
+
+    openEditService(id);
     return;
 
   }
 
 
-  if(
-    action ===
-    "edit"
-  ){
-
-    openEditService(
-      id
-    );
-
-    return;
-
-  }
-
-
-  if(
-    action ===
-    "activate"
-  ){
+  if(action === "activate"){
 
     await changeServiceStatus(
       id,
@@ -3072,10 +2992,7 @@ async function handleServiceAction(
   }
 
 
-  if(
-    action ===
-    "disable"
-  ){
+  if(action === "disable"){
 
     await changeServiceStatus(
       id,
@@ -3087,28 +3004,17 @@ async function handleServiceAction(
   }
 
 
-  if(
-    action ===
-    "stats"
-  ){
+  if(action === "stats"){
 
-    await showServiceStats(
-      id
-    );
-
+    await showServiceStats(id);
     return;
 
   }
 
 
-  if(
-    action ===
-    "delete"
-  ){
+  if(action === "delete"){
 
-    await deleteService(
-      id
-    );
+    await deleteService(id);
 
   }
 
@@ -3127,18 +3033,14 @@ serviceForm.addEventListener(
 
 
     const clientId =
-      Number(
-        serviceClient.value
-      );
+      Number(serviceClient.value);
 
 
     const type =
       serviceType.value;
 
 
-    if(
-      !clientId
-    ){
+    if(!clientId){
 
       alert(
         "Sélectionnez un client."
@@ -3149,9 +3051,7 @@ serviceForm.addEventListener(
     }
 
 
-    if(
-      !type
-    ){
+    if(!type){
 
       alert(
         "Sélectionnez un type de service."
@@ -3197,16 +3097,13 @@ serviceForm.addEventListener(
 
       stand_id:
         serviceStand.value
-          ? Number(
-              serviceStand.value
-            )
+          ? Number(serviceStand.value)
           : null,
 
       status:
         serviceStatus.value,
 
-      config:
-        config
+      config
 
     };
 
@@ -3226,25 +3123,25 @@ serviceForm.addEventListener(
       let response;
 
 
-      if(
-        editingServiceId
-      ){
+      if(editingServiceId){
 
         response =
           await fetch(
             "/api/services/" +
-            editingServiceId,
+            encodeURIComponent(
+              editingServiceId
+            ),
             {
               method:"PATCH",
               credentials:"same-origin",
               headers:{
                 "Content-Type":
+                  "application/json",
+                "Accept":
                   "application/json"
               },
               body:
-                JSON.stringify(
-                  data
-                )
+                JSON.stringify(data)
             }
           );
 
@@ -3258,12 +3155,12 @@ serviceForm.addEventListener(
               credentials:"same-origin",
               headers:{
                 "Content-Type":
+                  "application/json",
+                "Accept":
                   "application/json"
               },
               body:
-                JSON.stringify(
-                  data
-                )
+                JSON.stringify(data)
             }
           );
 
@@ -3271,19 +3168,17 @@ serviceForm.addEventListener(
 
 
       if(
-        response.status ===
-        401
+        response.status === 401
       ){
 
         showLogin();
-
         return;
 
       }
 
 
       const result =
-        await response.json();
+        await readApiResponse(response);
 
 
       if(
@@ -3300,9 +3195,7 @@ serviceForm.addEventListener(
 
 
       const wasEditing =
-        Boolean(
-          editingServiceId
-        );
+        Boolean(editingServiceId);
 
 
       closeModal();
@@ -3332,8 +3225,7 @@ serviceForm.addEventListener(
 
       showMessage(
         globalMessage,
-        "❌ " +
-        error.message,
+        "❌ " + error.message,
         "error"
       );
 
@@ -3342,7 +3234,6 @@ serviceForm.addEventListener(
 
       saveServiceButton.disabled =
         false;
-
 
       saveServiceButton.textContent =
         "Enregistrer";
@@ -3357,21 +3248,16 @@ serviceForm.addEventListener(
    EDIT SERVICE
 ===================================================== */
 
-function openEditService(
-  id
-){
+function openEditService(id){
 
   const service =
     services.find(
       item =>
-        Number(item.id) ===
-        Number(id)
+        Number(item.id) === Number(id)
     );
 
 
-  if(
-    !service
-  ){
+  if(!service){
 
     showMessage(
       globalMessage,
@@ -3397,45 +3283,32 @@ function openEditService(
 
 
   serviceClient.value =
-    service.client_id ||
-    "";
+    service.client_id || "";
 
 
   serviceType.value =
-    service.service_type ||
-    "";
+    service.service_type || "";
 
 
   serviceName.value =
-    service.service_name ||
-    "";
+    service.service_name || "";
 
 
   serviceDestination.value =
-    service.destination_url ||
-    "";
+    service.destination_url || "";
 
 
   serviceStand.value =
-    service.stand_id ||
-    "";
+    service.stand_id || "";
 
 
   serviceStatus.value =
-    service.status ||
-    "draft";
+    service.status || "draft";
 
 
   const config =
-    parseConfig(
-      service.config
-    );
+    parseConfig(service.config);
 
-
-  /*
-   * On récupère l'option Contacts depuis
-   * la configuration existante.
-   */
 
   contactSaveEnabled.checked =
     isTrue(
@@ -3443,25 +3316,16 @@ function openEditService(
     );
 
 
-  /*
-   * On ne montre pas contact_save_enabled
-   * dans la zone JSON pour éviter de créer
-   * un doublon ou une confusion.
-   */
-
   const visibleConfig = {
     ...config
   };
 
 
-  delete visibleConfig
-    .contact_save_enabled;
+  delete visibleConfig.contact_save_enabled;
 
 
   serviceConfig.value =
-    Object.keys(
-      visibleConfig
-    ).length
+    Object.keys(visibleConfig).length
       ? JSON.stringify(
           visibleConfig,
           null,
@@ -3494,12 +3358,14 @@ async function changeServiceStatus(
     const response =
       await fetch(
         "/api/services/" +
-        id,
+        encodeURIComponent(id),
         {
           method:"PATCH",
           credentials:"same-origin",
           headers:{
             "Content-Type":
+              "application/json",
+            "Accept":
               "application/json"
           },
           body:
@@ -3511,19 +3377,17 @@ async function changeServiceStatus(
 
 
     if(
-      response.status ===
-      401
+      response.status === 401
     ){
 
       showLogin();
-
       return;
 
     }
 
 
     const result =
-      await response.json();
+      await readApiResponse(response);
 
 
     if(
@@ -3563,8 +3427,7 @@ async function changeServiceStatus(
 
     showMessage(
       globalMessage,
-      "❌ " +
-      error.message,
+      "❌ " + error.message,
       "error"
     );
 
@@ -3577,15 +3440,12 @@ async function changeServiceStatus(
    DELETE SERVICE
 ===================================================== */
 
-async function deleteService(
-  id
-){
+async function deleteService(id){
 
   const service =
     services.find(
       item =>
-        Number(item.id) ===
-        Number(id)
+        Number(item.id) === Number(id)
     );
 
 
@@ -3603,9 +3463,7 @@ async function deleteService(
     );
 
 
-  if(
-    !confirmed
-  ){
+  if(!confirmed){
 
     return;
 
@@ -3617,28 +3475,30 @@ async function deleteService(
     const response =
       await fetch(
         "/api/services/" +
-        id,
+        encodeURIComponent(id),
         {
           method:"DELETE",
-          credentials:"same-origin"
+          credentials:"same-origin",
+          headers:{
+            "Accept":
+              "application/json"
+          }
         }
       );
 
 
     if(
-      response.status ===
-      401
+      response.status === 401
     ){
 
       showLogin();
-
       return;
 
     }
 
 
     const result =
-      await response.json();
+      await readApiResponse(response);
 
 
     if(
@@ -3676,8 +3536,7 @@ async function deleteService(
 
     showMessage(
       globalMessage,
-      "❌ " +
-      error.message,
+      "❌ " + error.message,
       "error"
     );
 
@@ -3690,38 +3549,38 @@ async function deleteService(
    SERVICE STATS
 ===================================================== */
 
-async function showServiceStats(
-  id
-){
+async function showServiceStats(id){
 
   try{
 
     const response =
       await fetch(
         "/api/services/" +
-        id +
+        encodeURIComponent(id) +
         "/stats",
         {
           method:"GET",
-          credentials:"same-origin"
+          credentials:"same-origin",
+          headers:{
+            "Accept":
+              "application/json"
+          }
         }
       );
 
 
     if(
-      response.status ===
-      401
+      response.status === 401
     ){
 
       showLogin();
-
       return;
 
     }
 
 
     const result =
-      await response.json();
+      await readApiResponse(response);
 
 
     if(
@@ -3738,13 +3597,11 @@ async function showServiceStats(
 
 
     const stats =
-      result.statistics ||
-      {};
+      result.statistics || {};
 
 
     const service =
-      result.service ||
-      {};
+      result.service || {};
 
 
     alert(
@@ -3765,27 +3622,19 @@ async function showServiceStats(
       "\n\n" +
 
       "Total : " +
-      Number(
-        stats.total || 0
-      ) +
+      Number(stats.total || 0) +
       "\n" +
 
       "Aujourd'hui : " +
-      Number(
-        stats.today || 0
-      ) +
+      Number(stats.today || 0) +
       "\n" +
 
       "7 jours : " +
-      Number(
-        stats.seven_days || 0
-      ) +
+      Number(stats.seven_days || 0) +
       "\n" +
 
       "30 jours : " +
-      Number(
-        stats.thirty_days || 0
-      ) +
+      Number(stats.thirty_days || 0) +
       "\n\n" +
 
       "Dernier scan : " +
@@ -3806,30 +3655,27 @@ async function showServiceStats(
 
     showMessage(
       globalMessage,
-      "❌ " +
-      error.message,
+      "❌ " + error.message,
       "error"
     );
 
   }
 
 }
-  /* =====================================================
+
+
+/* =====================================================
    RENDER STANDS
 ===================================================== */
 
 function renderStands(){
 
-  if(
-    !stands.length
-  ){
+  if(!stands.length){
 
     standsContainer.innerHTML =
       `
 <div class="empty">
-
 Aucun Stand trouvé.
-
 </div>
 `;
 
@@ -3839,9 +3685,7 @@ Aucun Stand trouvé.
 
 
   const wrapper =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
 
   wrapper.className =
@@ -3852,9 +3696,7 @@ Aucun Stand trouvé.
     stand => {
 
       const box =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
 
       box.className =
@@ -3862,14 +3704,17 @@ Aucun Stand trouvé.
 
 
       const isActive =
-        stand.status ===
-        "active";
+        stand.status === "active";
 
 
       const standCode =
         stand.stand_code ||
-        "STAND-" +
-        stand.id;
+        "STAND-" + stand.id;
+
+
+      const safeCode =
+        String(standCode)
+          .replace(/[^a-zA-Z0-9_-]/g,"-");
 
 
       box.innerHTML =
@@ -3878,9 +3723,7 @@ Aucun Stand trouvé.
 <div class="stand-top">
 
   <div class="stand-code">
-    ${escapeHtml(
-      standCode
-    )}
+    ${escapeHtml(standCode)}
   </div>
 
   <span
@@ -3933,8 +3776,7 @@ ${
     📊 Scans :
     <strong>
       ${Number(
-        stand.scans_count ||
-        0
+        stand.scans_count || 0
       )}
     </strong>
 
@@ -3963,8 +3805,7 @@ ${
       class="small-btn copy"
       data-stand-action="copy"
       data-url="${escapeHtml(
-        stand.destination_url ||
-        ""
+        stand.destination_url || ""
       )}"
     >
       🔗 Copier le lien
@@ -4011,7 +3852,7 @@ ${
 <div
   class="activate-box"
   id="activate-${escapeHtml(
-    standCode
+    safeCode
   )}"
 >
 
@@ -4094,17 +3935,13 @@ ${
 
 `;
 
-      wrapper.appendChild(
-        box
-      );
+      wrapper.appendChild(box);
 
     }
   );
 
 
-  standsContainer.innerHTML =
-    "";
-
+  standsContainer.innerHTML = "";
 
   standsContainer.appendChild(
     wrapper
@@ -4133,9 +3970,7 @@ ${
    STAND ACTIONS
 ===================================================== */
 
-async function handleStandAction(
-  event
-){
+async function handleStandAction(event){
 
   const button =
     event.currentTarget;
@@ -4145,25 +3980,24 @@ async function handleStandAction(
     button.dataset.standAction;
 
 
-  if(
-    action ===
-    "activate-toggle"
-  ){
+  if(action === "activate-toggle"){
 
     const code =
       button.dataset.stand;
 
 
+    const safeCode =
+      String(code)
+        .replace(/[^a-zA-Z0-9_-]/g,"-");
+
+
     const box =
       document.getElementById(
-        "activate-" +
-        code
+        "activate-" + safeCode
       );
 
 
-    if(
-      box
-    ){
+    if(box){
 
       box.classList.toggle(
         "show"
@@ -4171,16 +4005,12 @@ async function handleStandAction(
 
     }
 
-
     return;
 
   }
 
 
-  if(
-    action ===
-    "activate-submit"
-  ){
+  if(action === "activate-submit"){
 
     const code =
       button.dataset.stand;
@@ -4190,6 +4020,17 @@ async function handleStandAction(
       button.closest(
         ".activate-box"
       );
+
+
+    if(!parent){
+
+      alert(
+        "Interface d'activation introuvable."
+      );
+
+      return;
+
+    }
 
 
     const clientSelect =
@@ -4212,9 +4053,7 @@ async function handleStandAction(
       destinationInput.value.trim();
 
 
-    if(
-      !clientId
-    ){
+    if(!clientId){
 
       alert(
         "Sélectionnez un client."
@@ -4225,9 +4064,7 @@ async function handleStandAction(
     }
 
 
-    if(
-      !destinationUrl
-    ){
+    if(!destinationUrl){
 
       alert(
         "Entrez la destination URL."
@@ -4238,9 +4075,7 @@ async function handleStandAction(
     }
 
 
-    button.disabled =
-      true;
-
+    button.disabled = true;
 
     button.textContent =
       "Activation...";
@@ -4256,6 +4091,8 @@ async function handleStandAction(
             credentials:"same-origin",
             headers:{
               "Content-Type":
+                "application/json",
+              "Accept":
                 "application/json"
             },
             body:
@@ -4265,9 +4102,7 @@ async function handleStandAction(
                   code,
 
                 client_id:
-                  Number(
-                    clientId
-                  ),
+                  Number(clientId),
 
                 destination_url:
                   destinationUrl
@@ -4278,19 +4113,17 @@ async function handleStandAction(
 
 
       if(
-        response.status ===
-        401
+        response.status === 401
       ){
 
         showLogin();
-
         return;
 
       }
 
 
       const result =
-        await response.json();
+        await readApiResponse(response);
 
 
       if(
@@ -4330,16 +4163,14 @@ async function handleStandAction(
 
       showMessage(
         globalMessage,
-        "❌ " +
-        error.message,
+        "❌ " + error.message,
         "error"
       );
 
 
     }finally{
 
-      button.disabled =
-        false;
+      button.disabled = false;
 
       button.textContent =
         "Activer maintenant";
@@ -4352,10 +4183,7 @@ async function handleStandAction(
   }
 
 
-  if(
-    action ===
-    "copy"
-  ){
+  if(action === "copy"){
 
     const copied =
       await copyText(
@@ -4363,13 +4191,10 @@ async function handleStandAction(
       );
 
 
-    if(
-      copied
-    ){
+    if(copied){
 
       const oldText =
         button.textContent;
-
 
       button.textContent =
         "Copié ✓";
@@ -4377,10 +4202,8 @@ async function handleStandAction(
 
       setTimeout(
         () => {
-
           button.textContent =
             oldText;
-
         },
         1500
       );
@@ -4393,16 +4216,12 @@ async function handleStandAction(
 
     }
 
-
     return;
 
   }
 
 
-  if(
-    action ===
-    "reset"
-  ){
+  if(action === "reset"){
 
     const code =
       button.dataset.stand;
@@ -4418,18 +4237,14 @@ async function handleStandAction(
       );
 
 
-    if(
-      !confirmed
-    ){
+    if(!confirmed){
 
       return;
 
     }
 
 
-    button.disabled =
-      true;
-
+    button.disabled = true;
 
     button.textContent =
       "Réinitialisation...";
@@ -4445,31 +4260,30 @@ async function handleStandAction(
             credentials:"same-origin",
             headers:{
               "Content-Type":
+                "application/json",
+              "Accept":
                 "application/json"
             },
             body:
               JSON.stringify({
-                stand_code:
-                  code
+                stand_code:code
               })
           }
         );
 
 
       if(
-        response.status ===
-        401
+        response.status === 401
       ){
 
         showLogin();
-
         return;
 
       }
 
 
       const result =
-        await response.json();
+        await readApiResponse(response);
 
 
       if(
@@ -4509,17 +4323,14 @@ async function handleStandAction(
 
       showMessage(
         globalMessage,
-        "❌ " +
-        error.message,
+        "❌ " + error.message,
         "error"
       );
 
 
     }finally{
 
-      button.disabled =
-        false;
-
+      button.disabled = false;
 
       button.textContent =
         "🔄 Réinitialiser";
@@ -4542,9 +4353,7 @@ clientForm.addEventListener(
     event.preventDefault();
 
 
-    clientButton.disabled =
-      true;
-
+    clientButton.disabled = true;
 
     clientButton.textContent =
       "Création...";
@@ -4558,81 +4367,51 @@ clientForm.addEventListener(
     const data = {
 
       name:
-        clientForm.elements[
-          "name"
-        ].value.trim(),
+        clientForm.elements["name"].value.trim(),
 
       profession:
-        clientForm.elements[
-          "profession"
-        ].value.trim(),
+        clientForm.elements["profession"].value.trim(),
 
       bio:
-        clientForm.elements[
-          "bio"
-        ].value.trim(),
+        clientForm.elements["bio"].value.trim(),
 
       phone:
-        clientForm.elements[
-          "phone"
-        ].value.trim(),
+        clientForm.elements["phone"].value.trim(),
 
       whatsapp:
-        clientForm.elements[
-          "whatsapp"
-        ].value.trim(),
+        clientForm.elements["whatsapp"].value.trim(),
 
       email:
-        clientForm.elements[
-          "email"
-        ].value.trim(),
+        clientForm.elements["email"].value.trim(),
 
       instagram:
-        clientForm.elements[
-          "instagram"
-        ].value.trim(),
+        clientForm.elements["instagram"].value.trim(),
 
       facebook:
-        clientForm.elements[
-          "facebook"
-        ].value.trim(),
+        clientForm.elements["facebook"].value.trim(),
 
       tiktok:
-        clientForm.elements[
-          "tiktok"
-        ].value.trim(),
+        clientForm.elements["tiktok"].value.trim(),
 
       linkedin:
-        clientForm.elements[
-          "linkedin"
-        ].value.trim(),
+        clientForm.elements["linkedin"].value.trim(),
 
       address:
-        clientForm.elements[
-          "address"
-        ].value.trim(),
+        clientForm.elements["address"].value.trim(),
 
       maps:
-        clientForm.elements[
-          "maps"
-        ].value.trim(),
+        clientForm.elements["maps"].value.trim(),
 
       website:
-        clientForm.elements[
-          "website"
-        ].value.trim(),
+        clientForm.elements["website"].value.trim(),
 
       reviews:
-        clientForm.elements[
-          "reviews"
-        ].value.trim()
+        clientForm.elements["reviews"].value.trim()
 
     };
 
 
-    if(
-      !data.name
-    ){
+    if(!data.name){
 
       showMessage(
         globalMessage,
@@ -4641,13 +4420,10 @@ clientForm.addEventListener(
       );
 
 
-      clientButton.disabled =
-        false;
-
+      clientButton.disabled = false;
 
       clientButton.textContent =
         "Créer le profil";
-
 
       return;
 
@@ -4664,30 +4440,28 @@ clientForm.addEventListener(
             credentials:"same-origin",
             headers:{
               "Content-Type":
+                "application/json",
+              "Accept":
                 "application/json"
             },
             body:
-              JSON.stringify(
-                data
-              )
+              JSON.stringify(data)
           }
         );
 
 
       if(
-        response.status ===
-        401
+        response.status === 401
       ){
 
         showLogin();
-
         return;
 
       }
 
 
       const result =
-        await response.json();
+        await readApiResponse(response);
 
 
       if(
@@ -4714,9 +4488,7 @@ clientForm.addEventListener(
 
 
       await loadClients();
-
       await loadServices();
-
       await loadStands();
 
       updateGlobalStats();
@@ -4732,17 +4504,14 @@ clientForm.addEventListener(
 
       showMessage(
         globalMessage,
-        "❌ " +
-        error.message,
+        "❌ " + error.message,
         "error"
       );
 
 
     }finally{
 
-      clientButton.disabled =
-        false;
-
+      clientButton.disabled = false;
 
       clientButton.textContent =
         "Créer le profil";
@@ -4770,8 +4539,7 @@ function updateGlobalStats(){
   activeServices.textContent =
     services.filter(
       service =>
-        service.status ===
-        "active"
+        service.status === "active"
     ).length;
 
 
@@ -4790,8 +4558,7 @@ document.addEventListener(
   function(event){
 
     if(
-      event.key ===
-      "Escape" &&
+      event.key === "Escape" &&
       serviceModal.classList.contains(
         "show"
       )
